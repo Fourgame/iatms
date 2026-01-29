@@ -1,18 +1,33 @@
-import logo from './logo.svg';
-import './App.css';
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.js";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import "react-toastify/dist/ReactToastify.css";
+import "react-datepicker/dist/react-datepicker.css";
+import "react-bootstrap-typeahead/css/Typeahead.min.css";
+import "./App.css";
+
+import Header from "./components/Header/Header";
+import Home from "./components/Home/Home";
+import Signin from "./components/Signin/Signin";
+
+import { Routes, Route, Navigate } from "react-router-dom";
 
 function App() {
   return (
-    <div >
-      <header >
-        <p>Header</p>
+    <div className="container-fluid px-0">
+      <header>
+        <Header />
       </header>
       <main>
-        <p>Content</p>
+        <div className="content">
+          <Routes>
+            <Route path="/" element={<Signin title="Sign-in" />} />
+            <Route path="/signin" element={<Signin title="Sign-in" />} />
+            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="/home" element={<Home />} />
+          </Routes>
+        </div>
       </main>
-      <footer>
-        <p>Footer</p>
-      </footer>
     </div>
   );
 }
