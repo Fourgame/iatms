@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import "react-datepicker/dist/react-datepicker.css";
 import "react-bootstrap-typeahead/css/Typeahead.min.css";
 import "./App.css";
+import TokenService from "./services/token.service";
 
 import Header from "./components/Header/Header";
 import Home from "./components/Home/Home";
@@ -13,10 +14,11 @@ import Signin from "./components/Signin/Signin";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 function App() {
+  console.log(TokenService.isSignIn());
   return (
     <div className="container-fluid px-0">
       <header>
-        <Header />
+        {TokenService.isSignIn() && <Header />}
       </header>
       <main>
         <div className="content">

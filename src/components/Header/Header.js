@@ -1,13 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const Header = () => {
+
+    const navigate = useNavigate();
     // TODO: พอมี auth จริงค่อยเปลี่ยนให้ดึงจาก Redux
     const currentUser = null; // หรือใส่ mock เช่น { profile: { f_name_eng:"A", l_name_eng:"B" }, role:{ name:"Admin" } }
 
     const logOut = () => {
-        // TODO: พอมี Redux/Backend ค่อยใส่ logout action
         console.log("logout");
+        navigate("/signin");
     };
 
     const fullName = currentUser?.profile
