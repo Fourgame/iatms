@@ -5,20 +5,32 @@ import "react-toastify/dist/ReactToastify.css";
 import "react-datepicker/dist/react-datepicker.css";
 import "react-bootstrap-typeahead/css/Typeahead.min.css";
 import "./App.css";
-import TokenService from "./services/token.service";
+
+import { Routes, Route, Navigate,useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 import Header from "./components/Header/Header";
 import Home from "./components/Home/Home";
 import Signin from "./components/Signin/Signin";
+import TokenService from "./services/token.service";
 
-import { Routes, Route, Navigate } from "react-router-dom";
+
 
 function App() {
-  console.log(TokenService.isSignIn());
+
+  const location = useLocation();
+  const [isAuth, setIsAuth] = useState(TokenService.isSignIn());
+  
+  useEffect(() => {
+    setIsAuth(TokenService.isSignIn());
+  }, [location.pathname]); // เปลี่ยนหน้าเมื่อไหร่ เช็คใหม่
+
+  console.log("location: ",location.pathname);
+  console.log("is auth: ",isAuth);
   return (
     <div className="container-fluid px-0">
       <header>
-        {TokenService.isSignIn() && <Header />}
+        {isAuth && <Header onLogout={() => setIsAuth(false)} />}
       </header>
       <main>
         <div className="content">

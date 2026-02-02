@@ -28,12 +28,11 @@ const Home = () => {
     const [user, setUser] = useState(token.getUser());
 
     useEffect(() => {
-
     if (user) {
         setProfile(user);
     }
-    console.log("user",user);
-    console.log("profile",user.profile);
+    console.log("user :",user);
+    console.log("profile :",user.profile);
 
 }, []);
     return (

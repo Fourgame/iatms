@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Navigate, useNavigate } from "react-router-dom";
-
+import TokenService from "../../services/token.service";
 const Header = () => {
 
     const navigate = useNavigate();
@@ -9,7 +9,10 @@ const Header = () => {
     const currentUser = null; // หรือใส่ mock เช่น { profile: { f_name_eng:"A", l_name_eng:"B" }, role:{ name:"Admin" } }
 
     const logOut = () => {
-        console.log("logout");
+        TokenService.deleteUser();
+        console.log("after delete:", TokenService.isSignIn());
+        console.log("local:", localStorage.getItem("iatms_profile"));
+        // console.log("logout");
         navigate("/signin");
     };
 
