@@ -32,8 +32,8 @@ const Home = () => {
     if (user) {
         setProfile(user);
     }
-    console.log("user",user);
-    console.log("profile",user.profile);
+    console.log("user :",user);
+    console.log("profile :",user.profile);
 
 }, []);
     return (
