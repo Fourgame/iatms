@@ -28,6 +28,7 @@ const Home = () => {
     const [user, setUser] = useState(token.getUser());
 
     useEffect(() => {
+
     if (user) {
         setProfile(user);
     }
