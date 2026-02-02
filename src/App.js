@@ -1,5 +1,4 @@
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.js";
+
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "react-toastify/dist/ReactToastify.css";
 import "react-datepicker/dist/react-datepicker.css";
@@ -18,7 +17,7 @@ function App() {
   return (
     <div className="container-fluid px-0">
       <header>
-        {TokenService.isSignIn() && <Header />}
+        {<Header />}
       </header>
       <main>
         <div className="content">
