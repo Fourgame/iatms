@@ -36,8 +36,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Signin title="Sign-in" />} />
             <Route path="/signin" element={<Signin title="Sign-in" />} />
-            <Route path="/" element={<Navigate to="/home" replace />} />
-            <Route path="/home" element={<Home />} />
+            <Route path="/" element={<Navigate to="/Home" replace />} />
+            <Route path="/Home" element={<Home />} />
           </Routes>
         </div>
       </main>

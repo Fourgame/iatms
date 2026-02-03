@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import token from "../../services/token.service";
 import Header from "../Header/Header";
+import profile from "../../services/profile.service";
 
 const StatCard = ({ title, value, footer, bg }) => (
     <div
@@ -24,17 +25,29 @@ const StatCard = ({ title, value, footer, bg }) => (
 
 
 const Home = () => {
-    const [profile, setProfile] = useState(null);
-    const [user, setUser] = useState(token.getUser());
+    const [user, setUser] = useState();
 
     useEffect(() => {
-    if (user) {
-        setProfile(user);
-    }
-    console.log("user :",user);
-    console.log("profile :",user.profile);
+        
+        
+         profile.get_profile().then(
+      (response) => {
+        setUser(response.data);
+      },
+      (error) => {
+        if (error.response.status === 403) {
+          //toast.error("Access Denied.");
+        }
+      }
+    );
+    
+    
+    // console.log("user",user);
+    // console.log("profile",user.profile);
 
 }, []);
+
+if (!user) return null;
     return (
         
 
@@ -45,11 +58,11 @@ const Home = () => {
                     className="border border-2 border-secondary h-100 p-3"
                     style={{ backgroundColor: "#F5F5F5", flex: 1 }}
                 >
-                    <div className="fw-bold fs-4 mb-3 text-start">{user.profile.username}</div>
+                    <div className="fw-bold fs-4 mb-3 text-start">abc</div>
 
                     <div className="text-start" style={{ fontSize: "14px", lineHeight: "28px" }}>
                         <div>
-                            <span className="fw-bold">OA User ID :</span> 6530300139
+                            <span className="fw-bold">OA User ID :</span> {user.profile.oa}
                         </div>
                         <div>
                             <span className="fw-bold">Email :</span> napat.wis@ku.th
@@ -102,7 +115,7 @@ const Home = () => {
                     </div>
                 </div>
             </div>
-    );
+    );  
 };
 
 export default Home;
