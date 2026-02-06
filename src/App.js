@@ -13,8 +13,16 @@ import Home from "./components/HomePage/home";
 import Signin from "./components/Signin/Signin";
 import Role from "./components/Role/Role";
 import TokenService from "./services/token.service";
+<<<<<<< HEAD
+import TableUI from "./components/Utilities/TableTennis";
+import Listofvalues from "./components/Listofvalues/Listofvalues";
+import BreadCrumb from "./components/Utilities/Breadcrumb";
+import Role from "./components/Role/Role";
+
+=======
 import Breadcrumb from "./components/Utilities/Breadcrumb";
 import Notification from "./components/Utilities/Notification";
+>>>>>>> origin/master
 
 const ProtectedRoute = ({ isAuth, children }) => {
   if (!isAuth) {
@@ -39,6 +47,7 @@ function App() {
       <header>
         {isAuth && <Header onLogout={() => setIsAuth(false)} />}
       </header>
+      {isAuth && <BreadCrumb />}
       <main>
 
         <Breadcrumb />

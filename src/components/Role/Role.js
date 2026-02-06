@@ -7,7 +7,6 @@ import TokenService from '../../services/token.service';
 import Title from '../Utilities/Title';
 import Loading from '../Utilities/Loading';
 import { noticeShowMessage } from '../Utilities/Notification';
-
 const Role = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
@@ -15,7 +14,6 @@ const Role = () => {
     const [roleData, setRoleData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
-
     useEffect(() => {
         document.title = Title.get_title("Define Roles");
         fetchRoles();
@@ -40,7 +38,6 @@ const Role = () => {
             setLoading(false);
         }
     };
-
     const showAddModal = () => {
         setModalMode('add');
         setCurrentRole(null);
@@ -62,14 +59,12 @@ const Role = () => {
         if (record.menu_report) menuValues.push('report');
         if (record.menu_admin) menuValues.push('administrator');
         if (record.menu_setup) menuValues.push('setup');
-
         const functionValues = [];
         if (record.func_cico) functionValues.push('checkInOut');
         if (record.func_approve) functionValues.push('attendanceApproval');
         if (record.func_rp_attendance) functionValues.push('attendanceHistory');
         if (record.func_rp_work_hours) functionValues.push('workHours');
         if (record.func_rp_compensation) functionValues.push('compensation');
-
         form.setFieldsValue({
             role: record.role_id,
             description: record.description,
@@ -87,20 +82,17 @@ const Role = () => {
         if (menu) {
             const currentFunctions = form.getFieldValue('function') || [];
             let newFunctions = [...currentFunctions];
-
             if (!menu.includes('attendance')) {
                 newFunctions = newFunctions.filter(f => f !== 'checkInOut' && f !== 'attendanceApproval');
             }
             if (!menu.includes('report')) {
                 newFunctions = newFunctions.filter(f => f !== 'attendanceHistory' && f !== 'workHours' && f !== 'compensation');
             }
-
             if (currentFunctions.length !== newFunctions.length) {
                 form.setFieldValue('function', newFunctions);
             }
         }
     }, [menu, form]);
-
     const handleOk = () => {
         form.validateFields().then(async (values) => {
             setLoading(true);
@@ -108,7 +100,6 @@ const Role = () => {
                 const roleId = modalMode === 'add' ? values.role : currentRole.role_id;
                 const currentUser = TokenService.getUser();
                 const username = currentUser?.username || "System";
-
                 const payload = {
                     role_id: roleId,
                     description: values.description,
@@ -135,7 +126,6 @@ const Role = () => {
                 } else {
                     noticeShowMessage(response.data?.message || "บันทึกข้อมูลไม่สำเร็จ", true);
                 }
-
             } catch (error) {
                 console.error("Error saving role:", error);
                 const serverMessage = error.response?.data?.message;
@@ -282,7 +272,6 @@ const Role = () => {
             ]
         }
     ];
-
     const tableProps = {
         columns: columns,
         dataSource: roleData,
@@ -304,7 +293,6 @@ const Role = () => {
                     {...tableProps}
                 />
             </div>
-
             <Modal
                 title={
                     <div style={{
@@ -369,7 +357,6 @@ const Role = () => {
                             </div>
                         </Col>
                     </Row>
-
                     <Row gutter={24}>
                         <Col span={14}>
                             <Form.Item
@@ -381,7 +368,6 @@ const Role = () => {
                             </Form.Item>
                         </Col>
                     </Row>
-
                     <Row gutter={24}>
                         <Col span={14}>
                             <Form.Item
@@ -452,7 +438,6 @@ const Role = () => {
                             </Row>
                         </Checkbox.Group>
                     </Form.Item>
-
                     <Row justify="center" style={{ marginTop: '24px' }}>
                         <Space size="large">
                             <Button

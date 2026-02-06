@@ -10,7 +10,6 @@ const Breadcrumb = () => {
     pathname.substring(1).toLowerCase() === "" ||
       pathname.substring(1).toLowerCase() === "/home"
       ? true : false;
-
   const pathSegments = pathname
     .substring(1)
     .split("/")
@@ -34,7 +33,6 @@ const Breadcrumb = () => {
       </span>
     );
   });
-
   return (
     isLoggedIn &&
     !isHome && (

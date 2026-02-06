@@ -5,10 +5,11 @@ import TokenService from "../../services/token.service";
 
 
 
+
 const Signin = (props) => {
 
   const navigate = useNavigate();
-  const [username, setUsername] = useState("nattapol.prai");
+  const [username, setUsername] = useState("napattarapong.c");
   const [password, setPassword] = useState("@Int1234");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -22,7 +23,7 @@ const Signin = (props) => {
 
   const handleLogin = async (e) => {
     if (skipLogin) {
-      navigate("/home", { replace: true });
+      navigate("/Home", { replace: true });
       return;
     }
     e.preventDefault();
@@ -65,7 +66,7 @@ const Signin = (props) => {
 
   return (
     <div
-      className="min-vh-100 d-flex justify-content-end align-items-center border border-danger border-3"
+      className="min-vh-100 d-flex justify-content-end align-items-center "  //boder-danger
       style={{
         backgroundImage: "url(/signin_bg.png)",
         backgroundSize: "cover",
@@ -73,14 +74,14 @@ const Signin = (props) => {
         backgroundRepeat: "no-repeat",
       }}
     >
-      <div className="justify-content-end border border-success border-3 me-5">
+      <div className="justify-content-end me-5"> 
         <h3 className="text-light fs-1 ">
           <p className="lh-1">Intern Attendance Tracking</p>
           <span className="lh-1">Management System</span>
           <i className="ms-3 bi bi-calendar"></i>
         </h3>
         <div className="align-items-center">
-          <div className="card border-3 border-danger rounded-4 mt-4 " style={{ width: "38rem" }}>
+          <div className="card rounded-4 mt-4 " style={{ width: "38rem" }}>  
             <div className="card-body p-4">
 
               <form onSubmit={handleLogin}>

@@ -62,7 +62,7 @@ const Header = () => {
 
     return (
         <nav
-            className="navbar navbar-expand-xl navbar-dark px-4 py-2"
+            className="navbar navbar-expand-xl navbar-dark px-4 py-3"
             style={{ backgroundColor: "#1C3C85" }}
         >
             <div className="container-fluid d-flex justify-content-between align-items-center">
@@ -70,7 +70,7 @@ const Header = () => {
                 <div className="d-flex align-items-center gap-5">
                     {/* Brand */}
                     <Link
-                        to="/home"
+                        to="/Home"
                         className="btn btn-primary border border-3 rounded-4 d-flex align-items-center gap-2 px-3 py-1 border-white text-decoration-none"
                         style={{ backgroundColor: "#04318D", height: "48px" }}
                     >
@@ -98,7 +98,7 @@ const Header = () => {
                             {/* 1. Menu: Attendance */}
                             {activeMenus.attendance && (
                                 <li className="nav-item dropdown">
-                                    <a className="nav-link dropdown-toggle text-white fw-light" href="#" role="button" data-bs-toggle="dropdown">
+                                    <a className="nav-link dropdown-toggle text-white fw-medium" href="#" role="button" data-bs-toggle="dropdown">
                                         Attendance
                                     </a>
                                     <ul className="dropdown-menu shadow border-0 mt-2">
@@ -112,7 +112,7 @@ const Header = () => {
                             {/* 2. Menu: Report */}
                             {activeMenus.report && (
                                 <li className="nav-item dropdown">
-                                    <a className="nav-link dropdown-toggle text-white fw-light" href="#" role="button" data-bs-toggle="dropdown">
+                                    <a className="nav-link dropdown-toggle text-white fw-medium" href="#" role="button" data-bs-toggle="dropdown">
                                         Report
                                     </a>
                                     <ul className="dropdown-menu shadow border-0 mt-2">
@@ -126,7 +126,7 @@ const Header = () => {
                             {/* 3. Menu: Admin */}
                             {activeMenus.admin && (
                                 <li className="nav-item dropdown">
-                                    <a className="nav-link dropdown-toggle text-white fw-light" href="#" role="button" data-bs-toggle="dropdown">
+                                    <a className="nav-link dropdown-toggle text-white fw-medium" href="#" role="button" data-bs-toggle="dropdown">
                                         Admin
                                     </a>
                                     <ul className="dropdown-menu shadow border-0 mt-2">
@@ -138,7 +138,7 @@ const Header = () => {
                             {/* 4. Menu: Setup */}
                             {activeMenus.setup && (
                                 <li className="nav-item dropdown">
-                                    <a className="nav-link dropdown-toggle text-white fw-light" href="#" role="button" data-bs-toggle="dropdown">
+                                    <a className="nav-link dropdown-toggle text-white fw-medium" href="#" role="button" data-bs-toggle="dropdown">
                                         Setup
                                     </a>
                                     <ul className="dropdown-menu shadow border-0 mt-2">
@@ -155,7 +155,7 @@ const Header = () => {
                 {/* Right Side */}
                 <div className="d-flex align-items-center gap-4 ms-auto">
                     <span className="fw-lighter text-white">Version: (Web) | (API)</span>
-                    <span className="fw-bold text-white">Role : {roleName}</span>
+                    <span className="fw-bold text-white">Role : {currentUser.profile.role_id}</span>
 
                     <a
                         className="btn btn-primary rounded-pill border border-2 d-flex align-items-center gap-2 px-3 py-1 border border-black"
