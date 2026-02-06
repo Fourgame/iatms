@@ -28,8 +28,7 @@ const Home = () => {
     const [user, setUser] = useState();
 
     useEffect(() => {
-        
-        
+
          profile.get_profile().then(
       (response) => {
         setUser(response.data);
