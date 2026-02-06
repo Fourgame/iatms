@@ -1,0 +1,163 @@
+@import url("../../../Styles/Fonts/HelveticaNeue/css/fonts.css");
+@import url("../../../Styles/Fonts/Kanit/css/fonts.css");
+@import url("../../../Styles/Fonts/BBLSansOffice/css/fonts.css");
+
+thead[class*="ant-table-thead"] th {
+  background-color: #80cbc4 !important;
+  color: rgb(0, 0, 0) !important;
+  text-align: center !important;
+  z-index: 0;
+}
+
+.ant-table {
+  background-color: #ffffff17 !important;
+  z-index: 0;
+  font-family: BBLSansOffice-Regular, Kanit !important;
+}
+
+.table-row-light {
+  background-color: #ffffffeb;
+}
+
+.table-row-dark {
+  background-color: transparent;
+}
+
+.table-striped-rows tr:nth-child(2n) td {
+  background-color: #f7f7f7f3;
+}
+
+.table-striped-rows tr:nth-child(2n-1) td {
+  background-color: #ffffff;
+}
+
+/*สีขาวในตาราง */
+
+.table-striped-rows thead {
+  background-color: #fbfbfbb8;
+}
+
+.show {
+  display: block;
+}
+
+.hide {
+  display: none;
+}
+
+.editable-cell {
+  position: relative;
+}
+
+.editable-cell-value-wrap {
+  padding: 5px 12px;
+  cursor: pointer;
+}
+
+.editable-row:hover .editable-cell-value-wrap {
+  padding: 4px 11px;
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
+}
+
+[data-theme="dark"] .editable-row:hover .editable-cell-value-wrap {
+  border: 1px solid #434343;
+}
+
+.ant-table-column-sorter {
+  color: #ffffff;
+}
+
+.ant-table-empty .ant-table-tbody > tr.ant-table-placeholder {
+  background-color: #ffffff;
+}
+
+.divTab .ant-table-sticky-holder {
+  position: sticky !important;
+  z-index: 0 !important;
+  background: #fff !important;
+}
+
+@media only screen and (max-width: 767px) {
+  .ant-table-sticky-holder {
+    position: sticky !important;
+    z-index: 3 !important;
+    background: #fff !important;
+    top: 40px !important;
+  }
+}
+
+.ant-pagination.mini .ant-pagination-options-size-changer {
+  width: 100px;
+}
+
+.ant-table-cell-fix-left {
+  z-index: 2 !important;
+}
+
+tr.ant-table-expanded-row > td,
+tr.ant-table-expanded-row:hover > td {
+  background-color: #ffffff !important;
+}
+
+div.table-striped-rows
+  table
+  > tbody.ant-table-tbody
+  > tr.ant-table-row.level_3
+  > td {
+  background-color: #d7d7d7;
+}
+
+.ant-table-thead > tr > th.column-red {
+  background-color: #ff0000 !important;
+}
+
+.ant-table-thead > tr > th.column-orange {
+  background-color: #ff8c1a !important;
+}
+
+.ant-table-thead > tr > th.column-yellow {
+  background-color: #ffd633 !important;
+}
+
+.ant-table-thead > tr > th.column-green {
+  background-color: #009933 !important;
+}
+
+.ant-table-thead > tr > th.column-drakgreen {
+  background-color: #008000 !important;
+}
+
+.ant-table-thead > tr > th.column-pink_ {
+  background-color: #ef9ca6 !important;
+  color: black !important;
+}
+
+.ant-table-thead > tr > th.column-orange_ {
+  background-color: #facd91 !important;
+  color: black !important;
+}
+
+.ant-table-thead > tr > th.column-yellow_ {
+  background-color: #ffff80 !important;
+  color: black !important;
+}
+
+.ant-table-thead > tr > th.column-green_ {
+  background-color: #caf982 !important;
+  color: black !important;
+}
+
+.ant-table-summary {
+  z-index: 0 !important;
+  background: #feffdb !important;
+}
+.col_level_1 {
+  background-color: #f8a408 !important;
+}
+.col_level_2 {
+  background-color: #f7c364 !important;
+}
+.col_level_3 {
+  background-color: #f3eec5 !important;
+}

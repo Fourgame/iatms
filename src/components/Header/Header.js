@@ -29,7 +29,7 @@ const Header = () => {
         // console.log("logout");
         // console.log("logout");
         // TokenService.deleteUser();
-        // navigate("/signin");
+        navigate("/signin");
     };
 
 
@@ -53,12 +53,12 @@ const Header = () => {
 
     }, []);
 
-    const roleName = currentUser?.profile?.role_name ?? "";
+    const roleName = currentUser?.profile?.role_id ?? "";
     const fullName = currentUser?.profile?.name_en ?? "Full Name";
 
     if (!TokenService.isSignIn()) return null;
 
-    
+
 
     return (
         <nav
@@ -155,7 +155,7 @@ const Header = () => {
                 {/* Right Side */}
                 <div className="d-flex align-items-center gap-4 ms-auto">
                     <span className="fw-lighter text-white">Version: (Web) | (API)</span>
-                    <span className="fw-bold text-white">Role : {currentUser.profile.roleNa}</span>
+                    <span className="fw-bold text-white">Role : {roleName}</span>
 
                     <a
                         className="btn btn-primary rounded-pill border border-2 d-flex align-items-center gap-2 px-3 py-1 border border-black"
