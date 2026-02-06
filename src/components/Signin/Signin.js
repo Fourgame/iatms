@@ -37,7 +37,7 @@ const Signin = (props) => {
       try {
         if (response.status === 200) {
           TokenService.setUser(response.data);
-          navigate("/Home");
+          navigate("/home");
           setIsLoggedIn(true);
         } else {
           setMessage("Login failed.");

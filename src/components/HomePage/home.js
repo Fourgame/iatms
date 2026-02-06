@@ -23,12 +23,17 @@ const StatCard = ({ title, value, footer, bg }) => (
 
 
 
+<<<<<<< HEAD:src/components/Home/home.js
 const Home = () => {
+=======
+const home = () => {
+>>>>>>> master:src/components/HomePage/home.js
     const [profile, setProfile] = useState(null);
     const [user, setUser] = useState(token.getUser());
 
     useEffect(() => {
 
+<<<<<<< HEAD:src/components/Home/home.js
     if (user) {
         setProfile(user);
     }
@@ -36,12 +41,65 @@ const Home = () => {
     console.log("profile :",user.profile);
 
 }, []);
+=======
+        if (user) {
+            setProfile(user);
+        }
+        console.log("user :", user);
+        console.log("profile :", user.profile);
+
+    }, []);
+>>>>>>> master:src/components/HomePage/home.js
     return (
         
 
             <div className="d-flex gap-3 p-3 my-3" style={{ height: "70vh" }}>
 
+<<<<<<< HEAD:src/components/Home/home.js
                 {/* LEFT BOX */}
+=======
+        <div className="d-flex gap-3 p-3 my-3" style={{ height: "70vh" }}>
+
+            {/* LEFT BOX */}
+            <div
+                className="border border-2 border-secondary h-100 p-3"
+                style={{ backgroundColor: "#F5F5F5", flex: 1 }}
+            >
+                <div className="fw-bold fs-4 mb-3 text-start">{user.profile.username}</div>
+
+                <div className="text-start" style={{ fontSize: "14px", lineHeight: "28px" }}>
+                    <div>
+                        <span className="fw-bold">OA User ID :</span> 6530300139
+                    </div>
+                    <div>
+                        <span className="fw-bold">Email :</span> napat.wis@ku.th
+                    </div>
+                    <div>
+                        <span className="fw-bold">Role :</span> Intern
+                    </div>
+                    <div>
+                        <span className="fw-bold">Division :</span> 00191 - ENTERPRISE RESOURCE MANAGEMENT SYSTEM
+                    </div>
+                    <div>
+                        <span className="fw-bold">Team :</span> A
+                    </div>
+                    <div>
+                        <span className="fw-bold">Workplace :</span> สำนักงานพระราม 3
+                    </div>
+                </div>
+            </div>
+
+            {/* RIGHT */}
+            <div
+                className="border border-2 border-secondary h-100 p-2 d-flex flex-column"
+                style={{ backgroundColor: "#F5F5F5", flex: 1 }}
+            >
+                <div className="text-center fw-bold mb-2">
+                    ข้อมูล ณ วันที่ 07/01/2026
+                </div>
+
+                {/* ✅ กริด 3x3 กินพื้นที่ที่เหลือทั้งหมด */}
+>>>>>>> master:src/components/HomePage/home.js
                 <div
                     className="border border-2 border-secondary h-100 p-3"
                     style={{ backgroundColor: "#F5F5F5", flex: 1 }}
@@ -106,4 +164,4 @@ const Home = () => {
     );
 };
 
-export default Home;
+export default home;
