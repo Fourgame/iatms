@@ -1,21 +1,27 @@
+
 import { useLocation } from "react-router-dom";
 import TokenService from "../../services/token.service";
- 
+
 const Breadcrumb = () => {
   const isLoggedIn = TokenService.getUser();
- 
+
   const pathname = useLocation().pathname;
   const isHome =
     pathname.substring(1).toLowerCase() === "" ||
       pathname.substring(1).toLowerCase() === "/home"
       ? true : false;
- 
   const pathSegments = pathname
     .substring(1)
     .split("/")
     .filter((segment) => segment && !segment.includes("="))
-    .map((segment) => segment.replace(/-/g, " ").toUpperCase());
- 
+    .map((segment) => {
+      return segment
+        .replace(/-/g, " ")
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+    });
+
   const lists = pathSegments.map((item, i) => {
     const isLast = i === pathSegments.length - 1;
     return (
@@ -27,7 +33,6 @@ const Breadcrumb = () => {
       </span>
     );
   });
- 
   return (
     isLoggedIn &&
     !isHome && (
@@ -38,7 +43,6 @@ const Breadcrumb = () => {
           borderRadius: '5px',
           padding: '10px 15px',
           margin: '20px',
-          marginBottom: '20px',
           fontSize: '18px',
           fontWeight: '500',
           color: '#000'
@@ -49,5 +53,5 @@ const Breadcrumb = () => {
     )
   );
 };
- 
+
 export default Breadcrumb;

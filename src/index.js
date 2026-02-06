@@ -5,7 +5,7 @@ import './index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import App from './App';
-import setup from './services/setupInterceptors.js'
+import setupInterceptors from './services/setupInterceptors';
 // import reportWebVitals from './reportWebVitals';
 
 
@@ -23,3 +23,4 @@ root.render(
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 // reportWebVitals();
 setup();
+setupInterceptors();

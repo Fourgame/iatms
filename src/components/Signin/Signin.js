@@ -38,7 +38,8 @@ const Signin = (props) => {
       try {
         if (response.status === 200) {
           TokenService.setUser(response.data);
-          navigate("/Home");
+          navigate("/home");
+          setIsLoggedIn(true);
         } else {
           setMessage("Login failed.");
           setLoading(false);
@@ -49,11 +50,8 @@ const Signin = (props) => {
         setMessage(msg);
         setLoading(false);
       }
-      // login สำเร็จ
-      // setIsLoggedIn(true);
 
-      // ปกติไม่จำเป็นต้อง reload
-      // window.location.reload();
+      window.location.reload();
     } catch (err) {
       const msg =
         err?.response?.data?.message || err.message || "Login failed.";

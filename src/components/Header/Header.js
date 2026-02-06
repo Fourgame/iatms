@@ -53,12 +53,12 @@ const Header = () => {
 
     }, []);
 
-    const roleName = currentUser?.profile?.role_name ?? "";
+    const roleName = currentUser?.profile?.role_id ?? "";
     const fullName = currentUser?.profile?.name_en ?? "Full Name";
 
     if (!TokenService.isSignIn()) return null;
 
-    
+
 
     return (
         <nav

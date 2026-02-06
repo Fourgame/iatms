@@ -12,7 +12,7 @@ export const noticeShowAxiosError = (error, message = "") => {
     } else if (error.response.status === 400) {
       if (error.response.data.message) {
         toast.error(error.response.data.message);
-      } else if (error.request.responseType == "blob") {
+      } else if (error.request.responseType === "blob") {
         error.response.data.text().then((text) => {
           const _msg = JSON.parse(text);
           if (_msg.message) toast.error(_msg.message);

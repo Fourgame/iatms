@@ -1,10 +1,10 @@
-import api from './api';
+import axiosInstance from "./api";
 
 class ProfileService {
-  async get_profile() {
-    return await api.get("profile");
-  }
+    async getProfile() {
+        return await axiosInstance.get("profile");
+    }
 }
 
-const profile = new ProfileService();
-export default profile;
+const profileService = new ProfileService();
+export default profileService;

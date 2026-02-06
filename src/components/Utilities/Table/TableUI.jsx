@@ -5,6 +5,16 @@ import { FiTrash2 } from "react-icons/fi";
 
 import { IsEmpty } from "../../SysComponent/SystemComponent";
 
+// const IsEmpty = (value) => {
+//   return (
+//     value === null ||
+//     value === undefined ||
+//     value === "" ||
+//     (Array.isArray(value) && value.length === 0) ||
+//     (typeof value === "object" && Object.keys(value).length === 0)
+//   );
+// };
+
 // import "../Table/Table.css";
 
 /**
@@ -55,7 +65,7 @@ export const TableUI = (props) => {
     <Table
       className={props.classname ? props.classname : "table-striped-rows divTab"}
       rowKey={props.rowKey}
-      indentSize={3}  //not
+      indentSize={3}
       onChange={onChange}
       loading={props.loading || false}
       components={props.components || undefined}
