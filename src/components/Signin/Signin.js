@@ -23,7 +23,7 @@ const Signin = (props) => {
 
   const handleLogin = async (e) => {
     if (skipLogin) {
-      navigate("/Home", { replace: true });
+      navigate("/home", { replace: true });
       return;
     }
     e.preventDefault();

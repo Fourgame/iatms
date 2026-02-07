@@ -7,12 +7,6 @@ class RoleService {
         return await axiosInstance.post("PostRole", data);
     }
 }
-<<<<<<< HEAD
- 
-const roleService = new RoleService();
-export default roleService;
-=======
 
 const roleService = new RoleService();
 export default roleService;
->>>>>>> origin/master

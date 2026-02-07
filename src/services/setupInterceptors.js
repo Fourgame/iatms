@@ -1,7 +1,7 @@
 import axiosInstance from "./api";
 import TokenService from "./token.service";
 
-const setup = () => {
+const setupInterceptors = () => {
     axiosInstance.interceptors.request.use(
         (config) => {
             const token = TokenService.getLocalAccessToken();
@@ -57,4 +57,4 @@ const setup = () => {
         }
     );
 };
-export default setup;
+export default setupInterceptors;
