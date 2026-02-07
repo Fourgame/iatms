@@ -56,13 +56,13 @@ function App() {
 
             <Route path="/" element={
               <ProtectedRoute isAuth={isAuth}>
-                <home />
+                <Home />
               </ProtectedRoute>
             } />
 
             <Route path="/Home" element={
               <ProtectedRoute isAuth={isAuth}>
-                <home />
+                <Home />
               </ProtectedRoute>
             } />
 
