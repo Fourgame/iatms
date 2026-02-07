@@ -9,13 +9,13 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import Header from "./components/Header/Header";
-import Home from "./components/HomePage/Home";
+import Home from "./components/HomePage/home";
 import Signin from "./components/Signin/Signin";
 import Role from "./components/Role/Role";
 import TokenService from "./services/token.service";
 import TableUI from "./components/Utilities/TableTennis";
 import Listofvalues from "./components/Listofvalues/Listofvalues";
-import BreadCrumb from "./components/Utilities/Breadcrumb";
+import Breadcrumb from "./components/Utilities/Breadcrumb";
 import Notification from "./components/Utilities/Notification";
 
 const ProtectedRoute = ({ isAuth, children }) => {
