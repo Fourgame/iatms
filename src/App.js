@@ -61,7 +61,7 @@ function App() {
               <Role title="Role" />
             } />
 
-            <Route path="/setup/lov" element={
+            <Route path="/setup/Manage-List-of-Values" element={
               <Listofvalues title="List of values" />
             } />
 
@@ -69,6 +69,9 @@ function App() {
               <UserManage title="User Management" />
             } />
 
+            <Route path="/setup/manage-holidays" element={
+              <Holidays title="Holidays" />
+            } />
             <Route path="*" element={<Navigate to={isAuth ? "/Home" : "/signin"} title="Sign-in" />} />
           </Routes>
         </div>
