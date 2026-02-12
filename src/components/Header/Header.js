@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import TokenService from "../../services/token.service";
+import { noticeShowMessage } from "../Utilities/Notification";
+ 
 const Header = () => {
-
+ 
     const navigate = useNavigate();
+    const location = useLocation();
     const currentUser = TokenService.getUser();
-
+ 
+    const handleRefresh = (e, path) => {
+        if (location.pathname.toLowerCase() === path.toLowerCase()) {
+            e.preventDefault();
+            window.location.reload();
+        }
+    };
+ 
     const [activeMenus, setActiveMenus] = useState({
         attendance: false,
         report: false,
@@ -20,19 +30,15 @@ const Header = () => {
             rp_compensation: false
         }
     });
-
-
+ 
+ 
     const logOut = () => {
         TokenService.deleteUser();
-        console.log("after delete:", TokenService.isSignIn());
-        console.log("local:", localStorage.getItem("iatms_profile"));
-        // console.log("logout");
-        // console.log("logout");
-        // TokenService.deleteUser();
+        noticeShowMessage("Logged out successfully");
         navigate("/signin");
     };
-
-
+ 
+ 
     useEffect(() => {
         const user = TokenService.getUser();
         if (user) {
@@ -50,16 +56,16 @@ const Header = () => {
                 }
             });
         }
-
+ 
     }, []);
-
+ 
     const roleName = currentUser?.profile?.role_id ?? "";
     const fullName = currentUser?.profile?.name_en ?? "Full Name";
-
-    if (!TokenService.isSignIn()) return null;
-
-
-
+ 
+    if (!currentUser) return null;
+ 
+ 
+ 
     return (
         <nav
             className="navbar navbar-expand-xl navbar-dark px-4 py-3"
@@ -70,14 +76,15 @@ const Header = () => {
                 <div className="d-flex align-items-center gap-5">
                     {/* Brand */}
                     <Link
-                        to="/Home"
+                        to="/home"
                         className="btn btn-primary border border-3 rounded-4 d-flex align-items-center gap-2 px-3 py-1 border-white text-decoration-none"
                         style={{ backgroundColor: "#04318D", height: "48px" }}
+                        onClick={(e) => handleRefresh(e, "/home")}
                     >
                         <span className="fw-bold me-2">IATMS</span>
                         <i className="bi bi-calendar-check-fill"></i>
                     </Link>
-
+ 
                     {/* Toggler */}
                     <a
                         className="navbar-toggler"
@@ -90,11 +97,11 @@ const Header = () => {
                     >
                         <span className="navbar-toggler-icon"></span>
                     </a>
-
+ 
                     {/* Menus */}
                     <div className="collapse navbar-collapse" id="navbarNav">
                         <ul className="navbar-nav me-auto mb-2 mb-lg-0 gap-4">
-
+ 
                             {/* 1. Menu: Attendance */}
                             {activeMenus.attendance && (
                                 <li className="nav-item dropdown">
@@ -102,13 +109,13 @@ const Header = () => {
                                         Attendance
                                     </a>
                                     <ul className="dropdown-menu shadow border-0 mt-2">
-                                        {activeMenus.func.cico && <li><Link className="dropdown-item" to="/attendance/checkinout">Check In/Out</Link></li>}
-                                        {activeMenus.func.approve && <li><Link className="dropdown-item" to="/attendance/approve">Approve Timesheet</Link></li>}
-                                        <li><Link className="dropdown-item" to="/attendance/history">History</Link></li>
+                                        {activeMenus.func.cico && <li><Link className="dropdown-item" to="/attendance/checkinout" onClick={(e) => handleRefresh(e, "/attendance/checkinout")}>Check-in/out & Leave Request</Link></li>}
+                                        {activeMenus.func.cico && <li><Link className="dropdown-item" to="/attendance/approve" onClick={(e) => handleRefresh(e, "/attendance/approve")}>Change Request</Link></li>}
+                                        {activeMenus.func.approve && <li><Link className="dropdown-item" to="/attendance/approve" onClick={(e) => handleRefresh(e, "/attendance/approve")}>Approve Request</Link></li>}
                                     </ul>
                                 </li>
                             )}
-
+ 
                             {/* 2. Menu: Report */}
                             {activeMenus.report && (
                                 <li className="nav-item dropdown">
@@ -116,13 +123,13 @@ const Header = () => {
                                         Report
                                     </a>
                                     <ul className="dropdown-menu shadow border-0 mt-2">
-                                        {activeMenus.func.rp_attendance && <li><Link className="dropdown-item" to="/report/attendance">Attendance Report</Link></li>}
-                                        {activeMenus.func.rp_work_hours && <li><Link className="dropdown-item" to="/report/workhours">Work Hours Report</Link></li>}
-                                        {activeMenus.func.rp_compensation && <li><Link className="dropdown-item" to="/report/compensation">Compensation Report</Link></li>}
+                                        {activeMenus.func.rp_attendance && <li><Link className="dropdown-item" to="/report/attendance" onClick={(e) => handleRefresh(e, "/report/attendance")}>Attendance Report</Link></li>}
+                                        {activeMenus.func.rp_work_hours && <li><Link className="dropdown-item" to="/report/workhours" onClick={(e) => handleRefresh(e, "/report/workhours")}>Work Hours Report</Link></li>}
+                                        {activeMenus.func.rp_compensation && <li><Link className="dropdown-item" to="/report/compensation" onClick={(e) => handleRefresh(e, "/report/compensation")}>Compensation Report</Link></li>}
                                     </ul>
                                 </li>
                             )}
-
+ 
                             {/* 3. Menu: Admin */}
                             {activeMenus.admin && (
                                 <li className="nav-item dropdown">
@@ -130,11 +137,11 @@ const Header = () => {
                                         Admin
                                     </a>
                                     <ul className="dropdown-menu shadow border-0 mt-2">
-                                        <li><Link className="dropdown-item" to="/admin/user">User Manage</Link></li>
+                                        <li><Link className="dropdown-item" to="/admin/user-management" onClick={(e) => handleRefresh(e, "/admin/user-management")}>User Management</Link></li>
                                     </ul>
                                 </li>
                             )}
-
+ 
                             {/* 4. Menu: Setup */}
                             {activeMenus.setup && (
                                 <li className="nav-item dropdown">
@@ -142,21 +149,21 @@ const Header = () => {
                                         Setup
                                     </a>
                                     <ul className="dropdown-menu shadow border-0 mt-2">
-                                        {<li><Link className="dropdown-item" to="/setup/lov">List of Value</Link></li>}
-                                        {<li><Link className="dropdown-item" to="/setup/role">Define Role</Link></li>}
-                                        {<li><Link className="dropdown-item" to="/setup/holiday">Manage Holiday</Link></li>}
+                                        {<li><Link className="dropdown-item" to="/setup/Manage-List-of-Values" onClick={(e) => handleRefresh(e, "/setup/Manage-List-of-Values")}>List of Value</Link></li>}
+                                        {<li><Link className="dropdown-item" to="/setup/role" onClick={(e) => handleRefresh(e, "/setup/role")}>Define Role</Link></li>}
+                                        {<li><Link className="dropdown-item" to="/setup/manage-holidays" onClick={(e) => handleRefresh(e, "/setup/manage-holidays")}>Manage Holiday</Link></li>}
                                     </ul>
                                 </li>
                             )}
                         </ul>
                     </div>
                 </div>
-
+ 
                 {/* Right Side */}
                 <div className="d-flex align-items-center gap-4 ms-auto">
                     <span className="fw-lighter text-white">Version: (Web) | (API)</span>
                     <span className="fw-bold text-white">Role : {currentUser.profile.role_id}</span>
-
+ 
                     <a
                         className="btn btn-primary rounded-pill border border-2 d-flex align-items-center gap-2 px-3 py-1 border border-black"
                         style={{ backgroundColor: "#2e59d9" }}
@@ -172,5 +179,7 @@ const Header = () => {
         </nav>
     );
 };
-
+ 
 export default Header;
+ 
+ 

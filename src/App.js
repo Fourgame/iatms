@@ -15,31 +15,27 @@ import Role from "./components/Role/Role";
 import TokenService from "./services/token.service";
 import TableUI from "./components/Utilities/TableTennis";
 import Listofvalues from "./components/Listofvalues/Listofvalues";
+import Holidays from "./components/Holidays/Holidays";
 import Breadcrumb from "./components/Utilities/Breadcrumb";
 import Notification from "./components/Utilities/Notification";
 
-const ProtectedRoute = ({ isAuth, children }) => {
-  if (!isAuth) {
-    return <Navigate to="/signin" replace />;
-  }
-  return children;
-};
 
 function App() {
 
   const location = useLocation();
-  const [isAuth, setIsAuth] = useState(TokenService.isSignIn());
+  // const [isAuth, setIsAuth] = useState(TokenService.isSignIn());
+  // useEffect(() => {
+  //   setIsAuth(TokenService.isSignIn());
+  // }, [location.pathname]); 
 
-  useEffect(() => {
-    setIsAuth(TokenService.isSignIn());
-  }, [location.pathname]); // เปลี่ยนหน้าเมื่อไหร่ เช็คใหม่
+  const isAuth = TokenService.isSignIn();
 
   console.log("location: ", location.pathname);
   console.log("is auth: ", isAuth);
   return (
     <div className="container-fluid px-0">
       <header>
-        {isAuth && <Header onLogout={() => setIsAuth(false)} />}
+        {isAuth && <Header />}
       </header>
       {isAuth && <Breadcrumb />}
       <main>
@@ -55,28 +51,24 @@ function App() {
             />
 
             <Route path="/" element={
-              <ProtectedRoute isAuth={isAuth}>
-                <Home />
-              </ProtectedRoute>
+                <Signin />
             } />
 
             <Route path="/Home" element={
-              <ProtectedRoute isAuth={isAuth}>
                 <Home />
-              </ProtectedRoute>
             } />
 
 
             <Route path="/setup/role" element={
-              <ProtectedRoute isAuth={isAuth}>
-                <Role />
-              </ProtectedRoute>
+              <Role />
             } />
 
-            <Route path="/setup/lov" element={
-              <ProtectedRoute isAuth={isAuth}>
-                <Listofvalues />
-              </ProtectedRoute>
+            <Route path="/setup/Manage-List-of-Values" element={
+              <Listofvalues />
+            } />
+
+            <Route path="/setup/manage-holidays" element={
+              <Holidays />
             } />
 
             <Route path="*" element={<Navigate to={isAuth ? "/Home" : "/signin"} />} />

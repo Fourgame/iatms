@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import AuthService from "../../services/auth.service";
 import TokenService from "../../services/token.service";
-
-
-
+import { useLocation } from "react-router";
+import { noticeShowMessage } from "../Utilities/Notification";
 
 const Signin = (props) => {
 
@@ -16,9 +15,18 @@ const Signin = (props) => {
   const skipLogin = false;
 
   // เก็บข้อความ error ใน state เอง
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState();
+  const location = useLocation();
   // เก็บสถานะ login เอง
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+   useEffect(() => {
+    const message = location.state?.message;
+    if (message) {
+      setMessage(message);
+       noticeShowMessage(`${message} from message`, true);
+    }
+  }, []);
 
 
   const handleLogin = async (e) => {
@@ -41,12 +49,13 @@ const Signin = (props) => {
           navigate("/home");
           setIsLoggedIn(true);
         } else {
-          setMessage("Login failed.");
+          debugger;
+          setMessage("Login failed. 1");
           setLoading(false);
         }
       } catch (err) {
         const msg =
-          err?.response?.data?.message || err.message || "Login failed.";
+          err?.response?.data?.message || err.message || "Login failed. 2";
         setMessage(msg);
         setLoading(false);
       }
@@ -54,7 +63,7 @@ const Signin = (props) => {
       window.location.reload();
     } catch (err) {
       const msg =
-        err?.response?.data?.message || err.message || "Login failed.";
+        err?.response?.data?.message || err.message || "Login failed. 3";
       setMessage(msg);
       setLoading(false);
     }

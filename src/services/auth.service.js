@@ -1,4 +1,6 @@
 import axios from "axios";
+import TokenService from "./token.service";
+
 
 const base_endpoint_url =
     process.env.REACT_APP_ENV === "prod"
@@ -20,12 +22,28 @@ const client = axios.create({
     // },
 });
 
-const login = async (username, password) => {
-    const user = {
-        username: username,
-        password: password,
-    };
+// const login = async (username, password) => {
+//     const user = {
+//         username: username,
+//         password: password,
+//     };
 
-    return await client.post("/auth/SignIn", user);
+//     return await client.post("/auth/SignIn", user).then((response) => {
+//     if (response.status === 200) {
+//       TokenService.setUser(response.data);
+//     }
+
+//     return response.data;
+//   });
+// };
+
+const login = (username, password) => {
+  const user = { username, password };
+  return client.post("/auth/SignIn", user); // คืน axios response เต็ม
 };
-export default { login };
+
+const logout = () => {
+  TokenService.deleteUser();
+};
+
+export default { login, logout };
