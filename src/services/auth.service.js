@@ -1,6 +1,5 @@
 import axios from "axios";
 import TokenService from "./token.service";
-import { noticeShowMessage } from "../components/Utilities/Notification";
 
 
 const base_endpoint_url =
@@ -23,15 +22,14 @@ const client = axios.create({
     // },
 });
 
-const login = async (username, password) => {
-    const user = {
-        username: username,
-        password: password,
-    };
 
-    return await client.post("/auth/signin", user);
+const login = (username, password) => {
+  const user = { username, password };
+  return client.post("/auth/SignIn", user); // คืน axios response เต็ม
 };
 
+const logout = () => {
+  TokenService.deleteUser();
+};
 
-
-export default { login };
+export default { login, logout };

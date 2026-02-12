@@ -3,20 +3,17 @@ import { Link } from "react-router-dom";
 import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import TokenService from "../../services/token.service";
 import { noticeShowMessage } from "../Utilities/Notification";
-
 const Header = () => {
-
+ 
     const navigate = useNavigate();
     const location = useLocation();
     const currentUser = TokenService.getUser();
-
     const handleRefresh = (e, path) => {
         if (location.pathname.toLowerCase() === path.toLowerCase()) {
             e.preventDefault();
             window.location.reload();
         }
     };
-
     const [activeMenus, setActiveMenus] = useState({
         attendance: false,
         report: false,
@@ -30,15 +27,15 @@ const Header = () => {
             rp_compensation: false
         }
     });
-
-
+ 
+ 
     const logOut = () => {
         TokenService.deleteUser();
         noticeShowMessage("Logged out successfully");
         navigate("/signin");
     };
-
-
+ 
+ 
     useEffect(() => {
         const user = TokenService.getUser();
         if (user) {
@@ -56,9 +53,9 @@ const Header = () => {
                 }
             });
         }
-
+ 
     }, []);
-
+ 
     const roleName = currentUser?.profile?.role_id ?? "";
     const fullName = currentUser?.profile?.name_en ?? "Full Name";
 
@@ -84,7 +81,7 @@ const Header = () => {
                         <span className="fw-bold me-2">IATMS</span>
                         <i className="bi bi-calendar-check-fill"></i>
                     </Link>
-
+ 
                     {/* Toggler */}
                     <a
                         className="navbar-toggler"
@@ -97,11 +94,11 @@ const Header = () => {
                     >
                         <span className="navbar-toggler-icon"></span>
                     </a>
-
+ 
                     {/* Menus */}
                     <div className="collapse navbar-collapse" id="navbarNav">
                         <ul className="navbar-nav me-auto mb-2 mb-lg-0 gap-4">
-
+ 
                             {/* 1. Menu: Attendance */}
                             {activeMenus.attendance && (
                                 <li className="nav-item dropdown">
@@ -115,7 +112,7 @@ const Header = () => {
                                     </ul>
                                 </li>
                             )}
-
+ 
                             {/* 2. Menu: Report */}
                             {activeMenus.report && (
                                 <li className="nav-item dropdown">
@@ -129,7 +126,7 @@ const Header = () => {
                                     </ul>
                                 </li>
                             )}
-
+ 
                             {/* 3. Menu: Admin */}
                             {activeMenus.admin && (
                                 <li className="nav-item dropdown">
@@ -141,7 +138,7 @@ const Header = () => {
                                     </ul>
                                 </li>
                             )}
-
+ 
                             {/* 4. Menu: Setup */}
                             {activeMenus.setup && (
                                 <li className="nav-item dropdown">
@@ -149,21 +146,21 @@ const Header = () => {
                                         Setup
                                     </a>
                                     <ul className="dropdown-menu shadow border-0 mt-2">
-                                        {<li><Link className="dropdown-item" to="/setup/lov" onClick={(e) => handleRefresh(e, "/setup/lov")}>List of Value</Link></li>}
+                                        {<li><Link className="dropdown-item" to="/setup/Manage-List-of-Values" onClick={(e) => handleRefresh(e, "/setup/Manage-List-of-Values")}>List of Value</Link></li>}
                                         {<li><Link className="dropdown-item" to="/setup/role" onClick={(e) => handleRefresh(e, "/setup/role")}>Define Role</Link></li>}
-                                        {<li><Link className="dropdown-item" to="/setup/holiday" onClick={(e) => handleRefresh(e, "/setup/holiday")}>Manage Holiday</Link></li>}
+                                        {<li><Link className="dropdown-item" to="/setup/manage-holidays" onClick={(e) => handleRefresh(e, "/setup/manage-holidays")}>Manage Holiday</Link></li>}
                                     </ul>
                                 </li>
                             )}
                         </ul>
                     </div>
                 </div>
-
+ 
                 {/* Right Side */}
                 <div className="d-flex align-items-center gap-4 ms-auto">
                     <span className="fw-lighter text-white">Version: (Web) | (API)</span>
                     <span className="fw-bold text-white">Role : {currentUser.profile.role_id}</span>
-
+ 
                     <a
                         className="btn btn-primary rounded-pill border border-2 d-flex align-items-center gap-2 px-3 py-1 border border-black"
                         style={{ backgroundColor: "#2e59d9" }}
@@ -179,5 +176,7 @@ const Header = () => {
         </nav>
     );
 };
-
+ 
 export default Header;
+ 
+ 

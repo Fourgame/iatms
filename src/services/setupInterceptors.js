@@ -35,7 +35,7 @@ const setupInterceptors = () => {
                 ) {
                     originalConfig._retry = true;
                     try {
-                        const rs = await axiosInstance.post("/auth/refresh_token", {
+                        const rs = await axiosInstance.post("auth/refresh_token", {
                             refresh_token: TokenService.getLocalRefreshToken(),
                         });
                         const token = rs.data;

@@ -15,6 +15,7 @@ import Role from "./components/Role/Role";
 import TokenService from "./services/token.service";
 
 import Listofvalues from "./components/Listofvalues/Listofvalues";
+import Holidays from "./components/Holidays/Holidays";
 import Breadcrumb from "./components/Utilities/Breadcrumb";
 import Notification from "./components/Utilities/Notification";
 import UserManage from "./components/UserManage/UserManage";
@@ -23,6 +24,11 @@ import UserManage from "./components/UserManage/UserManage";
 function App() {
 
   const location = useLocation();
+  // const [isAuth, setIsAuth] = useState(TokenService.isSignIn());
+  // useEffect(() => {
+  //   setIsAuth(TokenService.isSignIn());
+  // }, [location.pathname]); 
+
   const isAuth = TokenService.isSignIn();
 
   console.log("location: ", location.pathname);
