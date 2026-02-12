@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import TokenService from "../../services/token.service";
+import { noticeShowMessage } from "../Utilities/Notification";
+
 const Header = () => {
 
     const navigate = useNavigate();
+    const location = useLocation();
     const currentUser = TokenService.getUser();
+
+    const handleRefresh = (e, path) => {
+        if (location.pathname.toLowerCase() === path.toLowerCase()) {
+            e.preventDefault();
+            window.location.reload();
+        }
+    };
 
     const [activeMenus, setActiveMenus] = useState({
         attendance: false,
@@ -24,11 +34,7 @@ const Header = () => {
 
     const logOut = () => {
         TokenService.deleteUser();
-        console.log("after delete:", TokenService.isSignIn());
-        console.log("local:", localStorage.getItem("iatms_profile"));
-        // console.log("logout");
-        // console.log("logout");
-        // TokenService.deleteUser();
+        noticeShowMessage("Logged out successfully");
         navigate("/signin");
     };
 
@@ -56,7 +62,7 @@ const Header = () => {
     const roleName = currentUser?.profile?.role_id ?? "";
     const fullName = currentUser?.profile?.name_en ?? "Full Name";
 
-    if (!TokenService.isSignIn()) return null;
+    if (!currentUser) return null;
 
 
 
@@ -70,9 +76,10 @@ const Header = () => {
                 <div className="d-flex align-items-center gap-5">
                     {/* Brand */}
                     <Link
-                        to="/Home"
+                        to="/home"
                         className="btn btn-primary border border-3 rounded-4 d-flex align-items-center gap-2 px-3 py-1 border-white text-decoration-none"
                         style={{ backgroundColor: "#04318D", height: "48px" }}
+                        onClick={(e) => handleRefresh(e, "/home")}
                     >
                         <span className="fw-bold me-2">IATMS</span>
                         <i className="bi bi-calendar-check-fill"></i>
@@ -102,9 +109,9 @@ const Header = () => {
                                         Attendance
                                     </a>
                                     <ul className="dropdown-menu shadow border-0 mt-2">
-                                        {activeMenus.func.cico && <li><Link className="dropdown-item" to="/attendance/checkinout">Check In/Out</Link></li>}
-                                        {activeMenus.func.approve && <li><Link className="dropdown-item" to="/attendance/approve">Approve Timesheet</Link></li>}
-                                        <li><Link className="dropdown-item" to="/attendance/history">History</Link></li>
+                                        {activeMenus.func.cico && <li><Link className="dropdown-item" to="/attendance/checkinout" onClick={(e) => handleRefresh(e, "/attendance/checkinout")}>Check-in/out & Leave Request</Link></li>}
+                                        {activeMenus.func.cico && <li><Link className="dropdown-item" to="/attendance/approve" onClick={(e) => handleRefresh(e, "/attendance/approve")}>Change Request</Link></li>}
+                                        {activeMenus.func.approve && <li><Link className="dropdown-item" to="/attendance/approve" onClick={(e) => handleRefresh(e, "/attendance/approve")}>Approve Request</Link></li>}
                                     </ul>
                                 </li>
                             )}
@@ -116,9 +123,9 @@ const Header = () => {
                                         Report
                                     </a>
                                     <ul className="dropdown-menu shadow border-0 mt-2">
-                                        {activeMenus.func.rp_attendance && <li><Link className="dropdown-item" to="/report/attendance">Attendance Report</Link></li>}
-                                        {activeMenus.func.rp_work_hours && <li><Link className="dropdown-item" to="/report/workhours">Work Hours Report</Link></li>}
-                                        {activeMenus.func.rp_compensation && <li><Link className="dropdown-item" to="/report/compensation">Compensation Report</Link></li>}
+                                        {activeMenus.func.rp_attendance && <li><Link className="dropdown-item" to="/report/attendance" onClick={(e) => handleRefresh(e, "/report/attendance")}>Attendance Report</Link></li>}
+                                        {activeMenus.func.rp_work_hours && <li><Link className="dropdown-item" to="/report/workhours" onClick={(e) => handleRefresh(e, "/report/workhours")}>Work Hours Report</Link></li>}
+                                        {activeMenus.func.rp_compensation && <li><Link className="dropdown-item" to="/report/compensation" onClick={(e) => handleRefresh(e, "/report/compensation")}>Compensation Report</Link></li>}
                                     </ul>
                                 </li>
                             )}
@@ -130,7 +137,7 @@ const Header = () => {
                                         Admin
                                     </a>
                                     <ul className="dropdown-menu shadow border-0 mt-2">
-                                        <li><Link className="dropdown-item" to="/admin/user">User Manage</Link></li>
+                                        <li><Link className="dropdown-item" to="/admin/user-management" onClick={(e) => handleRefresh(e, "/admin/user-management")}>User Management</Link></li>
                                     </ul>
                                 </li>
                             )}
@@ -142,9 +149,9 @@ const Header = () => {
                                         Setup
                                     </a>
                                     <ul className="dropdown-menu shadow border-0 mt-2">
-                                        {<li><Link className="dropdown-item" to="/setup/lov">List of Value</Link></li>}
-                                        {<li><Link className="dropdown-item" to="/setup/role">Define Role</Link></li>}
-                                        {<li><Link className="dropdown-item" to="/setup/holiday">Manage Holiday</Link></li>}
+                                        {<li><Link className="dropdown-item" to="/setup/lov" onClick={(e) => handleRefresh(e, "/setup/lov")}>List of Value</Link></li>}
+                                        {<li><Link className="dropdown-item" to="/setup/role" onClick={(e) => handleRefresh(e, "/setup/role")}>Define Role</Link></li>}
+                                        {<li><Link className="dropdown-item" to="/setup/holiday" onClick={(e) => handleRefresh(e, "/setup/holiday")}>Manage Holiday</Link></li>}
                                     </ul>
                                 </li>
                             )}

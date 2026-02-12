@@ -1,4 +1,7 @@
 import axios from "axios";
+import TokenService from "./token.service";
+import { noticeShowMessage } from "../components/Utilities/Notification";
+
 
 const base_endpoint_url =
     process.env.REACT_APP_ENV === "prod"
@@ -26,6 +29,9 @@ const login = async (username, password) => {
         password: password,
     };
 
-    return await client.post("/auth/SignIn", user);
+    return await client.post("/auth/signin", user);
 };
+
+
+
 export default { login };

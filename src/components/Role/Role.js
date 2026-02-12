@@ -3,11 +3,13 @@ import { Button, Tag, Modal, Form, Input, Checkbox, Row, Col, Space } from 'antd
 import { CheckOutlined, CloseOutlined, EditOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import TableUI from '../Utilities/Table/TableUI';
 import RoleService from '../../services/Role.service';
-import TokenService from '../../services/token.service';
+import token from '../../services/token.service';
 import Title from '../Utilities/Title';
 import Loading from '../Utilities/Loading';
 import { noticeShowMessage } from '../Utilities/Notification';
+import { useNavigate } from 'react-router-dom';
 const Role = () => {
+    const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
     const [currentRole, setCurrentRole] = useState(null);
@@ -22,7 +24,11 @@ const Role = () => {
     const fetchRoles = async () => {
         setLoading(true);
         try {
-
+            const currentUser = token.getUser();
+            if (!currentUser) {
+                token.deleteUser();
+                return navigate("/signin", { state: { message: "token not found" } });
+            }
             const response = await RoleService.getRole();
             if (response.data) {
                 const dataWithKeys = response.data.map((item, index) => ({
@@ -32,8 +38,23 @@ const Role = () => {
                 setRoleData(dataWithKeys);
             }
         } catch (error) {
-            console.error("Error fetching roles:", error);
-            noticeShowMessage("Failed to fetch roles", true);
+            if (error.response) {
+                const status = error.response.status;
+                if (status === 401) {
+                    token.deleteUser();
+                    return navigate("/signin", { state: { message: "session expire" } });
+                }
+                if (status === 403) return noticeShowMessage("access-denied", true);
+                if (status === 404) return noticeShowMessage("not-found", true);
+
+            } else if (error.request) {
+                console.log("No response received:", error.request);
+                return noticeShowMessage("network-error", true);
+
+            } else {
+                console.log("Error setting up request:", error.message);
+                return noticeShowMessage("error", true);
+            }
         } finally {
             setLoading(false);
         }
@@ -98,7 +119,11 @@ const Role = () => {
             setLoading(true);
             try {
                 const roleId = modalMode === 'add' ? values.role : currentRole.role_id;
-                const currentUser = TokenService.getUser();
+                const currentUser = token.getUser();
+                if (!currentUser) {
+                    token.deleteUser();
+                    return navigate("/signin", { state: { message: "token not found" } });
+                }
                 const username = currentUser?.username || "System";
                 const payload = {
                     role_id: roleId,
@@ -127,9 +152,23 @@ const Role = () => {
                     noticeShowMessage(response.data?.message || "บันทึกข้อมูลไม่สำเร็จ", true);
                 }
             } catch (error) {
-                console.error("Error saving role:", error);
-                const serverMessage = error.response?.data?.message;
-                noticeShowMessage(serverMessage || "เกิดข้อผิดพลาดในการบันทึกข้อมูล", true);
+                if (error.response) {
+                    const status = error.response.status;
+                    if (status === 401) {
+                        token.deleteUser();
+                        return navigate("/signin", { state: { message: "session expire" } });
+                    }
+                    if (status === 403) return noticeShowMessage("access-denied", true);
+                    if (status === 404) return noticeShowMessage("not-found", true);
+
+                } else if (error.request) {
+                    console.log("No response received:", error.request);
+                    return noticeShowMessage("network-error", true);
+
+                } else {
+                    console.log("Error setting up request:", error.message);
+                    return noticeShowMessage("error", true);
+                }
             } finally {
                 setLoading(false);
             }

@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate, Navigate } from "react-router-dom";
 import token from "../../services/token.service";
-import Header from "../Header/Header";
+import profileService from "../../services/profile.service";
+import Title from "../../components/Utilities/Title";
+import { noticeShowMessage } from "../../components/Utilities/Notification";
+import authService from "../../services/auth.service";
 
 const StatCard = ({ title, value, footer, bg }) => (
     <div
@@ -9,7 +13,6 @@ const StatCard = ({ title, value, footer, bg }) => (
     >
         <div className="small text-muted">{title}</div>
 
-        {/* ให้ value อยู่กลางการ์ด */}
         <div
             className="flex-grow-1 d-flex justify-content-center align-items-center fw-bold text-center"
             style={{ fontSize: "18px", whiteSpace: "pre-line" }}
@@ -23,19 +26,50 @@ const StatCard = ({ title, value, footer, bg }) => (
 
 
 
-const Home = () => {
-    const [profile, setProfile] = useState(null);
-    const [user, setUser] = useState(token.getUser());
+const Home = (props) => {
+    let navigate = useNavigate();
+    const [user, setUser] = useState(null);
+    const onPageLoad = async () => {
+        try {
+            const response = await profileService.getProfile();
+            setUser(response.data);
+        } catch (error) {
+            if (error.response) {
+                const status = error.response.status;
+                if (status === 401) {
+                    token.deleteUser();
+                    return navigate("/signin", { state: { message: "session expire" } });
+                }
+                if (status === 403) return navigate("/signin", { state: { message: "access-denied" } });
+                if (status === 404) return navigate("/signin", { state: { message: "not-found" } });
+
+            } else if (error.request) {
+                console.log("No response received:", error.request);
+                return navigate("/signin", { state: { message: "network-error" } });
+
+            } else {
+                console.log("Error setting up request:", error.message);
+                return navigate("/signin", { state: { message: "error" } });
+            }
+        }
+    };
+
 
     useEffect(() => {
 
-        if (user) {
-            setProfile(user);
+        if (!token.isSignIn()) {
+            return navigate("/signin", { state: { message: "token not found" } });
+
+        } else {
+            onPageLoad();
         }
-        console.log("user :", user);
-        console.log("profile :", user.profile);
 
     }, []);
+
+    if (!user || !user.profile) {
+        return null;
+    }
+
     return (
 
 
@@ -46,26 +80,26 @@ const Home = () => {
                 className="border border-2 border-secondary h-100 p-3"
                 style={{ backgroundColor: "#F5F5F5", flex: 1 }}
             >
-                <div className="fw-bold fs-4 mb-3 text-start">{user.profile.username}</div>
+                <div className="fw-bold fs-4 mb-3 text-start">{user.profile.name_en}</div>
 
                 <div className="text-start" style={{ fontSize: "14px", lineHeight: "28px" }}>
                     <div>
-                        <span className="fw-bold">OA User ID :</span> 6530300139
+                        <span className="fw-bold">OA User ID :</span> {user.profile.oa_user}
                     </div>
                     <div>
-                        <span className="fw-bold">Email :</span> napat.wis@ku.th
+                        <span className="fw-bold">Email :</span> {user.profile.email}
                     </div>
                     <div>
-                        <span className="fw-bold">Role :</span> Intern
+                        <span className="fw-bold">Role :</span> {user.profile.role_id}
                     </div>
                     <div>
-                        <span className="fw-bold">Division :</span> 00191 - ENTERPRISE RESOURCE MANAGEMENT SYSTEM
+                        <span className="fw-bold">Division :</span> {user.profile.division_code}
                     </div>
                     <div>
-                        <span className="fw-bold">Team :</span> A
+                        <span className="fw-bold">Team :</span> {user.profile.team}
                     </div>
                     <div>
-                        <span className="fw-bold">Workplace :</span> สำนักงานพระราม 3
+                        <span className="fw-bold">Workplace :</span> {user.profile.work_Place}
                     </div>
                 </div>
             </div>

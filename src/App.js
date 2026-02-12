@@ -13,73 +13,57 @@ import Home from "./components/HomePage/home";
 import Signin from "./components/Signin/Signin";
 import Role from "./components/Role/Role";
 import TokenService from "./services/token.service";
-import TableUI from "./components/Utilities/TableTennis";
+
 import Listofvalues from "./components/Listofvalues/Listofvalues";
 import Breadcrumb from "./components/Utilities/Breadcrumb";
 import Notification from "./components/Utilities/Notification";
+import UserManage from "./components/UserManage/UserManage";
 
-const ProtectedRoute = ({ isAuth, children }) => {
-  if (!isAuth) {
-    return <Navigate to="/signin" replace />;
-  }
-  return children;
-};
 
 function App() {
 
   const location = useLocation();
-  const [isAuth, setIsAuth] = useState(TokenService.isSignIn());
-
-  useEffect(() => {
-    setIsAuth(TokenService.isSignIn());
-  }, [location.pathname]); // เปลี่ยนหน้าเมื่อไหร่ เช็คใหม่
+  const isAuth = TokenService.isSignIn();
 
   console.log("location: ", location.pathname);
   console.log("is auth: ", isAuth);
   return (
     <div className="container-fluid px-0">
       <header>
-        {isAuth && <Header onLogout={() => setIsAuth(false)} />}
+        {<Header />}
       </header>
       {isAuth && <Breadcrumb />}
       <main>
-
-
-
         <Notification />
         <div className="content">
           <Routes>
             <Route
               path="/signin"
-              element={isAuth ? <Navigate to="/Home" replace /> : <Signin title="Sign-in" />}
+              element={isAuth ? <Navigate to="/Home" title="Sign-in" replace /> : <Signin title="Sign-in" />}
             />
 
             <Route path="/" element={
-              <ProtectedRoute isAuth={isAuth}>
-                <Home />
-              </ProtectedRoute>
+              <Home title="Home" />
             } />
 
             <Route path="/Home" element={
-              <ProtectedRoute isAuth={isAuth}>
-                <Home />
-              </ProtectedRoute>
+              <Home title="Home" />
             } />
 
 
             <Route path="/setup/role" element={
-              <ProtectedRoute isAuth={isAuth}>
-                <Role />
-              </ProtectedRoute>
+              <Role title="Role" />
             } />
 
             <Route path="/setup/lov" element={
-              <ProtectedRoute isAuth={isAuth}>
-                <Listofvalues />
-              </ProtectedRoute>
+              <Listofvalues title="List of values" />
             } />
 
-            <Route path="*" element={<Navigate to={isAuth ? "/Home" : "/signin"} />} />
+            <Route path="/admin/user-management" element={
+              <UserManage title="User Management" />
+            } />
+
+            <Route path="*" element={<Navigate to={isAuth ? "/Home" : "/signin"} title="Sign-in" />} />
           </Routes>
         </div>
       </main>
