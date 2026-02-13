@@ -2,6 +2,7 @@ import { Button, Empty, Popconfirm, Table } from "antd";
 import moment from "moment";
 import { useEffect, useState } from "react";
 import { FiTrash2 } from "react-icons/fi";
+import "./Table.css";
 
 import "./Table.css";
 import { IsEmpty } from "../../SysComponent/SystemComponent";

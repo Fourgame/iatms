@@ -83,20 +83,20 @@ const Header = () => {
                 {/* Left Side */}
                 <div className="d-flex align-items-center gap-5">
                     {/* Brand */}
-                    <Button variant="primary"
-                        onClick={goHome}
-                        className="border border-3 rounded-4 d-flex align-items-center gap-2 px-3 py-1 border-white"
-                        style={{
-                            "--bs-btn-bg": "#04318D",
-                            "--bs-btn-hover-bg": "#2e59d9",
-                            "--bs-btn-active-bg": "#2e59d9",
-                            height: "48px"
-                        }}
-                    >
-                        <span className="fw-bold me-2">IATMS</span>
-                        <i className="bi bi-calendar-check-fill"></i>
-                    </Button>
-
+                        <Button variant="primary"
+                            onClick={goHome}
+                            className="border border-3 rounded-4 d-flex align-items-center gap-2 px-3 py-1 border-white"
+                            style={{
+                                "--bs-btn-bg": "#04318D",
+                                "--bs-btn-hover-bg": "#2e59d9",
+                                "--bs-btn-active-bg": "#2e59d9",
+                                height: "48px"
+                            }}
+                        >
+                            <span className="fw-bold me-2">IATMS</span>
+                            <i className="bi bi-calendar-check-fill"></i>
+                        </Button>
+                    
                     {/* Toggler */}
                     <a
                         className="navbar-toggler"

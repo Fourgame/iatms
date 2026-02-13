@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
+import "../Utilities/Table/Table.css";
 import { Select, Checkbox, Tag, Modal, Form, Input, DatePicker } from "antd";
-import { getHolidays, postHolidays, getHolidayYears } from "../../services/holidays.service";
-import TableUI from "../Utilities/TableTennis";
+import { getHolidays, postHolidays, getHolidayYears } from "../../services/้้holidays.service";
+import TableUI from "../Utilities/Table/TableUI";
 import Loading from "../Utilities/Loading";
 import { SearchToolBtn, ClearToolBtn, AddToolBtn, EditToolBtn, SaveModalBtn, CloseModalBtn, CloseIconBtn } from "../Utilities/Buttons/Buttons";
 import { noticeShowMessage } from '../Utilities/Notification';
@@ -540,7 +541,7 @@ const Holidays = () => {
                         rowKey={(r, index) => r.id || index}
                         pagination={true}
                         bordered={true}
-                        size={"small"}
+                        size={"large"}
                     />
                 </div>
             </div>
