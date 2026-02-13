@@ -39,7 +39,7 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
                     code: "",
                     description: "",
                     condition: "",
-                    orderIndex: "1",
+                    orderIndex: "",
                     isActive: true,
                 });
             }
@@ -273,13 +273,13 @@ const Listofvalues = () => {
 
 
     const handleAdd = () => {
-        setModalTitle("Add - Manage List of Values");
+        setModalTitle("Add - List of Value");
         setSelectedRecord(null);
         setIsModalOpen(true);
     };
 
     const handleEdit = (record) => {
-        setModalTitle("Edit - Manage List of Values");
+        setModalTitle("Edit - List of Value");
         setSelectedRecord(record);
         setIsModalOpen(true);
     };
