@@ -3,8 +3,9 @@ import { Link } from "react-router-dom";
 import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import TokenService from "../../services/token.service";
 import { noticeShowMessage } from "../Utilities/Notification";
+import { Button } from 'react-bootstrap';
 const Header = () => {
- 
+
     const navigate = useNavigate();
     const location = useLocation();
     const currentUser = TokenService.getUser();
@@ -27,15 +28,15 @@ const Header = () => {
             rp_compensation: false
         }
     });
- 
- 
+
+
     const logOut = () => {
         TokenService.deleteUser();
         noticeShowMessage("Logged out successfully");
         navigate("/signin");
     };
- 
- 
+
+
     useEffect(() => {
         const user = TokenService.getUser();
         if (user) {
@@ -53,9 +54,9 @@ const Header = () => {
                 }
             });
         }
- 
+
     }, []);
- 
+
     const roleName = currentUser?.profile?.role_id ?? "";
     const fullName = currentUser?.profile?.name_en ?? "Full Name";
 
@@ -72,16 +73,20 @@ const Header = () => {
                 {/* Left Side */}
                 <div className="d-flex align-items-center gap-5">
                     {/* Brand */}
-                    <Link
-                        to="/home"
-                        className="btn btn-primary border border-3 rounded-4 d-flex align-items-center gap-2 px-3 py-1 border-white text-decoration-none"
-                        style={{ backgroundColor: "#04318D", height: "48px" }}
-                        onClick={(e) => handleRefresh(e, "/home")}
-                    >
-                        <span className="fw-bold me-2">IATMS</span>
-                        <i className="bi bi-calendar-check-fill"></i>
-                    </Link>
- 
+                        <Button variant="primary"
+                            onClick={(e) => handleRefresh(e, "/home")}
+                            className="border border-3 rounded-4 d-flex align-items-center gap-2 px-3 py-1 border-white"
+                            style={{
+                                "--bs-btn-bg": "#04318D",
+                                "--bs-btn-hover-bg": "#2e59d9",
+                                "--bs-btn-active-bg": "#2e59d9",
+                                height: "48px"
+                            }}
+                        >
+                            <span className="fw-bold me-2">IATMS</span>
+                            <i className="bi bi-calendar-check-fill"></i>
+                        </Button>
+                    
                     {/* Toggler */}
                     <a
                         className="navbar-toggler"
@@ -94,11 +99,11 @@ const Header = () => {
                     >
                         <span className="navbar-toggler-icon"></span>
                     </a>
- 
+
                     {/* Menus */}
                     <div className="collapse navbar-collapse" id="navbarNav">
                         <ul className="navbar-nav me-auto mb-2 mb-lg-0 gap-4">
- 
+
                             {/* 1. Menu: Attendance */}
                             {activeMenus.attendance && (
                                 <li className="nav-item dropdown">
@@ -112,7 +117,7 @@ const Header = () => {
                                     </ul>
                                 </li>
                             )}
- 
+
                             {/* 2. Menu: Report */}
                             {activeMenus.report && (
                                 <li className="nav-item dropdown">
@@ -126,7 +131,7 @@ const Header = () => {
                                     </ul>
                                 </li>
                             )}
- 
+
                             {/* 3. Menu: Admin */}
                             {activeMenus.admin && (
                                 <li className="nav-item dropdown">
@@ -138,7 +143,7 @@ const Header = () => {
                                     </ul>
                                 </li>
                             )}
- 
+
                             {/* 4. Menu: Setup */}
                             {activeMenus.setup && (
                                 <li className="nav-item dropdown">
@@ -155,13 +160,29 @@ const Header = () => {
                         </ul>
                     </div>
                 </div>
- 
+
                 {/* Right Side */}
                 <div className="d-flex align-items-center gap-4 ms-auto">
                     <span className="fw-lighter text-white">Version: (Web) | (API)</span>
                     <span className="fw-bold text-white">Role : {currentUser.profile.role_id}</span>
- 
-                    <a
+
+                    <Button variant="primary"
+                        onClick={logOut}
+                        className="rounded-pill border border-2 d-flex align-items-center gap-2 px-3 py-1 border border-black"
+                        style={{
+                            "--bs-btn-bg": "#2750B0",
+                            "--bs-btn-hover-bg": "#2e59d9",
+                            "--bs-btn-active-bg": "#2e59d9",
+                        }}
+                    >
+                        <i className="bi bi-person-fill fs-5"></i>
+                        <span className="fw-bold">{fullName}</span>
+                        <i className="bi bi-box-arrow-right fs-5"></i>
+                    </Button>
+
+                    {/* className="rounded-pill border border-2 d-flex align-items-center gap-2 px-3 py-1 border border-black" style={{ backgroundColor: "#2e59d9" }} */}
+
+                    {/* <a
                         className="btn btn-primary rounded-pill border border-2 d-flex align-items-center gap-2 px-3 py-1 border border-black"
                         style={{ backgroundColor: "#2e59d9" }}
                         type="button"
@@ -170,13 +191,12 @@ const Header = () => {
                         <i className="bi bi-person-fill fs-5"></i>
                         <span className="fw-bold">{fullName}</span>
                         <i className="bi bi-box-arrow-right fs-5"></i>
-                    </a>
+                    </a> */}
                 </div>
             </div>
         </nav>
     );
 };
- 
+
 export default Header;
- 
- 
+

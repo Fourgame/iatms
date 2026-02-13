@@ -71,9 +71,9 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
 
                 // Show success message
                 if (!data) {
-                    noticeShowMessage("เพิ่ม ข้อมูลสำเร็จ", false);
+                    noticeShowMessage("บันทึกข้อมูลสำเร็จ", false);
                 } else {
-                    noticeShowMessage("แก้ไข ข้อมูลสำเร็จ", false);
+                    noticeShowMessage("บันทึกข้อมูลสำเร็จ", false);
                 }
 
                 onSave(payload);
@@ -159,7 +159,7 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
                             {data.fieldName}
                         </span>
                     ) : (
-                        <Input placeholder="กรอก File Name" />
+                        <Input placeholder="กรอก File Name" onPressEnter={handleSaveClick} />
                     )}
                 </Form.Item>
 
@@ -193,7 +193,7 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
                             {data.code}
                         </span>
                     ) : (
-                        <Input placeholder="กรอก Code" />
+                        <Input placeholder="กรอก Code" onPressEnter={handleSaveClick} />
                     )}
                 </Form.Item>
 
@@ -202,7 +202,7 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
                     name="description"
                     label={<span className="fw-bold">Description</span>}
                 >
-                    <Input placeholder="กรอก Description" />
+                    <Input placeholder="กรอก Description" onPressEnter={handleSaveClick} />
                 </Form.Item>
 
                 {/* Condition */}
@@ -210,7 +210,16 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
                     name="condition"
                     label={<span className="fw-bold">Condition</span>}
                 >
-                    <Input.TextArea rows={3} placeholder="กรอก Condition" />
+                    <Input.TextArea
+                        rows={3}
+                        placeholder="กรอก Condition"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSaveClick();
+                            }
+                        }}
+                    />
                 </Form.Item>
 
                 {/* Order */}
@@ -232,8 +241,9 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
                     <Input
                         type="number"
                         placeholder="กรอก Order"
+                        onPressEnter={handleSaveClick}
                         onKeyPress={(event) => {
-                            if (!/[0-9]/.test(event.key)) {
+                            if (!/[0-9]/.test(event.key) && event.key !== 'Enter') {
                                 event.preventDefault();
                             }
                         }}
@@ -246,7 +256,17 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
                     label={<span className="fw-bold">สถานะ</span>}
                     valuePropName="checked"
                 >
-                    <Checkbox className="fw-bold">ใช้งาน</Checkbox>
+                    <Checkbox
+                        className="fw-bold"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleSaveClick();
+                            }
+                        }}
+                    >
+                        ใช้งาน
+                    </Checkbox>
                 </Form.Item>
             </Form>
 
@@ -387,7 +407,7 @@ const Listofvalues = () => {
             },
         },
         {
-            title: "Active",
+            title: "สถานะ",
             dataIndex: "isActive",
             key: "isActive",
             align: "center",
@@ -448,7 +468,7 @@ const Listofvalues = () => {
 
 
     return (
-        <div style={{ margin: "0 12px 12px", minHeight: '80vh' }}>
+        <div style={{ padding: '20px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
             {loading && <Loading />}
             <div
                 style={{

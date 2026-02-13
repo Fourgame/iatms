@@ -11,8 +11,8 @@ import { noticeShowMessage } from "../Utilities/Notification";
 const Signin = (props) => {
 
   const navigate = useNavigate();
-  const [username, setUsername] = useState("nattapol.prai");
-  const [password, setPassword] = useState("@Int1234");
+  const [username, setUsername] = useState("napattarapong.c");
+  const [password, setPassword] = useState("1234");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const skipLogin = false;
@@ -23,11 +23,11 @@ const Signin = (props) => {
   // เก็บสถานะ login เอง
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-   useEffect(() => {
+  useEffect(() => {
     const message = location.state?.message;
     if (message) {
       setMessage(message);
-       noticeShowMessage(`${message} from message`, true);
+      noticeShowMessage(`${message} from message`, true);
     }
   }, []);
 
@@ -76,17 +76,11 @@ const Signin = (props) => {
   //   return <Navigate to="/home" />;
   // }
 
-  useEffect(() => {
-    const message = location.state?.message;
-    if (message) {
-      setMessage(message);
-      noticeShowMessage(`${message} from message`, true);
-    }
-  }, []);
+
 
   return (
     <div
-      className="min-vh-100 d-flex justify-content-end align-items-center "  //boder-danger
+      className="vh-100 overflow-hidden d-flex justify-content-end align-items-center "  //boder-danger
       style={{
         backgroundImage: "url(/signin_bg.png)",
         backgroundSize: "cover",
@@ -101,7 +95,7 @@ const Signin = (props) => {
           <i className="ms-3 bi bi-calendar"></i>
         </h3>
         <div className="align-items-center">
-          <div className="card rounded-4 mt-4 " style={{ width: "38rem" }}>
+          <div className="card rounded-4 mt-4 " style={{ width: "38rem", maxWidth: "90vw" }}>
             <div className="card-body p-4">
 
               <form onSubmit={handleLogin}>
