@@ -23,11 +23,11 @@ const Signin = (props) => {
   // เก็บสถานะ login เอง
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-   useEffect(() => {
+  useEffect(() => {
     const message = location.state?.message;
     if (message) {
       setMessage(message);
-       noticeShowMessage(`${message} from message`, true);
+      noticeShowMessage(`${message} from message`, true);
     }
   }, []);
 
@@ -76,13 +76,7 @@ const Signin = (props) => {
   //   return <Navigate to="/home" />;
   // }
 
-  useEffect(() => {
-    const message = location.state?.message;
-    if (message) {
-      setMessage(message);
-      noticeShowMessage(`${message} from message`, true);
-    }
-  }, []);
+
 
   return (
     <div

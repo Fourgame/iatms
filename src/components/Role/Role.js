@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, Tag, Modal, Form, Input, Checkbox, Row, Col, Space } from 'antd';
 import { CheckOutlined, CloseOutlined, EditOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import TableUI from '../Utilities/Table/TableUI';
-import RoleService from '../../services/Role.service';
+import RoleService from '../../services/role.service';
 import token from '../../services/token.service';
 import Title from '../Utilities/Title';
 import Loading from '../Utilities/Loading';
@@ -345,7 +345,7 @@ const Role = () => {
                         fontSize: '16px',
                         fontWeight: '600'
                     }}>
-                        <span>{modalMode === 'add' ? 'Add - Roles' : 'Edit - Roles'}</span>
+                        <span>{modalMode === 'add' ? 'Add - Role' : 'Edit - Role'}</span>
                     </div>
                 }
                 open={isModalOpen}
@@ -366,6 +366,7 @@ const Role = () => {
                     <Row gutter={24}>
                         <Col span={14}>
                             <Form.Item
+                                style={{ fontWeight: 'bold' }}
                                 name="role"
                                 label="Role Name"
                                 rules={[
@@ -401,6 +402,7 @@ const Role = () => {
                             <Form.Item
                                 name="description"
                                 label="Description"
+                                style={{ fontWeight: 'bold' }}
                                 rules={[{ required: true, message: 'กรอก Role Description' }]}
                             >
                                 <Input placeholder="กรอก Role Description" />
@@ -412,6 +414,7 @@ const Role = () => {
                             <Form.Item
                                 name="roleLevel"
                                 label="Role Level"
+                                style={{ fontWeight: 'bold' }}
                                 rules={[
                                     { required: true, message: 'กรอก Role Level' },
                                     { pattern: /^[0-9]+$/, message: 'กรุณากรอกเฉพาะตัวเลข' }

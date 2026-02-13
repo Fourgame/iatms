@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Button, Input, Tag, Modal, Form, Select, Checkbox, Row, Col, Space, Card } from 'antd';
 import { SearchOutlined, ClearOutlined, PlusOutlined, EditOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
 import TableUI from '../Utilities/Table/TableUI';
-import { getUserManage, postUserManage, getDropdown, findLdap } from '../../services/UserManage.service';
-import RoleService from '../../services/Role.service';
+import { getUserManage, postUserManage, getDropdown, findLdap } from '../../services/user-manage.service';
 import TokenService from '../../services/token.service';
-import { getLov } from '../../services/Lov.service';
+import { getLov } from '../../services/lov.service';
 import Title from '../Utilities/Title';
 import Loading from '../Utilities/Loading';
 import { noticeShowMessage } from '../Utilities/Notification';
@@ -45,86 +44,70 @@ const UserManage = () => {
     const [teamList, setTeamList] = useState([]);
 
     const navigate = useNavigate();
-
     useEffect(() => {
         document.title = Title.get_title("User Management");
-        fetchInitialData();
-        fetchDropdowns();
+
+        const initPage = async () => {
+            setLoading(true);
+            try {
+                // ใช้ Promise.all รวมทุกอย่างที่ต้องโหลดตอนเปิดหน้า
+                const [roleRes, workPlaceRes, teamRes, userRes] = await Promise.all([
+                    getDropdown.get_dropdown({ type: 'Role' }),
+                    getDropdown.get_dropdown({ type: 'WorkPlace' }),
+                    getDropdown.get_dropdown({ type: 'Team' }),
+                    getUserManage.get_user_manage({ Keyword: '' })
+                ]);
+
+                // Set Dropdowns
+                if (roleRes.data) setRoleList(roleRes.data);
+                if (workPlaceRes.data) setWorkPlaceList(workPlaceRes.data);
+                if (teamRes.data) setTeamList(teamRes.data);
+
+                // Set Users
+                if (userRes.data) {
+                    setUserData(userRes.data.map((item, index) => ({
+                        ...item,
+                        key: item.oa_user || index
+                    })));
+                }
+            } catch (error) {
+                handleRequestError(error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        initPage();
     }, []);
 
-    const fetchInitialData = () => {
-        fetchUsers('');
-    };
-
-    const fetchDropdowns = async () => {
-        try {
-            const [roleRes, workPlaceRes, teamRes] = await Promise.all([
-                getDropdown.get_dropdown({ type: 'Role' }),
-                getDropdown.get_dropdown({ type: 'WorkPlace' }),
-                getDropdown.get_dropdown({ type: 'Team' })
-            ]);
-
-            // ข้อมูลที่ได้กลับมาจะเป็นรูปแบบ { value: "...", label: "..." }
-            if (roleRes.data) setRoleList(roleRes.data);
-            if (workPlaceRes.data) setWorkPlaceList(workPlaceRes.data);
-            if (teamRes.data) setTeamList(teamRes.data);
-        } catch (error) {
-            if (error.response) {
-                const status = error.response.status;
-                if (status === 401) {
-                    TokenService.deleteUser();
-                    return navigate("/signin", { state: { message: "session expire" } });
-                }
-                if (status === 403) return noticeShowMessage("access-denied", true);
-                if (status === 404) return noticeShowMessage("not-found", true);
-
-            } else if (error.request) {
-                console.log("No response received:", error.request);
-                return noticeShowMessage("network-error", true);
-
-            } else {
-                console.log("Error setting up request:", error.message);
-                return noticeShowMessage("error", true);
-            }
-        }
-    };
-
+    // ฟังก์ชัน fetchUsers สำหรับปุ่ม Search (ใช้ ErrorHandler กลาง)
     const fetchUsers = async (searchKeyword) => {
         setLoading(true);
         try {
             const response = await getUserManage.get_user_manage({ Keyword: searchKeyword });
-            if (response.data) {
-                const dataWithKeys = response.data.map((item, index) => ({
-                    ...item,
-                    key: item.oa_user || index
-                }));
-                setUserData(dataWithKeys);
-            } else {
-                setUserData([]);
-            }
-
+            setUserData(response.data?.map((item, index) => ({ ...item, key: item.oa_user || index })) || []);
         } catch (error) {
-            if (error.response) {
-                const status = error.response.status;
-                if (status === 401) {
-                    TokenService.deleteUser();
-                    return navigate("/signin", { state: { message: "session expire" } });
-                }
-                if (status === 403) return noticeShowMessage("access-denied", true);
-                if (status === 404) return noticeShowMessage("not-found", true);
-
-            } else if (error.request) {
-                console.log("No response received:", error.request);
-                return noticeShowMessage("network-error", true);
-
-            } else {
-                console.log("Error setting up request:", error.message);
-                return noticeShowMessage("error", true);
-            }
-            setUserData([]);
+            handleRequestError(error);
         } finally {
             setLoading(false);
         }
+    };
+    const handleRequestError = (error) => {
+        if (error.response) {
+            const status = error.response.status;
+            if (status === 401) {
+                TokenService.deleteUser();
+                navigate("/signin", { state: { message: "session expire" } });
+                return true; // บอกว่าจัดการ redirect ไปแล้ว
+            }
+            const messages = { 403: "access-denied", 404: "not-found" };
+            noticeShowMessage(messages[status] || "error", true);
+        } else if (error.request) {
+            noticeShowMessage("network-error", true);
+        } else {
+            noticeShowMessage("error", true);
+        }
+        return false;
     };
 
     const handleSearch = () => {
@@ -230,15 +213,20 @@ const UserManage = () => {
 
         // Validate if values exist in dropdown lists
         // If the current value is not in the list (e.g. inactive), set to undefined to show placeholder
-        const validRole = roleList.some(r => r.value === record.role) ? record.role : undefined;
-        const validTeam = teamList.some(t => t.value === record.team) ? record.team : undefined;
-        const validWorkPlace = workPlaceList.some(w => w.value === record.work_place) ? record.work_place : undefined;
+        const findValue = (list, val) => {
+            const found = list.find(item => item.value === val || item.label === val);
+            return found ? found.value : undefined;
+        };
+
+        const validRole = findValue(roleList, record.role);
+        const validTeam = findValue(teamList, record.team);
+        const validWorkPlace = findValue(workPlaceList, record.work_place);
 
         form.setFieldsValue({
             role_id: validRole,
             team_code: validTeam,
             work_place: validWorkPlace,
-            is_active: record.is_active
+            is_active: record.is_active,
         });
         setIsModalOpen(true);
     };

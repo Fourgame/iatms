@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { getLov, postLov } from "../../services/Lov.service";
+import { getLov, postLov } from "../../services/lov.service";
 import TableUI from "../Utilities/TableTennis";
 import Loading from "../Utilities/Loading";
 import { Button, Tag, Input, Alert, Modal, Form, Checkbox } from "antd";
 import { noticeShowMessage } from '../Utilities/Notification';
 import { SearchToolBtn, ClearToolBtn, SaveModalBtn, AddToolBtn, EditToolBtn, CloseModalBtn, CloseIconBtn } from "../Utilities/Buttons/Buttons";
 
-import {Navigate, useNavigate} from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import AuthService from "../../services/auth.service";
 import TokenService from "../../services/token.service";
 
@@ -17,7 +17,7 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    useEffect(() => {                                                       
+    useEffect(() => {
         if (show) {
             setLoading(false);
             form.resetFields();
@@ -47,7 +47,7 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
     }, [show, data, form, existingData]);
 
     const handleSaveClick = async () => {
-        
+
         try {
             const currentUser = TokenService.getUser();
             if (!currentUser) {
@@ -78,9 +78,9 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
 
                 onSave(payload);
             } catch (err) {
-                if(err.response.status === 401){
+                if (err.response.status === 401) {
                     TokenService.deleteUser();
-                    navigate("/", {state: {message: "session expire"}})
+                    navigate("/", { state: { message: "session expire" } })
                 }
                 const serverMessage = err.response?.data?.message || err.response?.data || err.message;
                 noticeShowMessage(serverMessage || "เกิดข้อผิดพลาดในการบันทึกข้อมูล", true);
@@ -270,7 +270,7 @@ const Listofvalues = () => {
     const [selectedRecord, setSelectedRecord] = useState(null);
     const [keyword, setKeyword] = useState("");
 
-    
+
 
     const handleAdd = () => {
         setModalTitle("Add - Manage List of Values");
@@ -290,11 +290,11 @@ const Listofvalues = () => {
 
     const fetchData = async (searchKeyword) => {
         const currentUser = TokenService.getUser();
-            if (!currentUser) {
-                TokenService.deleteUser();
-                return navigate("/signin", { state: { message: "token not found" } });
-            }
- 
+        if (!currentUser) {
+            TokenService.deleteUser();
+            return navigate("/signin", { state: { message: "token not found" } });
+        }
+
         let payload = {
             keyword: typeof searchKeyword === "string" ? searchKeyword : keyword || "",
         };
@@ -307,10 +307,10 @@ const Listofvalues = () => {
         } catch (error) {
             setLoading(false);
             if (error.response?.status === 401) {
-                
+
                 TokenService.deleteUser();
-                return navigate("/",{ state: { message: "session expire" }});
-            }else{
+                return navigate("/", { state: { message: "session expire" } });
+            } else {
                 noticeShowMessage("Failed to fetch data", true);
             }
         }
@@ -318,7 +318,7 @@ const Listofvalues = () => {
 
     const handleSaveModal = () => {
         setIsModalOpen(false);
-        fetchData();    
+        fetchData();
     };
 
     const columns = [
@@ -413,7 +413,7 @@ const Listofvalues = () => {
     ];
 
     const actionColumn = {
-        
+
         title: (
             <AddToolBtn onClick={handleAdd} />
         ),
@@ -421,7 +421,7 @@ const Listofvalues = () => {
         dataIndex: "actions",
         align: "center",
         width: 90,
-        fixed: "left",  
+        fixed: "left",
         render: (_, record) => (
             <EditToolBtn onClick={() => handleEdit(record)} />
         ),
@@ -431,21 +431,21 @@ const Listofvalues = () => {
 
     useEffect(() => {
         if (!TokenService.isSignIn()) {
-    return navigate("/", { state: { message: "please login" } });
-    
-  }else{
-    fetchData();
-  }
+            return navigate("/", { state: { message: "please login" } });
+
+        } else {
+            fetchData();
+        }
 
     }, []);
-    
 
-//     if (!TokenService.isSignIn()) {
-//     return navigate("/", { state: { message: "session expire 1" } });
-    
-//   }
 
-  
+    //     if (!TokenService.isSignIn()) {
+    //     return navigate("/", { state: { message: "session expire 1" } });
+
+    //   }
+
+
 
     return (
         <div style={{ margin: "0 12px 12px", minHeight: '80vh' }}>
