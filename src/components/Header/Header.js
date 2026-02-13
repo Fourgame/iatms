@@ -36,6 +36,10 @@ const Header = () => {
         navigate("/signin");
     };
 
+    const goHome = () => {
+        navigate("/home");
+    };
+
 
     useEffect(() => {
         const user = TokenService.getUser();
