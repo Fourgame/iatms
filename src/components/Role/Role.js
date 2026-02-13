@@ -161,6 +161,10 @@ const Role = () => {
                     if (status === 403) return noticeShowMessage("access-denied", true);
                     if (status === 404) return noticeShowMessage("not-found", true);
 
+                    if (error.response.data && error.response.data.message) {
+                        return noticeShowMessage(error.response.data.message, true);
+                    }
+
                 } else if (error.request) {
                     console.log("No response received:", error.request);
                     return noticeShowMessage("network-error", true);
@@ -370,7 +374,7 @@ const Role = () => {
                                 name="role"
                                 label="Role Name"
                                 rules={[
-                                    { required: true, message: 'กรอก Role Name' },
+                                    { message: 'กรอก Role Name' },
                                     {
                                         validator: (_, value) => {
                                             if (modalMode === 'add' && roleData.some(r => r.role_id === value)) {

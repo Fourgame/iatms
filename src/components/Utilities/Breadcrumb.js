@@ -41,14 +41,15 @@ const Breadcrumb = () => {
 
     <div style={{ backgroundColor: '#e9ecef', overflow: 'hidden' }}>
       <div style={{
-        backgroundColor: '#dbeaff',
+        backgroundColor: '#CEDDFF',
         border: '1px solid #dee2e6',
         borderRadius: '5px',
-        padding: '10px 15px',
+        padding: '15px 15px',
         margin: '20px',
         fontSize: '18px',
         fontWeight: '500',
-        color: '#000'
+        color: '#000',
+        boxShadow: '0px 4px 4px 0px rgba(0,0,0,0.25)'
       }}>
         {lists}
       </div>

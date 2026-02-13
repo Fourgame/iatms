@@ -296,6 +296,11 @@ const UserManage = () => {
                     if (status === 403) return noticeShowMessage("access-denied", true);
                     if (status === 404) return noticeShowMessage("not-found", true);
 
+                    // Show specific error message from backend if available
+                    if (error.response.data && error.response.data.message) {
+                        return noticeShowMessage(error.response.data.message, true);
+                    }
+
                 } else if (error.request) {
                     console.log("No response received:", error.request);
                     return noticeShowMessage("network-error", true);
@@ -535,15 +540,15 @@ const UserManage = () => {
                 <Form
                     form={form}
                     layout="horizontal"
-                    labelCol={{ span: 6 }}
-                    wrapperCol={{ span: 17 }}
+                    labelCol={{ span: 4 }}
+                    wrapperCol={{ span: 15 }}
                     labelAlign="left"
                     style={{ marginTop: '10px' }}
                 >
                     {/* Display Details (Read-only) */}
                     {(modalMode === 'edit' && currentUser) && (
                         <>
-                            <Row gutter={24} style={{ marginBottom: '10px' }}>
+                            <Row gutter={24} style={{ marginBottom: '10px', marginLeft: '-5px' }}>
                                 <Col span={12}>
                                     <span style={{ fontWeight: 'bold', marginRight: '5px' }}>OA-User:</span>
                                     <span>{currentUser.oa_user}</span>
@@ -553,7 +558,7 @@ const UserManage = () => {
                                     <span>{currentUser.Division}</span>
                                 </Col>
                             </Row>
-                            <Row gutter={24} style={{ marginBottom: '10px' }}>
+                            <Row gutter={24} style={{ marginBottom: '10px', marginLeft: '-5px' }}>
                                 <Col span={12}>
                                     <span style={{ fontWeight: 'bold', marginRight: '5px' }}>ชื่อ (TH):</span>
                                     <span>{currentUser.first_name_th}</span>
@@ -563,7 +568,7 @@ const UserManage = () => {
                                     <span>{currentUser.last_name_th}</span>
                                 </Col>
                             </Row>
-                            <Row gutter={24} style={{ marginBottom: '10px' }}>
+                            <Row gutter={24} style={{ marginBottom: '10px', marginLeft: '-5px' }}>
                                 <Col span={12}>
                                     <span style={{ fontWeight: 'bold', marginRight: '5px' }}>ชื่อ (EN):</span>
                                     <span>{currentUser.first_name_en}</span>
@@ -573,7 +578,7 @@ const UserManage = () => {
                                     <span>{currentUser.last_name_en}</span>
                                 </Col>
                             </Row>
-                            <Row gutter={24} style={{ marginBottom: '20px' }}>
+                            <Row gutter={24} style={{ marginBottom: '20px', marginLeft: '-5px' }}>
                                 <Col span={24}>
                                     <span style={{ fontWeight: 'bold', marginRight: '5px' }}>E-mail:</span>
                                     <span>{currentUser.email}</span>
@@ -584,7 +589,7 @@ const UserManage = () => {
 
                     {(modalMode === 'add') && (
                         <>
-                            <Row gutter={24} style={{ marginBottom: '10px' }}>
+                            <Row gutter={24} style={{ marginBottom: '10px', marginLeft: '-5px' }}>
                                 <Col span={12}>
                                     <span style={{ fontWeight: 'bold', marginRight: '5px' }}>OA-User:</span>
                                     <span>{searchedUser.oa_user}</span>
@@ -594,7 +599,7 @@ const UserManage = () => {
                                     <span>{searchedUser.division}</span>
                                 </Col>
                             </Row>
-                            <Row gutter={24} style={{ marginBottom: '10px' }}>
+                            <Row gutter={24} style={{ marginBottom: '10px', marginLeft: '-5px' }}>
                                 <Col span={12}>
                                     <span style={{ fontWeight: 'bold', marginRight: '5px' }}>ชื่อ (TH):</span>
                                     <span>{searchedUser.first_name_th}</span>
@@ -604,7 +609,7 @@ const UserManage = () => {
                                     <span>{searchedUser.last_name_th}</span>
                                 </Col>
                             </Row>
-                            <Row gutter={24} style={{ marginBottom: '10px' }}>
+                            <Row gutter={24} style={{ marginBottom: '10px', marginLeft: '-5px' }}>
                                 <Col span={12}>
                                     <span style={{ fontWeight: 'bold', marginRight: '5px' }}>ชื่อ (EN):</span>
                                     <span>{searchedUser.first_name_en}</span>
@@ -614,7 +619,7 @@ const UserManage = () => {
                                     <span>{searchedUser.last_name_en}</span>
                                 </Col>
                             </Row>
-                            <Row gutter={24} style={{ marginBottom: '20px' }}>
+                            <Row gutter={24} style={{ marginBottom: '20px', marginLeft: '-5px' }}>
                                 <Col span={24}>
                                     <span style={{ fontWeight: 'bold', marginRight: '5px' }}>E-mail:</span>
                                     <span>{searchedUser.email}</span>
@@ -635,7 +640,7 @@ const UserManage = () => {
                             </Form.Item>
                         </Col>
                         <Col span={12}>
-                            <div style={{ display: 'flex', alignItems: 'center', height: '32px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', height: '32px', marginLeft: '5px' }}>
                                 <span style={{ marginRight: '8px', fontWeight: 'bold' }}>สถานะ :</span>
                                 <Form.Item name="is_active" valuePropName="checked" noStyle>
                                     <Checkbox>ใช้งาน</Checkbox>
@@ -661,6 +666,7 @@ const UserManage = () => {
                                 rules={[{ required: true, message: 'กรุณาเลือกสถานที่ปฏิบัติงาน' }]}
                                 labelCol={{ span: 9 }}
                                 wrapperCol={{ span: 15 }}
+                                style={{ marginLeft: '-5px' }}
                             >
                                 <Select placeholder="-เลือก-">
                                     {workPlaceList.map(item => (
