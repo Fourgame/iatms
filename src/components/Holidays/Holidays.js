@@ -57,7 +57,7 @@ const HolidaysModal = ({ show, onClose, onSave, title, data, existingData = [] }
 
             try {
                 await postHolidays.post_holidays(payload);
-                noticeShowMessage(data ? "แก้ไขข้อมูลสำเร็จ" : "เพิ่มข้อมูลสำเร็จ", false);
+                noticeShowMessage(data ? "บันทึกข้อมูลสำเร็จ" : "บันทึกข้อมูลสำเร็จ", false);
                 onSave(values.holidayDate ? values.holidayDate.year() : null);
                 setLoading(false);
             } catch (err) {
@@ -119,6 +119,9 @@ const HolidaysModal = ({ show, onClose, onSave, title, data, existingData = [] }
                         { required: true, message: 'กรุณาเลือกวันที่' },
                         ({ getFieldValue }) => ({
                             validator(_, value) {
+                                if (value && !value.isValid()) {
+                                    return Promise.reject(new Error("รูปแบบวันที่ไม่ถูกต้อง"));
+                                }
                                 if (!data && value) {
                                     const formattedDate = value.format("YYYY-MM-DD");
                                     const isDuplicate = existingData.some(
@@ -138,7 +141,17 @@ const HolidaysModal = ({ show, onClose, onSave, title, data, existingData = [] }
                             {data.holidayDate ? moment(data.holidayDate).format("DD/MM/YYYY") : "-"}
                         </span>
                     ) : (
-                        <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} placeholder="DD/MM/YYYY" />
+                        <DatePicker
+                            format="DD/MM/YYYY"
+                            style={{ width: '100%' }}
+                            placeholder="DD/MM/YYYY"
+                            inputReadOnly={true}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    handleSaveClick();
+                                }
+                            }}
+                        />
                     )}
                 </Form.Item>
 
@@ -147,7 +160,7 @@ const HolidaysModal = ({ show, onClose, onSave, title, data, existingData = [] }
                     label={<span className="fw-bold"><span style={{ color: 'red' }}></span>ชื่อวันหยุด</span>}
                     rules={[{ required: true, message: 'กรุณากรอกชื่อวันหยุด' }]}
                 >
-                    <Input placeholder="กรอกชื่อวันหยุด" />
+                    <Input placeholder="กรอกชื่อวันหยุด" onPressEnter={handleSaveClick} />
                 </Form.Item>
 
                 <Form.Item
@@ -155,7 +168,16 @@ const HolidaysModal = ({ show, onClose, onSave, title, data, existingData = [] }
                     label={<span className="fw-bold">สถานะ</span>}
                     valuePropName="checked"
                 >
-                    <Checkbox>ใช้งาน</Checkbox>
+                    <Checkbox
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleSaveClick();
+                            }
+                        }}
+                    >
+                        ใช้งาน
+                    </Checkbox>
                 </Form.Item>
 
                 <div className="modal-footer justify-content-center border-top-0 pb-0 pt-3">
@@ -176,6 +198,7 @@ const Holidays = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [yearOptions, setYearOptions] = useState([]);
+    const [openDropdown, setOpenDropdown] = useState(false);
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -271,6 +294,7 @@ const Holidays = () => {
 
     const handleSearch = () => {
         fetchData();
+        setOpenDropdown(false);
     };
 
     const handleClear = () => {
@@ -282,6 +306,7 @@ const Holidays = () => {
         const defaultIsActive = true;
         setYearSearch(defaultYear);
         setIsActive(defaultIsActive);
+        setOpenDropdown(false);
 
 
 
@@ -298,13 +323,13 @@ const Holidays = () => {
 
     // Modal Handlers
     const handleAdd = () => {
-        setModalTitle("Add - Manage Holidays");
+        setModalTitle("Add - Manage Holiday");
         setSelectedRecord(null);
         setIsModalOpen(true);
     };
 
     const handleEdit = (record) => {
-        setModalTitle("Edit - Manage Holidays");
+        setModalTitle("Edit - Manage Holiday");
         setSelectedRecord(record);
         setIsModalOpen(true);
     };
@@ -368,6 +393,7 @@ const Holidays = () => {
             key: "holidayDate",
             align: "center",
             width: "25%",
+            sorter: (a, b) => new Date(a.holidayDate || 0) - new Date(b.holidayDate || 0),
             render: (text) => text ? new Date(text).toLocaleDateString("en-GB") : "-", // Formatting date dd/mm/yyyy
         },
         {
@@ -429,7 +455,7 @@ const Holidays = () => {
     const columnsWithActions = [actionColumn, ...columns];
 
     return (
-        <div style={{ margin: "0 12px 12px", minHeight: '80vh' }}>
+        <div style={{ padding: '20px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
             {loading && <Loading />}
 
             <div
@@ -473,8 +499,11 @@ const Holidays = () => {
                         <span style={{ fontWeight: 700, fontSize: '16px' }}>ปี:</span>
                         <Select
                             value={yearSearch}
-                            onChange={(value) => setYearSearch(value)}
+                            open={openDropdown}
+                            onDropdownVisibleChange={(open) => setOpenDropdown(open)}
                             onKeyDown={handleKeyDown}
+                            onChange={(value) => setYearSearch(value)}
+
                             style={{ width: 150 }}
                         >
                             {yearOptions.map(year => (
