@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getLov, postLov } from "../../services/Lov.service";
+import { getLov, postLov } from "../../services/lov.service";
 import TableUI from "../Utilities/TableTennis";
 import Loading from "../Utilities/Loading";
 import { Button, Tag, Input, Alert, Modal, Form, Checkbox } from "antd";

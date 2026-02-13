@@ -45,14 +45,14 @@ function App() {
           <Routes>
             <Route
               path="/signin"
-              element={isAuth ? <Navigate to="/Home" title="Sign-in" replace /> : <Signin title="Sign-in" />}
+              element={isAuth ? <Navigate to="/home" title="Sign-in" replace /> : <Signin title="Sign-in" />}
             />
 
             <Route path="/" element={
               <Home title="Home" />
             } />
 
-            <Route path="/Home" element={
+            <Route path="/home" element={
               <Home title="Home" />
             } />
 
@@ -61,7 +61,7 @@ function App() {
               <Role title="Role" />
             } />
 
-            <Route path="/setup/Manage-List-of-Values" element={
+            <Route path="/setup/manage-list-of-values" element={
               <Listofvalues title="List of values" />
             } />
 
