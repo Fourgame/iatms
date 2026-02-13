@@ -1,9 +1,9 @@
-@import url("../../../Styles/Fonts/HelveticaNeue/css/fonts.css");
+/* @import url("../../../Styles/Fonts/HelveticaNeue/css/fonts.css");
 @import url("../../../Styles/Fonts/Kanit/css/fonts.css");
-@import url("../../../Styles/Fonts/BBLSansOffice/css/fonts.css");
+@import url("../../../Styles/Fonts/BBLSansOffice/css/fonts.css"); */
 
 thead[class*="ant-table-thead"] th {
-  background-color: #80cbc4 !important;
+  background-color: #dabc6b !important;
   color: rgb(0, 0, 0) !important;
   text-align: center !important;
   z-index: 0;
@@ -12,7 +12,7 @@ thead[class*="ant-table-thead"] th {
 .ant-table {
   background-color: #ffffff17 !important;
   z-index: 0;
-  font-family: BBLSansOffice-Regular, Kanit !important;
+  /* font-family: BBLSansOffice-Regular; */
 }
 
 .table-row-light {

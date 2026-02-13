@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
+import "../Utilities/Table/Table.css";
 import { getLov, postLov } from "../../services/lov.service";
-import TableUI from "../Utilities/TableTennis";
+import TableUI from "../Utilities/Table/TableUI";
 import Loading from "../Utilities/Loading";
 import { Button, Tag, Input, Alert, Modal, Form, Checkbox } from "antd";
 import { noticeShowMessage } from '../Utilities/Notification';
@@ -230,8 +231,11 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
                         { required: true, message: 'กรุณากรอก Order' },
                         {
                             validator: (_, value) => {
-                                if (value && (isNaN(value) || parseInt(value, 10) <= 0)) {
-                                    return Promise.reject(new Error('กรุณากรอกตัวเลขมากกว่า 0'));
+                                if (value) {
+                                    // Leading zero check: "0" is ok, "01" is bad.
+                                    if (value.length > 1 && value.startsWith('0')) {
+                                        return Promise.reject(new Error('ห้ามขึ้นต้นด้วย 0'));
+                                    }
                                 }
                                 return Promise.resolve();
                             }
@@ -239,7 +243,8 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
                     ]}
                 >
                     <Input
-                        type="number"
+                        // type="number"
+                        maxLength={5}
                         placeholder="กรอก Order"
                         onPressEnter={handleSaveClick}
                         onKeyPress={(event) => {
@@ -540,7 +545,7 @@ const Listofvalues = () => {
                         rowKey={(r) => `${r.fieldName}__${r.code}`}
                         pagination={true}
                         bordered={true}
-                        size={"small"}
+                        size={"large"}
                     />
                 </div>
             </div>
