@@ -211,13 +211,13 @@ const Role = () => {
             align: 'center',
         },
         {
-            title: 'Role',
+            title: <div style={{ textAlign: 'center' }}>Role Name</div>,
             dataIndex: 'role_id',
             key: 'role_id',
             SortName: 'role_id',
         },
         {
-            title: 'Description',
+            title: <div style={{ textAlign: 'center' }}>Description</div>,
             dataIndex: 'description',
             key: 'description',
             SortName: 'description',
@@ -235,7 +235,19 @@ const Role = () => {
             key: 'is_active',
             SortName: 'is_active',
             render: (status) => (
-                <Tag color={status ? "#198754" : "#dc3545"} style={{ fontSize: '14px', padding: '5px 15px', borderRadius: '15px' }}>
+                <Tag
+                    style={{
+                        backgroundColor: status ? "#198754" : "#DC3545",
+                        color: "white",
+                        borderRadius: "20px",
+                        minWidth: "80px",
+                        textAlign: "center",
+                        fontSize: "14px",
+                        padding: "5px 10px",
+                        border: "none",
+                        fontWeight: "normal",
+                    }}
+                >
                     {status ? "ใช้งาน" : "ไม่ใช้งาน"}
                 </Tag>
             ),
@@ -285,7 +297,7 @@ const Role = () => {
                     render: (val) => val ? <CheckOutlined style={{ color: '#198754', fontSize: '18px' }} /> : <CloseOutlined style={{ color: '#dc3545', fontSize: '18px' }} />
                 },
                 {
-                    title: 'Attendance Approval',
+                    title: 'Attendance & Leave Approval',
                     dataIndex: 'func_approve',
                     key: 'func_approve',
                     align: 'center',
@@ -327,7 +339,7 @@ const Role = () => {
     };
 
     return (
-        <div style={{ padding: '20px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
+        <div style={{ paddingLeft: '20px', paddingRight: '20px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
             {loading && <Loading />}
 
 
@@ -406,7 +418,7 @@ const Role = () => {
                             <Form.Item
                                 name="description"
                                 label="Description"
-                                style={{ fontWeight: 'bold' }}
+                                style={{ fontWeight: 'bold', marginLeft: '-10px' }}
                                 rules={[{ required: true, message: 'กรอก Role Description' }]}
                             >
                                 <Input placeholder="กรอก Role Description" />
@@ -418,14 +430,15 @@ const Role = () => {
                             <Form.Item
                                 name="roleLevel"
                                 label="Role Level"
-                                style={{ fontWeight: 'bold' }}
+                                style={{ fontWeight: 'bold', marginLeft: '-10px' }}
                                 rules={[
                                     { required: true, message: 'กรอก Role Level' },
-                                    { pattern: /^[0-9]+$/, message: 'กรุณากรอกเฉพาะตัวเลข' }
+                                    { pattern: /^[1-9][0-9]*$/, message: 'รูปแบบไม่ถูกต้อง ห้ามขึ้นต้นด้วย 0' }
                                 ]}
                             >
                                 <Input
                                     placeholder="กรอก Role Level"
+                                    maxLength={5}
                                     onKeyPress={(event) => {
                                         if (!/[0-9]/.test(event.key)) {
                                             event.preventDefault();

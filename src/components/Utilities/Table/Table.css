@@ -1,18 +1,31 @@
-@import url("../../../Styles/Fonts/HelveticaNeue/css/fonts.css");
+/* @import url("../../../Styles/Fonts/HelveticaNeue/css/fonts.css");
 @import url("../../../Styles/Fonts/Kanit/css/fonts.css");
-@import url("../../../Styles/Fonts/BBLSansOffice/css/fonts.css");
+@import url("../../../Styles/Fonts/BBLSansOffice/css/fonts.css"); */
 
-thead[class*="ant-table-thead"] th {
-  background-color: #80cbc4 !important;
+/* thead[class*="ant-table-thead"] th {
+  background-color: #fffb00 !important;
   color: rgb(0, 0, 0) !important;
   text-align: center !important;
   z-index: 0;
+} */
+thead[class*="ant-table-thead"] th {
+  /* ใส่ URL ของ GIF ที่คุณต้องการ */
+  background-image: url("https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExZnU3eTNuYXpoNTlubzMwa3d4Mm8zcW5sYmpmdGtzcHJhOTNqZ3B5OSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/IeXVBbPDCOJoRm4RaZ/giphy.gif") !important;
+  background-size: cover;
+  /* ให้ภาพเต็มพื้นที่ */
+  background-position: center;
+  color: #ffffff !important;
+  /* ปรับสีตัวอักษรให้ตัดกับพื้นหลัง */
+  text-align: center !important;
+  z-index: 0;
+  text-shadow: 1px 1px 2px black;
+  /* เพิ่มเงาให้ตัวอักษรอ่านง่ายขึ้น */
 }
 
 .ant-table {
   background-color: #ffffff17 !important;
   z-index: 0;
-  font-family: BBLSansOffice-Regular, Kanit !important;
+  /* font-family: BBLSansOffice-Regular, Kanit !important; */
 }
 
 .table-row-light {
@@ -68,7 +81,7 @@ thead[class*="ant-table-thead"] th {
   color: #ffffff;
 }
 
-.ant-table-empty .ant-table-tbody > tr.ant-table-placeholder {
+.ant-table-empty .ant-table-tbody>tr.ant-table-placeholder {
   background-color: #ffffff;
 }
 
@@ -95,55 +108,51 @@ thead[class*="ant-table-thead"] th {
   z-index: 2 !important;
 }
 
-tr.ant-table-expanded-row > td,
-tr.ant-table-expanded-row:hover > td {
+tr.ant-table-expanded-row>td,
+tr.ant-table-expanded-row:hover>td {
   background-color: #ffffff !important;
 }
 
-div.table-striped-rows
-  table
-  > tbody.ant-table-tbody
-  > tr.ant-table-row.level_3
-  > td {
+div.table-striped-rows table>tbody.ant-table-tbody>tr.ant-table-row.level_3>td {
   background-color: #d7d7d7;
 }
 
-.ant-table-thead > tr > th.column-red {
+.ant-table-thead>tr>th.column-red {
   background-color: #ff0000 !important;
 }
 
-.ant-table-thead > tr > th.column-orange {
+.ant-table-thead>tr>th.column-orange {
   background-color: #ff8c1a !important;
 }
 
-.ant-table-thead > tr > th.column-yellow {
+.ant-table-thead>tr>th.column-yellow {
   background-color: #ffd633 !important;
 }
 
-.ant-table-thead > tr > th.column-green {
+.ant-table-thead>tr>th.column-green {
   background-color: #009933 !important;
 }
 
-.ant-table-thead > tr > th.column-drakgreen {
+.ant-table-thead>tr>th.column-drakgreen {
   background-color: #008000 !important;
 }
 
-.ant-table-thead > tr > th.column-pink_ {
+.ant-table-thead>tr>th.column-pink_ {
   background-color: #ef9ca6 !important;
   color: black !important;
 }
 
-.ant-table-thead > tr > th.column-orange_ {
+.ant-table-thead>tr>th.column-orange_ {
   background-color: #facd91 !important;
   color: black !important;
 }
 
-.ant-table-thead > tr > th.column-yellow_ {
+.ant-table-thead>tr>th.column-yellow_ {
   background-color: #ffff80 !important;
   color: black !important;
 }
 
-.ant-table-thead > tr > th.column-green_ {
+.ant-table-thead>tr>th.column-green_ {
   background-color: #caf982 !important;
   color: black !important;
 }
@@ -152,12 +161,15 @@ div.table-striped-rows
   z-index: 0 !important;
   background: #feffdb !important;
 }
+
 .col_level_1 {
   background-color: #f8a408 !important;
 }
+
 .col_level_2 {
   background-color: #f7c364 !important;
 }
+
 .col_level_3 {
   background-color: #f3eec5 !important;
 }

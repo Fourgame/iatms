@@ -349,41 +349,37 @@ const UserManage = () => {
             ),
         },
         {
-            title: 'OA User',
+            title: <div style={{ textAlign: 'center' }}>OA User</div>,
             dataIndex: 'oa_user',
             key: 'oa_user',
             SortName: 'oa_user',
-            align: 'center',
         },
         {
-            title: 'ชื่อ-นามสกุล',
+            title: <div style={{ textAlign: 'center' }}>ชื่อ-นามสกุล</div>,
             key: 'fullname',
             render: (text, record) => `${record.first_name_th || ''} ${record.last_name_th || ''}`,
             SortName: 'first_name_th',
         },
         {
-
-            title: 'Role',
+            title: <div style={{ textAlign: 'center' }}>Role</div>,
             dataIndex: 'role',
             key: 'role',
             SortName: 'role',
-            align: 'center',
         },
         {
-            title: 'Team',
+            title: <div style={{ textAlign: 'center' }}>Team</div>,
             dataIndex: 'team',
             key: 'team',
             SortName: 'team',
-            align: 'center',
         },
         {
-            title: 'ส่วนงาน (Division)',
+            title: <div style={{ textAlign: 'center' }}>ส่วนงาน</div>,
             dataIndex: 'division',
             key: 'division',
             SortName: 'division'
         },
         {
-            title: 'สถานที่ปฏิบัติงาน',
+            title: <div style={{ textAlign: 'center' }}>สถานที่ปฏิบัติงาน</div>,
             dataIndex: 'work_place',
             key: 'work_place',
             SortName: 'work_place',
@@ -394,7 +390,19 @@ const UserManage = () => {
             key: 'is_active',
             align: 'center',
             render: (status) => (
-                <Tag color={status ? "#198754" : "#dc3545"} style={{ fontSize: '14px', padding: '5px 15px', borderRadius: '15px' }}>
+                <Tag
+                    style={{
+                        backgroundColor: status ? "#198754" : "#DC3545",
+                        color: "white",
+                        borderRadius: "20px",
+                        minWidth: "80px",
+                        textAlign: "center",
+                        fontSize: "14px",
+                        padding: "5px 10px",
+                        border: "none",
+                        fontWeight: "normal",
+                    }}
+                >
                     {status ? "ใช้งาน" : "ไม่ใช้งาน"}
                 </Tag>
             ),
@@ -412,8 +420,8 @@ const UserManage = () => {
     };
 
     return (
-        <div style={{ padding: '20px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
-            {/* Search Section */}
+        <div style={{ paddingLeft: '20px', paddingRight: '20px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
+            {loading && <Loading />}
             {/* Search Section */}
             <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', marginBottom: '20px', overflow: 'hidden' }}>
                 <div style={{

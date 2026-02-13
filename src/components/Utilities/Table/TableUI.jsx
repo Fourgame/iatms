@@ -3,6 +3,7 @@ import moment from "moment";
 import { useEffect, useState } from "react";
 import { FiTrash2 } from "react-icons/fi";
 
+import "./Table.css";
 import { IsEmpty } from "../../SysComponent/SystemComponent";
 
 // const IsEmpty = (value) => {
