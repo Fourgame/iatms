@@ -37,8 +37,14 @@ const Header = () => {
     };
 
     const goHome = () => {
-        navigate("/home");
+        const target = "/home";
+        if (location.pathname.toLowerCase() === target) {
+            window.location.reload();
+        } else {
+            navigate(target);
+        }
     };
+
 
 
     useEffect(() => {
@@ -78,7 +84,7 @@ const Header = () => {
                 <div className="d-flex align-items-center gap-5">
                     {/* Brand */}
                         <Button variant="primary"
-                            onClick={(e) => handleRefresh(e, "/home")}
+                            onClick={goHome}
                             className="border border-3 rounded-4 d-flex align-items-center gap-2 px-3 py-1 border-white"
                             style={{
                                 "--bs-btn-bg": "#04318D",
