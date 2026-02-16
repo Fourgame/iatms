@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../Utilities/Table/Table.css";
 import { Select, Checkbox, Tag, Modal, Form, Input, DatePicker } from "antd";
+import { Card } from 'react-bootstrap';
 import { getHolidays, postHolidays, getHolidayYears } from "../../services/้้holidays.service";
 import TableUI from "../Utilities/Table/TableUI";
 import Loading from "../Utilities/Loading";
@@ -115,9 +116,9 @@ const HolidaysModal = ({ show, onClose, onSave, title, data, existingData = [] }
             >
                 <Form.Item
                     name="holidayDate"
-                    label={<span className="fw-bold"><span style={{ color: 'red' }}></span>วันที่</span>}
+                    label={<span className="fw-bold">วันที่</span>}
                     rules={[
-                        { required: true, message: 'กรุณาเลือกวันที่' },
+                        { required: true, message: 'เลือกวันที่' },
                         ({ getFieldValue }) => ({
                             validator(_, value) {
                                 if (value && !value.isValid()) {
@@ -158,10 +159,12 @@ const HolidaysModal = ({ show, onClose, onSave, title, data, existingData = [] }
 
                 <Form.Item
                     name="holidayName"
-                    label={<span className="fw-bold"><span style={{ color: 'red' }}></span>ชื่อวันหยุด</span>}
-                    rules={[{ required: true, message: 'กรุณากรอกชื่อวันหยุด' }]}
+                    label={<span className="fw-bold">ชื่อวันหยุด</span>}
+                    rules={[{ required: true, whitespace: true, message: 'กรอกชื่อวันหยุด' }]}
                 >
-                    <Input placeholder="กรอกชื่อวันหยุด" onPressEnter={handleSaveClick} />
+                    <Input
+                        maxLength={100}
+                        placeholder="กรอกชื่อวันหยุด" onPressEnter={handleSaveClick} />
                 </Form.Item>
 
                 <Form.Item
@@ -206,6 +209,24 @@ const Holidays = () => {
     const [modalTitle, setModalTitle] = useState("");
     const [selectedRecord, setSelectedRecord] = useState(null);
 
+    const handleRequestError = (error) => {
+        if (error.response) {
+            const status = error.response.status;
+            if (status === 401) {
+                TokenService.deleteUser();
+                navigate("/signin", { state: { message: "session expire" } });
+                return true;
+            }
+            const messages = { 403: "access-denied", 404: "not-found" };
+            noticeShowMessage(messages[status] || "error", true);
+        } else if (error.request) {
+            noticeShowMessage("network-error", true);
+        } else {
+            noticeShowMessage("error", true);
+        }
+        return false;
+    };
+
     const initializeData = async () => {
         setLoading(true);
         try {
@@ -241,21 +262,16 @@ const Holidays = () => {
             await fetchData(defaultYear);
 
         } catch (error) {
-            if (error.response?.status === 401) {
-                TokenService.deleteUser();
-                return navigate("/", { state: { message: "session expire from initialize data" } });
-            }
-            noticeShowMessage("Failed to initialize data", true);
+            handleRequestError(error);
             // Fallback
             setYearOptions([currentYear]);
             setYearSearch(currentYear);
+        } finally {
             setLoading(false);
         }
     };
 
     const fetchData = async (searchYear = yearSearch, isactive = isActive) => {
-
-
         setLoading(true);
         try {
             const currentUser = TokenService.getUser();
@@ -269,26 +285,13 @@ const Holidays = () => {
                 isActive: isactive
             };
 
-
-
-
             const response = await getHolidays.get_holidays(payload);
-
             setData(response.data || []);
-            setLoading(false);
         } catch (error) {
+            handleRequestError(error);
+            setData([]);
+        } finally {
             setLoading(false);
-            if (error.response?.status === 401) {
-                noticeShowMessage("session expire", true);
-                TokenService.deleteUser();
-                return navigate("/", { state: { message: "session expire" } });
-
-            }
-            else {
-                setLoading(false);
-                noticeShowMessage("Failed to fetch data", true);
-                setData([]);
-            }
         }
 
     };
@@ -459,92 +462,90 @@ const Holidays = () => {
         <div style={{ padding: '20px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
             {loading && <Loading />}
 
-            <div
+            <Card
+                className="shadow-sm border-0"
                 style={{
                     borderRadius: "6px",
                     overflow: "hidden",
                     boxShadow: "0px 4px 4px rgba(0,0,0,0.25)",
-                    background: "#fff",
                 }}
             >
                 {/* Search Header */}
-                <div
+                <Card.Header
                     style={{
                         backgroundColor: "#A0BDFF",
                         padding: "14px 20px",
                         fontSize: "22px",
                         fontWeight: 600,
                         color: "black",
-                        border: "1px solid #d9d9d9",
-                        borderBottom: "none",
+                        borderBottom: "1px solid #d9d9d9",
                     }}
                 >
                     Search
-                </div>
+                </Card.Header>
 
                 {/* Search Form Row */}
-                <div
-                    style={{
-                        padding: "12px 15px",
-                        display: "flex",
-                        alignItems: "center",
-                        flexWrap: "wrap",
-                        gap: "15px",
-                        background: "white",
-                        borderLeft: "1px solid #d9d9d9",
-                        borderRight: "1px solid #d9d9d9",
-                        borderBottom: "none",
-                    }}
-                >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontWeight: 700, fontSize: '16px' }}>ปี:</span>
-                        <Select
-                            value={yearSearch}
-                            open={openDropdown}
-                            onDropdownVisibleChange={(open) => setOpenDropdown(open)}
-                            onKeyDown={handleKeyDown}
-                            onChange={(value) => setYearSearch(value)}
+                <Card.Body className="p-0">
+                    <div
+                        style={{
+                            padding: "12px 15px",
+                            display: "flex",
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                            gap: "15px",
+                            background: "white",
+                        }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ fontWeight: 700, fontSize: '16px' }}>ปี:</span>
+                            <Select
+                                value={yearSearch}
+                                open={openDropdown}
+                                onDropdownVisibleChange={(open) => setOpenDropdown(open)}
+                                onKeyDown={handleKeyDown}
+                                onChange={(value) => setYearSearch(value)}
 
-                            style={{ width: 150 }}
-                        >
-                            {yearOptions.map(year => (
-                                <Option key={year} value={year}>{year}</Option>
-                            ))}
-                        </Select>
+                                style={{ width: 150 }}
+                            >
+                                {yearOptions.map(year => (
+                                    <Option key={year} value={year}>{year}</Option>
+                                ))}
+                            </Select>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ fontWeight: 700, fontSize: '16px' }}>สถานะ:</span>
+                            <Checkbox
+                                checked={isActive}
+                                onChange={(e) => setIsActive(e.target.checked)}
+                                onKeyDown={handleKeyDown}
+                                style={{ fontSize: '14px' }}
+                            >
+                                ใช้งาน
+                            </Checkbox>
+                        </div>
+
+                        <div style={{ marginLeft: "auto", display: 'flex', gap: '10px' }}>
+                            <SearchToolBtn onClick={handleSearch} />
+                            <ClearToolBtn onClick={handleClear} />
+                        </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontWeight: 700, fontSize: '16px' }}>สถานะ:</span>
-                        <Checkbox
-                            checked={isActive}
-                            onChange={(e) => setIsActive(e.target.checked)}
-                            onKeyDown={handleKeyDown}
-                            style={{ fontSize: '14px' }}
-                        >
-                            ใช้งาน
-                        </Checkbox>
+                    {/* Table */}
+                    <div className="m-3">
+                        <TableUI
+                            dataSource={data}
+                            columns={columnsWithActions}
+                            // If no ID, I might need to generate one or use index.
+                            // Replacing rowKey with function just in case
+                            rowKey={(r, index) => r.id || index}
+                            pagination={true}
+                            bordered={true}
+                            size={"large"}
+                        />
                     </div>
-
-                    <div style={{ marginLeft: "auto", display: 'flex', gap: '10px' }}>
-                        <SearchToolBtn onClick={handleSearch} />
-                        <ClearToolBtn onClick={handleClear} />
-                    </div>
-                </div>
-
-                {/* Table */}
-                <div>
-                    <TableUI
-                        dataSource={data}
-                        columns={columnsWithActions}
-                        // If no ID, I might need to generate one or use index.
-                        // Replacing rowKey with function just in case
-                        rowKey={(r, index) => r.id || index}
-                        pagination={true}
-                        bordered={true}
-                        size={"large"}
-                    />
-                </div>
-            </div>
+                </Card.Body>
+            </Card>
 
             {/* Modal */}
             <HolidaysModal

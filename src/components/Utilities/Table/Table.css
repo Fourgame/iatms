@@ -10,15 +10,17 @@
 } */
 thead[class*="ant-table-thead"] th {
   /* ใส่ URL ของ GIF ที่คุณต้องการ */
-  background-image: url("https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExZnU3eTNuYXpoNTlubzMwa3d4Mm8zcW5sYmpmdGtzcHJhOTNqZ3B5OSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/IeXVBbPDCOJoRm4RaZ/giphy.gif") !important;
+  /* background-image: url("https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExZnU3eTNuYXpoNTlubzMwa3d4Mm8zcW5sYmpmdGtzcHJhOTNqZ3B5OSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/IeXVBbPDCOJoRm4RaZ/giphy.gif") !important; */
+  background-color: #ebcb61 !important;
   background-size: cover;
   /* ให้ภาพเต็มพื้นที่ */
   background-position: center;
-  color: #ffffff !important;
+  color: #000000 !important;
   /* ปรับสีตัวอักษรให้ตัดกับพื้นหลัง */
   text-align: center !important;
   z-index: 0;
-  text-shadow: 1px 1px 2px black;
+  font-weight: bold !important;
+  /* text-shadow: 1px 1px 2px black; */
   /* เพิ่มเงาให้ตัวอักษรอ่านง่ายขึ้น */
 }
 
