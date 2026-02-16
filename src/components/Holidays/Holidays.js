@@ -5,7 +5,7 @@ import { Card } from 'react-bootstrap';
 import { getHolidays, postHolidays, getHolidayYears } from "../../services/้้holidays.service";
 import TableUI from "../Utilities/Table/TableUI";
 import Loading from "../Utilities/Loading";
-import { SearchToolBtn, ClearToolBtn, AddToolBtn, EditToolBtn, SaveModalBtn, CloseModalBtn, CloseIconBtn } from "../Utilities/Buttons/Buttons";
+import { SearchToolBtnBootstrap, ClearToolBtnBootstrap, AddToolBtnBootstrap, EditToolBtnBootstrap, SaveModalBtnBootstrap, CloseModalBtnBootstrap, CloseIconBtn } from "../Utilities/Buttons/Buttons";
 import { noticeShowMessage } from '../Utilities/Notification';
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
@@ -185,9 +185,9 @@ const HolidaysModal = ({ show, onClose, onSave, title, data, existingData = [] }
                 </Form.Item>
 
                 <div className="modal-footer justify-content-center border-top-0 pb-0 pt-3">
-                    <SaveModalBtn onClick={handleSaveClick} />
+                    <SaveModalBtnBootstrap onClick={handleSaveClick} loading={loading} />
                     <div style={{ width: '40px' }}></div>
-                    <CloseModalBtn onClick={onClose} />
+                    <CloseModalBtnBootstrap onClick={onClose} />
                 </div>
             </Form>
         </Modal>
@@ -441,14 +441,14 @@ const Holidays = () => {
 
     const actionColumn = {
         title: (
-            <AddToolBtn onClick={handleAdd} />
+            <AddToolBtnBootstrap onClick={handleAdd} />
         ),
         key: "actions",
         dataIndex: "actions",
         align: "center",
         width: "25%",
         render: (_, record) => (
-            <EditToolBtn onClick={() => handleEdit(record)} />
+            <EditToolBtnBootstrap onClick={() => handleEdit(record)} />
         ),
     };
     // if (!TokenService.isSignIn()) {
@@ -459,7 +459,7 @@ const Holidays = () => {
     const columnsWithActions = [actionColumn, ...columns];
 
     return (
-        <div style={{ padding: '20px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
+        <div style={{ paddingLeft: '20px', paddingRight: '20px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
             {loading && <Loading />}
 
             <Card
@@ -526,8 +526,8 @@ const Holidays = () => {
                         </div>
 
                         <div style={{ marginLeft: "auto", display: 'flex', gap: '10px' }}>
-                            <SearchToolBtn onClick={handleSearch} />
-                            <ClearToolBtn onClick={handleClear} />
+                            <SearchToolBtnBootstrap onClick={handleSearch} />
+                            <ClearToolBtnBootstrap onClick={handleClear} />
                         </div>
                     </div>
 

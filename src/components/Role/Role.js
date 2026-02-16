@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Tag, Modal, Form, Input, Checkbox, Row, Col, Space } from 'antd';
 import { Card } from 'react-bootstrap';
-import { CheckOutlined, CloseOutlined, EditOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
+import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { AddToolBtnBootstrap, EditToolBtnBootstrap, SaveModalBtnBootstrap, CloseModalBtnBootstrap, CloseIconBtn } from "../Utilities/Buttons/Buttons";
 import TableUI from '../Utilities/Table/TableUI';
 import RoleService from '../../services/role.service';
 import token from '../../services/token.service';
@@ -171,25 +172,12 @@ const Role = () => {
     const columns = [
         {
             title: (
-                <Button
-                    type="primary"
-                    style={{ backgroundColor: '#198754', borderColor: '#198754' }}
-                    icon={<PlusOutlined />}
-                    onClick={showAddModal}
-                >
-                    Add
-                </Button>
+                <AddToolBtnBootstrap onClick={showAddModal} />
             ),
             key: 'action',
             width: 100,
             render: (record) => (
-                <Button
-                    style={{ backgroundColor: '#ffc107', borderColor: '#ffc107', color: 'black', fontWeight: '500' }}
-                    icon={<EditOutlined />}
-                    onClick={() => showEditModal(record)}
-                >
-                    Edit
-                </Button>
+                <EditToolBtnBootstrap onClick={() => showEditModal(record)} />
             ),
             align: 'center',
         },
@@ -326,14 +314,32 @@ const Role = () => {
             {loading && <Loading />}
 
 
-            <Card className="shadow-sm">
-                <Card.Header style={{ backgroundColor: '#aebbff', color: 'black', fontWeight: 'bold' }}>
+            <Card
+                className="shadow-sm border-0"
+                style={{
+                    borderRadius: "6px",
+                    overflow: "hidden",
+                    boxShadow: "0px 4px 4px rgba(0,0,0,0.25)",
+                }}
+            >
+                <Card.Header
+                    style={{
+                        backgroundColor: "#A0BDFF",
+                        padding: "14px 20px",
+                        fontSize: "22px",
+                        fontWeight: 600,
+                        color: "black",
+                        borderBottom: "1px solid #d9d9d9",
+                    }}
+                >
                     Role List
                 </Card.Header>
-                <Card.Body>
-                    <TableUI
-                        {...tableProps}
-                    />
+                <Card.Body className="p-0">
+                    <div className="m-3">
+                        <TableUI
+                            {...tableProps}
+                        />
+                    </div>
                 </Card.Body>
             </Card>
             <Modal
@@ -358,7 +364,7 @@ const Role = () => {
                 footer={null}
                 width={800}
                 styles={{ header: { padding: 0, borderBottom: 'none' }, body: { padding: '24px' }, content: { padding: 0, overflow: 'hidden' } }}
-                closeIcon={<CloseOutlined style={{ color: 'white', fontSize: '18px' }} />}
+                closeIcon={<CloseIconBtn />}
             >
                 <Form
                     form={form}
@@ -493,21 +499,8 @@ const Role = () => {
                     </Form.Item>
                     <Row justify="center" style={{ marginTop: '24px' }}>
                         <Space size="large">
-                            <Button
-                                type="primary"
-                                htmlType="submit"
-                                icon={<SaveOutlined />}
-                                style={{ backgroundColor: '#aebbff', borderColor: '#aebbff', color: '#000', width: '150px', height: '40px', fontSize: '16px' }}
-                            >
-                                Save
-                            </Button>
-                            <Button
-                                onClick={handleCancel}
-                                icon={<CloseOutlined />}
-                                style={{ backgroundColor: '#d3d3d3', borderColor: '#d3d3d3', color: '#000', width: '150px', height: '40px', fontSize: '16px' }}
-                            >
-                                Close
-                            </Button>
+                            <SaveModalBtnBootstrap onClick={handleOk} loading={loading} />
+                            <CloseModalBtnBootstrap onClick={handleCancel} />
                         </Space>
                     </Row>
                 </Form>

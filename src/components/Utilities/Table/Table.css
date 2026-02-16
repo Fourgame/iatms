@@ -8,21 +8,20 @@
   text-align: center !important;
   z-index: 0;
 } */
-thead[class*="ant-table-thead"] th {
-  /* ใส่ URL ของ GIF ที่คุณต้องการ */
-  background-image: url("https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExN3c2eGY2ZzI0YnFsM3JlOG13aWdyYWhqYTQ4MnpsamkzdHFiZmd4MyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/QAoGnF5aiXENmQxnjD/giphy.gif") !important;
+
+
+thead[class="ant-table-thead"] th {
+  /* / ใส่ URL ของ GIF ที่คุณต้องการ / */
+  background-color: #AEBBFF !important;
   background-size: cover;
-  /* ให้ภาพเต็มพื้นที่ */
+  /* / ให้ภาพเต็มพื้นที่ / */
   background-position: center;
   color: #000000 !important;
-  /* ปรับสีตัวอักษรให้ตัดกับพื้นหลัง */
+  /* / ปรับสีตัวอักษรให้ตัดกับพื้นหลัง */ 
   text-align: center !important;
   z-index: 0;
   font-weight: bold;
-  text-shadow: 1px 1px 2px black;
-  /* เพิ่มเงาให้ตัวอักษรอ่านง่ายขึ้น */
 }
-
 .ant-table {
   background-color: #ffffff17 !important;
   z-index: 0;

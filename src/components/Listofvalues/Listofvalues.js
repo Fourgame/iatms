@@ -6,7 +6,7 @@ import Loading from "../Utilities/Loading";
 import { Button, Tag, Input, Alert, Modal, Form, Checkbox } from "antd";
 import { Card } from 'react-bootstrap';
 import { noticeShowMessage } from '../Utilities/Notification';
-import { SearchToolBtn, ClearToolBtn, SaveModalBtn, AddToolBtn, EditToolBtn, CloseModalBtn, CloseIconBtn } from "../Utilities/Buttons/Buttons";
+import { CloseIconBtn, SearchToolBtnBootstrap, ClearToolBtnBootstrap, AddToolBtnBootstrap, EditToolBtnBootstrap, CloseModalBtnBootstrap, SaveModalBtnBootstrap } from "../Utilities/Buttons/Buttons";
 
 import { Navigate, useNavigate } from "react-router-dom";
 import AuthService from "../../services/auth.service";
@@ -291,9 +291,9 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
 
             {/* Footer */}
             <div className="modal-footer justify-content-center border-top-0 pb-0 pt-3">
-                <SaveModalBtn onClick={handleSaveClick} />
+                <SaveModalBtnBootstrap onClick={handleSaveClick} loading={loading} />
                 <div style={{ width: "40px" }} />
-                <CloseModalBtn onClick={onClose} />
+                <CloseModalBtnBootstrap onClick={onClose} />
             </div>
         </Modal>
     );
@@ -469,7 +469,7 @@ const Listofvalues = () => {
     const actionColumn = {
 
         title: (
-            <AddToolBtn onClick={handleAdd} />
+            <AddToolBtnBootstrap onClick={handleAdd} />
         ),
         key: "actions",
         dataIndex: "actions",
@@ -477,7 +477,7 @@ const Listofvalues = () => {
         width: 90,
         fixed: "left",
         render: (_, record) => (
-            <EditToolBtn onClick={() => handleEdit(record)} />
+            <EditToolBtnBootstrap onClick={() => handleEdit(record)} />
         ),
     };
 
@@ -502,7 +502,7 @@ const Listofvalues = () => {
 
 
     return (
-        <div style={{ padding: '20px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
+        <div style={{ paddingLeft: '20px', paddingRight: '20px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
             {loading && <Loading />}
             <Card
                 className="shadow-sm border-0"
@@ -551,9 +551,9 @@ const Listofvalues = () => {
                             }}
                         />
 
-                        <SearchToolBtn onClick={fetchData} style={{ marginLeft: "auto" }} />
+                        <SearchToolBtnBootstrap onClick={fetchData} style={{ marginLeft: "auto" }} />
 
-                        <ClearToolBtn
+                        <ClearToolBtnBootstrap
                             onClick={() => {
                                 setKeyword("");
                                 fetchData("");

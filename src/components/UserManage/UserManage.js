@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Input, Tag, Modal, Form, Select, Checkbox, Row, Col, Space } from 'antd';
 import { Card } from 'react-bootstrap';
-import { SearchOutlined, ClearOutlined, PlusOutlined, EditOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
+import { SearchToolBtnBootstrap, ClearToolBtnBootstrap, AddToolBtnBootstrap, EditToolBtnBootstrap, SaveModalBtnBootstrap, CloseModalBtnBootstrap, CloseIconBtn } from "../Utilities/Buttons/Buttons";
 import TableUI from '../Utilities/Table/TableUI';
 import { getUserManage, postUserManage, getDropdown, findLdap } from '../../services/user-manage.service';
 import TokenService from '../../services/token.service';
@@ -352,26 +352,13 @@ const UserManage = () => {
     const columns = [
         {
             title: (
-                <Button
-                    type="primary"
-                    style={{ backgroundColor: '#198754', borderColor: '#198754' }}
-                    icon={<PlusOutlined />}
-                    onClick={showAddModal}
-                >
-                    Add
-                </Button>
+                <AddToolBtnBootstrap onClick={showAddModal} />
             ),
             key: 'action',
             width: 100,
             align: 'center',
             render: (record) => (
-                <Button
-                    style={{ backgroundColor: '#ffc107', borderColor: '#ffc107', color: 'black', fontWeight: '500' }}
-                    icon={<EditOutlined />}
-                    onClick={() => showEditModal(record)}
-                >
-                    Edit
-                </Button>
+                <EditToolBtnBootstrap onClick={() => showEditModal(record)} />
             ),
         },
         {
@@ -449,12 +436,36 @@ const UserManage = () => {
         <div style={{ paddingLeft: '20px', paddingRight: '20px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
             {loading && <Loading />}
             {/* Search Section */}
-            <Card className="shadow-sm mb-4">
-                <Card.Header style={{ backgroundColor: '#aebbff', color: 'black', fontWeight: 'bold' }}>
+            {/* Search Section */}
+            <Card
+                className="shadow-sm border-0"
+                style={{
+                    borderRadius: "6px",
+                    overflow: "hidden",
+                    boxShadow: "0px 4px 4px rgba(0,0,0,0.25)",
+                }}
+            >
+                <Card.Header
+                    style={{
+                        backgroundColor: "#A0BDFF",
+                        padding: "14px 20px",
+                        fontSize: "22px",
+                        fontWeight: 600,
+                        color: "black",
+                        borderBottom: "1px solid #d9d9d9",
+                    }}
+                >
                     Search
                 </Card.Header>
-                <Card.Body>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
+                <Card.Body className="p-0">
+                    <div style={{
+                        padding: "12px 15px",
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        background: "white",
+                    }}>
                         <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: '300px' }}>
                             <span style={{ fontWeight: 'bold', fontSize: '16px', marginRight: '10px' }}>Keyword:</span>
                             <Input
@@ -466,30 +477,16 @@ const UserManage = () => {
                             />
                         </div>
                         <Space style={{ marginTop: '10px' }}>
-                            <Button
-                                type="primary"
-                                icon={<SearchOutlined />}
-                                onClick={handleSearch}
-                                style={{ backgroundColor: '#0dcaf0', borderColor: '#0dcaf0', color: '#000', fontWeight: 'bold' }}
-                            >
-                                Search
-                            </Button>
-                            <Button
-                                icon={<ClearOutlined />}
-                                onClick={handleClear}
-                                style={{ backgroundColor: '#e2e6ea', borderColor: '#dae0e5', color: '#000', fontWeight: 'bold' }}
-                            >
-                                Clear
-                            </Button>
+                            <SearchToolBtnBootstrap onClick={handleSearch} />
+                            <ClearToolBtnBootstrap onClick={handleClear} />
                         </Space>
+                    </div>
+
+                    <div className="m-3">
+                        <TableUI {...tableProps} />
                     </div>
                 </Card.Body>
             </Card>
-
-            {/* Table Section */}
-            <div style={{ backgroundColor: 'white', padding: '10px', borderRadius: '5px' }}>
-                <TableUI {...tableProps} />
-            </div>
 
             {/* Modal Section */}
             <Modal
@@ -514,7 +511,7 @@ const UserManage = () => {
                 footer={null}
                 width={800}
                 styles={{ header: { padding: 0, borderBottom: 'none' }, body: { padding: '24px' }, content: { padding: 0, overflow: 'hidden' } }}
-                closeIcon={<CloseOutlined style={{ color: 'white', fontSize: '18px' }} />}
+                closeIcon={<CloseIconBtn />}
             >
                 {/* Add Mode - Search Section */}
                 {modalMode === 'add' && (
@@ -554,14 +551,7 @@ const UserManage = () => {
                                 </div>
                             </Col>
                             <Col span={12}>
-                                <Button
-                                    type="primary"
-                                    icon={<SearchOutlined />}
-                                    onClick={handleUserSearch}
-                                    style={{ backgroundColor: '#0dcaf0', borderColor: '#0dcaf0', color: '#000', fontWeight: 'bold' }}
-                                >
-                                    Search
-                                </Button>
+                                <SearchToolBtnBootstrap onClick={handleUserSearch} />
                             </Col>
                         </Row>
                     </div>
@@ -710,21 +700,8 @@ const UserManage = () => {
 
                     <Row justify="center" style={{ marginTop: '24px' }}>
                         <Space size="large">
-                            <Button
-                                type="primary"
-                                htmlType="submit"
-                                icon={<SaveOutlined />}
-                                style={{ backgroundColor: '#aebbff', borderColor: '#aebbff', color: '#000', width: '150px', height: '40px', fontSize: '16px' }}
-                            >
-                                Save
-                            </Button>
-                            <Button
-                                onClick={handleCancel}
-                                icon={<CloseOutlined />}
-                                style={{ backgroundColor: '#d3d3d3', borderColor: '#d3d3d3', color: '#000', width: '150px', height: '40px', fontSize: '16px' }}
-                            >
-                                Close
-                            </Button>
+                            <SaveModalBtnBootstrap onClick={handleOk} loading={loading} />
+                            <CloseModalBtnBootstrap onClick={handleCancel} />
                         </Space>
                     </Row>
                 </Form>
