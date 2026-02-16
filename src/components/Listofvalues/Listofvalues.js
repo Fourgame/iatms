@@ -4,6 +4,7 @@ import { getLov, postLov } from "../../services/lov.service";
 import TableUI from "../Utilities/Table/TableUI";
 import Loading from "../Utilities/Loading";
 import { Button, Tag, Input, Alert, Modal, Form, Checkbox } from "antd";
+import { Card } from 'react-bootstrap';
 import { noticeShowMessage } from '../Utilities/Notification';
 import { SearchToolBtn, ClearToolBtn, SaveModalBtn, AddToolBtn, EditToolBtn, CloseModalBtn, CloseIconBtn } from "../Utilities/Buttons/Buttons";
 
@@ -30,7 +31,7 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
                     code: data.code || "",
                     description: data.description || "",
                     condition: data.condition || "",
-                    orderIndex: data.orderIndex || "",
+                    orderIndex: (data.orderIndex !== null && data.orderIndex !== undefined) ? String(data.orderIndex) : "",
                     isActive: data.isActive !== undefined ? data.isActive : true,
                 });
             } else {
@@ -129,14 +130,27 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
                 labelCol={{ span: 6 }}
                 wrapperCol={{ span: 18 }}
                 labelAlign="right"
+                onValuesChange={(changedValues, allValues) => {
+                    if (changedValues.fieldName) {
+                        const duplicateLoadingCode = form.getFieldValue('code');
+                        if (duplicateLoadingCode) {
+                            form.validateFields(['code']);
+                        }
+                    }
+                    if (changedValues.code) {
+                        const duplicateLoadingFieldName = form.getFieldValue('fieldName');
+                        if (duplicateLoadingFieldName) {
+                            form.validateFields(['fieldName']);
+                        }
+                    }
+                }}
             >
                 {/* Field Name */}
                 <Form.Item
                     name="fieldName"
                     label={<span className="fw-bold">Field Name</span>}
-                    dependencies={['code']}
                     rules={[
-                        { required: true, message: 'กรุณากรอก Field Name' },
+                        { required: true, whitespace: true, message: 'กรอก Field Name' },
                         ({ getFieldValue }) => ({
                             validator(_, value) {
                                 if (!data && value) {
@@ -160,7 +174,8 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
                             {data.fieldName}
                         </span>
                     ) : (
-                        <Input placeholder="กรอก File Name" onPressEnter={handleSaveClick} />
+                        <Input maxLength={50}
+                            placeholder="กรอก File Name" onPressEnter={handleSaveClick} />
                     )}
                 </Form.Item>
 
@@ -168,9 +183,8 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
                 <Form.Item
                     name="code"
                     label={<span className="fw-bold">Code</span>}
-                    dependencies={['fieldName']}
                     rules={[
-                        { required: true, message: 'กรุณากรอก Code' },
+                        { required: true, whitespace: true, message: 'กรอก Code' },
                         ({ getFieldValue }) => ({
                             validator(_, value) {
                                 if (!data && value) {
@@ -194,7 +208,7 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
                             {data.code}
                         </span>
                     ) : (
-                        <Input placeholder="กรอก Code" onPressEnter={handleSaveClick} />
+                        <Input maxLength={50} placeholder="กรอก Code" onPressEnter={handleSaveClick} />
                     )}
                 </Form.Item>
 
@@ -203,7 +217,7 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
                     name="description"
                     label={<span className="fw-bold">Description</span>}
                 >
-                    <Input placeholder="กรอก Description" onPressEnter={handleSaveClick} />
+                    <Input maxLength={255} placeholder="กรอก Description" onPressEnter={handleSaveClick} />
                 </Form.Item>
 
                 {/* Condition */}
@@ -212,6 +226,7 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
                     label={<span className="fw-bold">Condition</span>}
                 >
                     <Input.TextArea
+                        maxLength={255}
                         rows={3}
                         placeholder="กรอก Condition"
                         onKeyDown={(e) => {
@@ -228,13 +243,12 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
                     name="orderIndex"
                     label={<span className="fw-bold">Order</span>}
                     rules={[
-                        { required: true, message: 'กรุณากรอก Order' },
+                        { required: true, whitespace: true, message: 'กรอก Order' },
                         {
                             validator: (_, value) => {
                                 if (value) {
-                                    // Leading zero check: "0" is ok, "01" is bad.
-                                    if (value.length > 1 && value.startsWith('0')) {
-                                        return Promise.reject(new Error('ห้ามขึ้นต้นด้วย 0'));
+                                    if (value.startsWith('0')) {
+                                        return Promise.reject(new Error('รูปแบบไม่ถูกต้อง ห้ามขึ้นต้นด้วย 0'));
                                     }
                                 }
                                 return Promise.resolve();
@@ -296,6 +310,25 @@ const Listofvalues = () => {
     const [keyword, setKeyword] = useState("");
 
 
+    const handleRequestError = (error) => {
+        if (error.response) {
+            const status = error.response.status;
+            if (status === 401) {
+                TokenService.deleteUser();
+                navigate("/signin", { state: { message: "session expire" } });
+                return true;
+            }
+            const messages = { 403: "access-denied", 404: "not-found" };
+            noticeShowMessage(messages[status] || "error", true);
+        } else if (error.request) {
+            noticeShowMessage("network-error", true);
+        } else {
+            noticeShowMessage("error", true);
+        }
+        return false;
+    };
+
+
 
     const handleAdd = () => {
         setModalTitle("Add - List of Value");
@@ -314,32 +347,28 @@ const Listofvalues = () => {
     };
 
     const fetchData = async (searchKeyword) => {
-        const currentUser = TokenService.getUser();
-        if (!currentUser) {
-            TokenService.deleteUser();
-            return navigate("/signin", { state: { message: "token not found" } });
-        }
-
-        let payload = {
-            keyword: typeof searchKeyword === "string" ? searchKeyword : keyword || "",
-        };
         setLoading(true);
-
         try {
+            const currentUser = TokenService.getUser();
+            if (!currentUser) {
+                TokenService.deleteUser();
+                return navigate("/signin", { state: { message: "token not found" } });
+            }
+
+            let payload = {
+                keyword: typeof searchKeyword === "string" ? searchKeyword : keyword || "",
+            };
+
             const response = await getLov.get_lov(payload);
             setLov(response.data);
-            setLoading(false);
         } catch (error) {
+            handleRequestError(error);
+        } finally {
             setLoading(false);
-            if (error.response?.status === 401) {
-
-                TokenService.deleteUser();
-                return navigate("/", { state: { message: "session expire" } });
-            } else {
-                noticeShowMessage("Failed to fetch data", true);
-            }
         }
     };
+
+
 
     const handleSaveModal = () => {
         setIsModalOpen(false);
@@ -475,80 +504,78 @@ const Listofvalues = () => {
     return (
         <div style={{ padding: '20px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
             {loading && <Loading />}
-            <div
+            <Card
+                className="shadow-sm border-0"
                 style={{
                     borderRadius: "6px",
                     overflow: "hidden",
                     boxShadow: "0px 4px 4px rgba(0,0,0,0.25)",
-                    background: "#fff",
                 }}
             >
                 {/* Search Header */}
-                <div
+                <Card.Header
                     style={{
                         backgroundColor: "#A0BDFF",
                         padding: "14px 20px",
                         fontSize: "22px",
                         fontWeight: 600,
                         color: "black",
-                        border: "1px solid #d9d9d9",
-                        borderBottom: "none",
+                        borderBottom: "1px solid #d9d9d9",
                     }}
                 >
                     Search
-                </div>
+                </Card.Header>
 
                 {/* Search Form Row */}
-                <div
-                    style={{
-                        padding: "12px 15px",
-                        display: "flex",
-                        alignItems: "center",
-                        flexWrap: "wrap",
-                        gap: "10px",
-                        background: "white",
-                        borderLeft: "1px solid #d9d9d9",
-                        borderRight: "1px solid #d9d9d9",
-                        borderBottom: "none",
-                    }}
-                >
-                    <span style={{ fontWeight: 700 }}>Keyword:</span>
-                    <Input
-                        placeholder="กรอก Field Name, Code, Description, Condition, Order, สถานะ"
-                        style={{ width: "400px", borderColor: "#969696" }}
-                        value={keyword}
-                        onChange={(e) => setKeyword(e.target.value)}
-                        onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                                fetchData();
-                            }
+                <Card.Body className="p-0">
+                    <div
+                        style={{
+                            padding: "12px 15px",
+                            display: "flex",
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                            gap: "10px",
+                            background: "white",
                         }}
-                    />
+                    >
+                        <span style={{ fontWeight: 700 }}>Keyword:</span>
+                        <Input
+                            placeholder="กรอก Field Name, Code, Description, Condition, Order, สถานะ"
+                            style={{ width: "400px", borderColor: "#969696" }}
+                            value={keyword}
+                            onChange={(e) => setKeyword(e.target.value)}
+                            onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                    fetchData();
+                                }
+                            }}
+                        />
 
-                    <SearchToolBtn onClick={fetchData} style={{ marginLeft: "auto" }} />
+                        <SearchToolBtn onClick={fetchData} style={{ marginLeft: "auto" }} />
 
-                    <ClearToolBtn
-                        onClick={() => {
-                            setKeyword("");
-                            fetchData("");
-                        }}
+                        <ClearToolBtn
+                            onClick={() => {
+                                setKeyword("");
+                                fetchData("");
+                            }}
 
-                    />
+                        />
 
-                </div>
+                    </div>
 
-                {/* Table */}
-                <div>
-                    <TableUI
-                        dataSource={lov || []}
-                        columns={columnsWithActions}
-                        rowKey={(r) => `${r.fieldName}__${r.code}`}
-                        pagination={true}
-                        bordered={true}
-                        size={"large"}
-                    />
-                </div>
-            </div>
+                    {/* Table */}
+                    <div className="m-3">
+                        <TableUI
+                            dataSource={lov || []}
+                            columns={columnsWithActions}
+                            rowKey={(r) => `${r.fieldName}__${r.code}`}
+                            pagination={true}
+                            bordered={true}
+                            size={"large"}
+                        />
+                    </div>
+                </Card.Body>
+            </Card>
 
             {/* Modal */}
             <EditModal

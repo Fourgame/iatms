@@ -14,7 +14,7 @@ thead[class*="ant-table-thead"] th {
   background-size: cover;
   /* ให้ภาพเต็มพื้นที่ */
   background-position: center;
-  color: #ffffff !important;
+  color: #000000 !important;
   /* ปรับสีตัวอักษรให้ตัดกับพื้นหลัง */
   text-align: center !important;
   z-index: 0;
