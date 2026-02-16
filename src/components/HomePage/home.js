@@ -17,7 +17,7 @@ const StatCard = ({ title, value, footer, bg }) => (
         >
             {value}
         </div>
- 
+
         {footer && <div className="small text-center">{footer}</div>}
     </div>
 );
@@ -32,24 +32,30 @@ const Home = (props) => {
             const response = await profileService.getProfile();
             setUser(response.data);
         } catch (error) {
-            if (error.response) {
-                const status = error.response.status;
-                if (status === 401) {
-                    token.deleteUser();
-                    return navigate("/signin", { state: { message: "session expire" } });
-                }
-                if (status === 403) return navigate("/signin", { state: { message: "access-denied" } });
-                if (status === 404) return navigate("/signin", { state: { message: "not-found" } });
-
-            } else if (error.request) {
-                console.log("No response received:", error.request);
-                return navigate("/signin", { state: { message: "network-error" } });
-
-            } else {
-                console.log("Error setting up request:", error.message);
-                return navigate("/signin", { state: { message: "error" } });
-            }
+            handleRequestError(error);
         }
+    };
+
+    const handleRequestError = (error) => {
+        if (error.response) {
+            const status = error.response.status;
+            if (status === 401) {
+                token.deleteUser();
+                navigate("/signin", { state: { message: "session expire" } });
+                return true;
+            }
+            if (status === 403) return navigate("/signin", { state: { message: "access-denied" } });
+            if (status === 404) return navigate("/signin", { state: { message: "not-found" } });
+
+        } else if (error.request) {
+            console.log("No response received:", error.request);
+            return navigate("/signin", { state: { message: "network-error" } });
+
+        } else {
+            console.log("Error setting up request:", error.message);
+            return navigate("/signin", { state: { message: "error" } });
+        }
+        return false;
     };
 
 
@@ -69,10 +75,10 @@ const Home = (props) => {
     }
 
     return (
- 
- 
+
+
         <div className="d-flex gap-3 p-3 my-3" style={{ height: "70vh" }}>
- 
+
             {/* LEFT BOX */}
             <div
                 className="border border-2 border-secondary h-100 p-3"
@@ -100,7 +106,7 @@ const Home = (props) => {
                     </div>
                 </div>
             </div>
- 
+
             {/* RIGHT */}
             <div
                 className="border border-2 border-secondary h-100 p-2 d-flex flex-column"
@@ -109,7 +115,7 @@ const Home = (props) => {
                 <div className="text-center fw-bold mb-2">
                     ข้อมูล ณ วันที่ 07/01/2026
                 </div>
- 
+
                 {/* ✅ กริด 3x3 กินพื้นที่ที่เหลือทั้งหมด */}
                 <div
                     className="flex-grow-1"
@@ -123,11 +129,11 @@ const Home = (props) => {
                     <StatCard title="สถานะ" value="Check-In" />
                     <StatCard title="เวลาที่เช็คอิน" value="08.00 น." />
                     <StatCard title="เวลาเช็คเอาท์" value="-" />
- 
+
                     <StatCard title="จำนวนชั่วโมงสะสม" value="7 ชั่วโมง 30 นาที" />
                     <StatCard title="สถานที่เช็คอิน" value={"ธนาคารกรุงเทพ\nสำนักงานพระราม 3"} />
                     <StatCard title="สถานที่เช็คเอาท์" value="-" />
- 
+
                     <StatCard title="คำร้องอนุมัติ" value="1" footer="รายการ" bg="#c9ffd9" />
                     <StatCard title="คำร้องรออนุมัติ" value="1" footer="รายการ" bg="#fff0c9" />
                     <StatCard title="คำร้องไม่อนุมัติ" value="0" footer="รายการ" bg="#ffd0d0" />
@@ -136,8 +142,7 @@ const Home = (props) => {
         </div>
     );
 };
- 
- 
+
+
 export default Home;
- 
- 
+

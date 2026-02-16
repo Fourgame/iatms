@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Tag, Modal, Form, Input, Checkbox, Row, Col, Space } from 'antd';
+import { Card } from 'react-bootstrap';
 import { CheckOutlined, CloseOutlined, EditOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import TableUI from '../Utilities/Table/TableUI';
 import RoleService from '../../services/role.service';
@@ -38,26 +39,28 @@ const Role = () => {
                 setRoleData(dataWithKeys);
             }
         } catch (error) {
-            if (error.response) {
-                const status = error.response.status;
-                if (status === 401) {
-                    token.deleteUser();
-                    return navigate("/signin", { state: { message: "session expire" } });
-                }
-                if (status === 403) return noticeShowMessage("access-denied", true);
-                if (status === 404) return noticeShowMessage("not-found", true);
-
-            } else if (error.request) {
-                console.log("No response received:", error.request);
-                return noticeShowMessage("network-error", true);
-
-            } else {
-                console.log("Error setting up request:", error.message);
-                return noticeShowMessage("error", true);
-            }
+            handleRequestError(error);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleRequestError = (error) => {
+        if (error.response) {
+            const status = error.response.status;
+            if (status === 401) {
+                token.deleteUser();
+                navigate("/signin", { state: { message: "session expire" } });
+                return true;
+            }
+            const messages = { 403: "access-denied", 404: "not-found" };
+            noticeShowMessage(messages[status] || "error", true);
+        } else if (error.request) {
+            noticeShowMessage("network-error", true);
+        } else {
+            noticeShowMessage("error", true);
+        }
+        return false;
     };
     const showAddModal = () => {
         setModalMode('add');
@@ -152,27 +155,7 @@ const Role = () => {
                     noticeShowMessage(response.data?.message || "บันทึกข้อมูลไม่สำเร็จ", true);
                 }
             } catch (error) {
-                if (error.response) {
-                    const status = error.response.status;
-                    if (status === 401) {
-                        token.deleteUser();
-                        return navigate("/signin", { state: { message: "session expire" } });
-                    }
-                    if (status === 403) return noticeShowMessage("access-denied", true);
-                    if (status === 404) return noticeShowMessage("not-found", true);
-
-                    if (error.response.data && error.response.data.message) {
-                        return noticeShowMessage(error.response.data.message, true);
-                    }
-
-                } else if (error.request) {
-                    console.log("No response received:", error.request);
-                    return noticeShowMessage("network-error", true);
-
-                } else {
-                    console.log("Error setting up request:", error.message);
-                    return noticeShowMessage("error", true);
-                }
+                handleRequestError(error);
             } finally {
                 setLoading(false);
             }
@@ -343,11 +326,16 @@ const Role = () => {
             {loading && <Loading />}
 
 
-            <div style={{ backgroundColor: 'white', padding: '10px', borderRadius: '5px' }}>
-                <TableUI
-                    {...tableProps}
-                />
-            </div>
+            <Card className="shadow-sm">
+                <Card.Header style={{ backgroundColor: '#aebbff', color: 'black', fontWeight: 'bold' }}>
+                    Role List
+                </Card.Header>
+                <Card.Body>
+                    <TableUI
+                        {...tableProps}
+                    />
+                </Card.Body>
+            </Card>
             <Modal
                 title={
                     <div style={{
@@ -374,6 +362,7 @@ const Role = () => {
             >
                 <Form
                     form={form}
+                    onFinish={handleOk}
                     layout="horizontal"
                     labelCol={{ span: 6 }}
                     wrapperCol={{ span: 18 }}
@@ -382,11 +371,13 @@ const Role = () => {
                     <Row gutter={24}>
                         <Col span={14}>
                             <Form.Item
-                                style={{ fontWeight: 'bold' }}
+                                style={{ marginLeft: '-10px' }}
                                 name="role"
-                                label="Role Name"
+                                label={<span style={{ fontWeight: 'bold' }}>Role Name</span>}
                                 rules={[
-                                    { message: 'กรอก Role Name' },
+                                    { required: true, message: 'กรอก Role Name' },
+                                    { whitespace: true, message: 'กรอก Role Name' },
+                                    { max: 50, message: 'Role Name ต้องไม่เกิน 50 ตัวอักษร' },
                                     {
                                         validator: (_, value) => {
                                             if (modalMode === 'add' && roleData.some(r => r.role_id === value)) {
@@ -398,7 +389,7 @@ const Role = () => {
                                 ]}
                             >
                                 {modalMode === 'add' ? (
-                                    <Input placeholder="กรอก Role Name" />
+                                    <Input placeholder="กรอก Role Name" maxLength={50} />
                                 ) : (
                                     <span style={{ fontWeight: 500 }}>{currentRole?.role_id}</span>
                                 )}
@@ -417,11 +408,14 @@ const Role = () => {
                         <Col span={14}>
                             <Form.Item
                                 name="description"
-                                label="Description"
-                                style={{ fontWeight: 'bold', marginLeft: '-10px' }}
-                                rules={[{ required: true, message: 'กรอก Role Description' }]}
+                                label={<span style={{ fontWeight: 'bold' }}>Description</span>}
+                                style={{ marginLeft: '-10px' }}
+                                rules={[
+                                    { required: true, whitespace: true, message: 'กรอก Role Description' },
+                                    { max: 255, message: 'Description ต้องไม่เกิน 255 ตัวอักษร' }
+                                ]}
                             >
-                                <Input placeholder="กรอก Role Description" />
+                                <Input placeholder="กรอก Role Description" maxLength={255} />
                             </Form.Item>
                         </Col>
                     </Row>
@@ -429,8 +423,8 @@ const Role = () => {
                         <Col span={14}>
                             <Form.Item
                                 name="roleLevel"
-                                label="Role Level"
-                                style={{ fontWeight: 'bold', marginLeft: '-10px' }}
+                                label={<span style={{ fontWeight: 'bold' }}>Role Level</span>}
+                                style={{ marginLeft: '-10px' }}
                                 rules={[
                                     { required: true, message: 'กรอก Role Level' },
                                     { pattern: /^[1-9][0-9]*$/, message: 'รูปแบบไม่ถูกต้อง ห้ามขึ้นต้นด้วย 0' }
@@ -501,7 +495,7 @@ const Role = () => {
                         <Space size="large">
                             <Button
                                 type="primary"
-                                onClick={handleOk}
+                                htmlType="submit"
                                 icon={<SaveOutlined />}
                                 style={{ backgroundColor: '#aebbff', borderColor: '#aebbff', color: '#000', width: '150px', height: '40px', fontSize: '16px' }}
                             >

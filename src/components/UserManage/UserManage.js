@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Tag, Modal, Form, Select, Checkbox, Row, Col, Space, Card } from 'antd';
+import { Button, Input, Tag, Modal, Form, Select, Checkbox, Row, Col, Space } from 'antd';
+import { Card } from 'react-bootstrap';
 import { SearchOutlined, ClearOutlined, PlusOutlined, EditOutlined, SaveOutlined, CloseOutlined } from '@ant-design/icons';
 import TableUI from '../Utilities/Table/TableUI';
 import { getUserManage, postUserManage, getDropdown, findLdap } from '../../services/user-manage.service';
@@ -50,18 +51,8 @@ const UserManage = () => {
         const initPage = async () => {
             setLoading(true);
             try {
-                // ใช้ Promise.all รวมทุกอย่างที่ต้องโหลดตอนเปิดหน้า
-                const [roleRes, workPlaceRes, teamRes, userRes] = await Promise.all([
-                    getDropdown.get_dropdown({ type: 'Role' }),
-                    getDropdown.get_dropdown({ type: 'WorkPlace' }),
-                    getDropdown.get_dropdown({ type: 'Team' }),
-                    getUserManage.get_user_manage({ Keyword: '' })
-                ]);
-
-                // Set Dropdowns
-                if (roleRes.data) setRoleList(roleRes.data);
-                if (workPlaceRes.data) setWorkPlaceList(workPlaceRes.data);
-                if (teamRes.data) setTeamList(teamRes.data);
+                // Fetch only UserManage data initially to speed up page load
+                const userRes = await getUserManage.get_user_manage({ Keyword: '' });
 
                 // Set Users
                 if (userRes.data) {
@@ -98,7 +89,7 @@ const UserManage = () => {
             if (status === 401) {
                 TokenService.deleteUser();
                 navigate("/signin", { state: { message: "session expire" } });
-                return true; // บอกว่าจัดการ redirect ไปแล้ว
+                return true;
             }
             const messages = { 403: "access-denied", 404: "not-found" };
             noticeShowMessage(messages[status] || "error", true);
@@ -119,8 +110,41 @@ const UserManage = () => {
         fetchUsers('');
     };
 
+    // Function to fetch dropdown data if not already present
+    const fetchDropdowns = async () => {
+        // If data is already present, return it immediately
+        if (roleList.length > 0 && workPlaceList.length > 0 && teamList.length > 0) {
+            return { roleList, workPlaceList, teamList };
+        }
+
+        setLoading(true);
+        try {
+            const [roleRes, workPlaceRes, teamRes] = await Promise.all([
+                getDropdown.get_dropdown({ type: 'Role' }),
+                getDropdown.get_dropdown({ type: 'WorkPlace' }),
+                getDropdown.get_dropdown({ type: 'Team' })
+            ]);
+
+            const newRoleList = roleRes.data || [];
+            const newWorkPlaceList = workPlaceRes.data || [];
+            const newTeamList = teamRes.data || [];
+
+            if (roleRes.data) setRoleList(roleRes.data);
+            if (workPlaceRes.data) setWorkPlaceList(workPlaceRes.data);
+            if (teamRes.data) setTeamList(teamRes.data);
+
+            return { roleList: newRoleList, workPlaceList: newWorkPlaceList, teamList: newTeamList };
+        } catch (error) {
+            handleRequestError(error);
+            return { roleList: [], workPlaceList: [], teamList: [] };
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Modal Functions
-    const showAddModal = () => {
+    const showAddModal = async () => {
+        await fetchDropdowns();
         setModalMode('add');
         setCurrentUser(null);
         setSearchFnEn('');
@@ -207,7 +231,9 @@ const UserManage = () => {
         }
     };
 
-    const showEditModal = (record) => {
+    const showEditModal = async (record) => {
+        const { roleList: roles, workPlaceList: workPlaces, teamList: teams } = await fetchDropdowns();
+
         setModalMode('edit');
         setCurrentUser(record);
 
@@ -218,9 +244,9 @@ const UserManage = () => {
             return found ? found.value : undefined;
         };
 
-        const validRole = findValue(roleList, record.role);
-        const validTeam = findValue(teamList, record.team);
-        const validWorkPlace = findValue(workPlaceList, record.work_place);
+        const validRole = findValue(roles, record.role);
+        const validTeam = findValue(teams, record.team);
+        const validWorkPlace = findValue(workPlaces, record.work_place);
 
         form.setFieldsValue({
             role_id: validRole,
@@ -423,46 +449,42 @@ const UserManage = () => {
         <div style={{ paddingLeft: '20px', paddingRight: '20px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
             {loading && <Loading />}
             {/* Search Section */}
-            <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', marginBottom: '20px', overflow: 'hidden' }}>
-                <div style={{
-                    backgroundColor: '#aebbff', // blue header
-                    padding: '10px 20px',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                    color: 'black'
-                }}>
+            <Card className="shadow-sm mb-4">
+                <Card.Header style={{ backgroundColor: '#aebbff', color: 'black', fontWeight: 'bold' }}>
                     Search
-                </div>
-                <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: '300px' }}>
-                        <span style={{ fontWeight: 'bold', fontSize: '16px', marginRight: '10px' }}>Keyword:</span>
-                        <Input
-                            placeholder="กรอก OA User, ชื่อ-นามสกุล, Role, Team, ส่วนงาน, สถานที่ปฏิบัติงาน"
-                            style={{ width: '100%', maxWidth: '500px' }}
-                            value={keyword}
-                            onChange={(e) => setKeyword(e.target.value)}
-                            onPressEnter={handleSearch}
-                        />
+                </Card.Header>
+                <Card.Body>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: '300px' }}>
+                            <span style={{ fontWeight: 'bold', fontSize: '16px', marginRight: '10px' }}>Keyword:</span>
+                            <Input
+                                placeholder="กรอก OA User, ชื่อ-นามสกุล, Role, Team, ส่วนงาน, สถานที่ปฏิบัติงาน"
+                                style={{ width: '100%', maxWidth: '500px' }}
+                                value={keyword}
+                                onChange={(e) => setKeyword(e.target.value)}
+                                onPressEnter={handleSearch}
+                            />
+                        </div>
+                        <Space style={{ marginTop: '10px' }}>
+                            <Button
+                                type="primary"
+                                icon={<SearchOutlined />}
+                                onClick={handleSearch}
+                                style={{ backgroundColor: '#0dcaf0', borderColor: '#0dcaf0', color: '#000', fontWeight: 'bold' }}
+                            >
+                                Search
+                            </Button>
+                            <Button
+                                icon={<ClearOutlined />}
+                                onClick={handleClear}
+                                style={{ backgroundColor: '#e2e6ea', borderColor: '#dae0e5', color: '#000', fontWeight: 'bold' }}
+                            >
+                                Clear
+                            </Button>
+                        </Space>
                     </div>
-                    <Space style={{ marginTop: '10px' }}>
-                        <Button
-                            type="primary"
-                            icon={<SearchOutlined />}
-                            onClick={handleSearch}
-                            style={{ backgroundColor: '#0dcaf0', borderColor: '#0dcaf0', color: '#000', fontWeight: 'bold' }}
-                        >
-                            Search
-                        </Button>
-                        <Button
-                            icon={<ClearOutlined />}
-                            onClick={handleClear}
-                            style={{ backgroundColor: '#e2e6ea', borderColor: '#dae0e5', color: '#000', fontWeight: 'bold' }}
-                        >
-                            Clear
-                        </Button>
-                    </Space>
-                </div>
-            </div>
+                </Card.Body>
+            </Card>
 
             {/* Table Section */}
             <div style={{ backgroundColor: 'white', padding: '10px', borderRadius: '5px' }}>
@@ -551,6 +573,7 @@ const UserManage = () => {
                     labelCol={{ span: 4 }}
                     wrapperCol={{ span: 15 }}
                     labelAlign="left"
+                    onFinish={handleOk}
                     style={{ marginTop: '10px' }}
                 >
                     {/* Display Details (Read-only) */}
@@ -689,7 +712,7 @@ const UserManage = () => {
                         <Space size="large">
                             <Button
                                 type="primary"
-                                onClick={handleOk}
+                                htmlType="submit"
                                 icon={<SaveOutlined />}
                                 style={{ backgroundColor: '#aebbff', borderColor: '#aebbff', color: '#000', width: '150px', height: '40px', fontSize: '16px' }}
                             >
