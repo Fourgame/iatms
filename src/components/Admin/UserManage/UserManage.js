@@ -655,7 +655,10 @@ const UserManage = () => {
                             <Form.Item name="team_code" label={<span style={{ fontWeight: 'bold' }}>Team</span>} rules={[{ required: true, message: 'กรุณาเลือก Team' }]}>
                                 <Select placeholder="-เลือก-">
                                     {teamList.map(team => (
-                                        <Option key={team.value} value={team.value}>{team.label}</Option>
+                                        <Option key={team.value}
+                                            value={team.value}>
+                                            {team.label}
+                                        </Option>
                                     ))}
                                 </Select>
                             </Form.Item>

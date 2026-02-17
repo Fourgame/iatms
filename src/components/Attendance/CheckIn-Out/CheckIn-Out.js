@@ -3,13 +3,58 @@ import { Card, Row, Col } from 'react-bootstrap';
 import { CheckOutlined } from '@ant-design/icons';
 import { ResetLocationBtn, CheckInBtn, CheckOutBtn } from "../../Utilities/Buttons/Buttons";
 import TableUI from "../../Utilities/Table/TableUI";
+import { getButton } from "../../../services/CICO.service";
+import { GoogleMap, MarkerF, useJsApiLoader } from "@react-google-maps/api";
+
 
 const CheckInOut = () => {
 
     const [currentDateTime, setCurrentDateTime] = useState(new Date());
     const [coordinates, setCoordinates] = useState({ lat: null, long: null });
+    const [buttonStatus, setButtonStatus] = useState({ canCi: false, canCo: false });
+
+    const DEFAULT_CENTER = { lat: 13.7563, lng: 100.5018 }; // fallback (กทม.)
+
+    const { isLoaded, loadError } = useJsApiLoader({
+        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+    });
+
+    const mapCenter =
+        coordinates.lat !== null && coordinates.long !== null
+            ? { lat: coordinates.lat, lng: coordinates.long }
+            : DEFAULT_CENTER;
+
+    // ทำ icon หมุดสีฟ้า (แนว “blue dot”)
+    const blueDotSvg = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
+    <circle cx="12" cy="12" r="8" fill="#1a73e8" stroke="white" stroke-width="3"/>
+  </svg>
+`;
+    const blueDotIconUrl = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(blueDotSvg)}`;
+
+    const mapContainerStyle = {
+        width: "100%",
+        height: "320px", // ปรับสูง-ต่ำได้ตามต้องการ
+        borderRadius: "10px",
+        overflow: "hidden",
+    };
+
 
     useEffect(() => {
+        const fetchButtonStatus = async () => {
+            try {
+                const response = await getButton.get_button();
+                if (response.data) {
+                    setButtonStatus({
+                        canCi: response.data.canCi,
+                        canCo: response.data.canCo
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching button status:", error);
+            }
+        };
+        fetchButtonStatus();
 
         // Update time every second
         const timer = setInterval(() => {
@@ -234,105 +279,105 @@ const CheckInOut = () => {
     ];
 
     const mockData = [
-  {
-    key: 0,
-    date: "01/12/2025",
-    checkin_time: "08:25",
-    checkin_time_status: "ตรงเวลา",
-    checkin_location: "พระราม 3",
-    checkin_location_status: "ในพื้นที่",
-    checkin_reason: "-",
-    checkout_time: "17:25",
-    checkout_time_status: "ตรงเวลา",
-    checkout_location: "พระราม 3",
-    checkout_location_status: "ในพื้นที่",
-    checkout_reason: "-"
-  },
-  {
-    key: 1,
-    date: "01/12/2025",
-    checkin_time: "08:42",
-    checkin_time_status: "เกินเวลา",
-    checkin_location: "สอน",
-    checkin_location_status: "นอกพื้นที่",
-    checkin_reason: "รถติดครับ",
-    checkout_time: "17:42",
-    checkout_time_status: "ตรงเวลา",
-    checkout_location: "พระราม 3",
-    checkout_location_status: "นอกพื้นที่",
-    checkout_reason: "-"
-  },
-  {
-    key: 2,
-    date: "02/12/2025",
-    checkin_time: "08:30",
-    checkin_time_status: "ตรงเวลา",
-    checkin_location: "พระราม 3",
-    checkin_location_status: "ในพื้นที่",
-    checkin_reason: "-",
-    checkout_time: "17:30",
-    checkout_time_status: "ตรงเวลา",
-    checkout_location: "พระราม 3",
-    checkout_location_status: "ในพื้นที่",
-    checkout_reason: "-"
-  },
-  {
-    key: 3,
-    date: "02/12/2025",
-    checkin_time: "08:55",
-    checkin_time_status: "ตรงเวลา",
-    checkin_location: "พระราม 3",
-    checkin_location_status: "ในพื้นที่",
-    checkin_reason: "-",
-    checkout_time: "17:55",
-    checkout_time_status: "ตรงเวลา",
-    checkout_location: "พระราม 3",
-    checkout_location_status: "ในพื้นที่",
-    checkout_reason: "-"
-  },
-  {
-    key: 4,
-    date: "03/12/2025",
-    checkin_time: "08:18",
-    checkin_time_status: "ตรงเวลา",
-    checkin_location: "พระราม 3",
-    checkin_location_status: "ในพื้นที่",
-    checkin_reason: "-",
-    checkout_time: "17:18",
-    checkout_time_status: "ตรงเวลา",
-    checkout_location: "สอน",
-    checkout_location_status: "นอกพื้นที่",
-    checkout_reason: "ประชุมที่สอนครับ"
-  },
-  {
-    key: 5,
-    date: "03/12/2025",
-    checkin_time: "08:33",
-    checkin_time_status: "ตรงเวลา",
-    checkin_location: "พระราม 3",
-    checkin_location_status: "ในพื้นที่",
-    checkin_reason: "-",
-    checkout_time: "17:33",
-    checkout_time_status: "ตรงเวลา",
-    checkout_location: "พระราม 3",
-    checkout_location_status: "ในพื้นที่",
-    checkout_reason: "-"
-  },
-  {
-    key: 6,
-    date: "04/12/2025",
-    checkin_time: "08:48",
-    checkin_time_status: "ตรงเวลา",
-    checkin_location: "พระราม 3",
-    checkin_location_status: "ในพื้นที่",
-    checkin_reason: "-",
-    checkout_time: "17:48",
-    checkout_time_status: "ตรงเวลา",
-    checkout_location: "พระราม 3",
-    checkout_location_status: "ในพื้นที่",
-    checkout_reason: "-"
-  }
-];
+        {
+            key: 0,
+            date: "01/12/2025",
+            checkin_time: "08:25",
+            checkin_time_status: "ตรงเวลา",
+            checkin_location: "พระราม 3",
+            checkin_location_status: "ในพื้นที่",
+            checkin_reason: "-",
+            checkout_time: "17:25",
+            checkout_time_status: "ตรงเวลา",
+            checkout_location: "พระราม 3",
+            checkout_location_status: "ในพื้นที่",
+            checkout_reason: "-"
+        },
+        {
+            key: 1,
+            date: "01/12/2025",
+            checkin_time: "08:42",
+            checkin_time_status: "เกินเวลา",
+            checkin_location: "สอน",
+            checkin_location_status: "นอกพื้นที่",
+            checkin_reason: "รถติดครับ",
+            checkout_time: "17:42",
+            checkout_time_status: "ตรงเวลา",
+            checkout_location: "พระราม 3",
+            checkout_location_status: "นอกพื้นที่",
+            checkout_reason: "-"
+        },
+        {
+            key: 2,
+            date: "02/12/2025",
+            checkin_time: "08:30",
+            checkin_time_status: "ตรงเวลา",
+            checkin_location: "พระราม 3",
+            checkin_location_status: "ในพื้นที่",
+            checkin_reason: "-",
+            checkout_time: "17:30",
+            checkout_time_status: "ตรงเวลา",
+            checkout_location: "พระราม 3",
+            checkout_location_status: "ในพื้นที่",
+            checkout_reason: "-"
+        },
+        {
+            key: 3,
+            date: "02/12/2025",
+            checkin_time: "08:55",
+            checkin_time_status: "ตรงเวลา",
+            checkin_location: "พระราม 3",
+            checkin_location_status: "ในพื้นที่",
+            checkin_reason: "-",
+            checkout_time: "17:55",
+            checkout_time_status: "ตรงเวลา",
+            checkout_location: "พระราม 3",
+            checkout_location_status: "ในพื้นที่",
+            checkout_reason: "-"
+        },
+        {
+            key: 4,
+            date: "03/12/2025",
+            checkin_time: "08:18",
+            checkin_time_status: "ตรงเวลา",
+            checkin_location: "พระราม 3",
+            checkin_location_status: "ในพื้นที่",
+            checkin_reason: "-",
+            checkout_time: "17:18",
+            checkout_time_status: "ตรงเวลา",
+            checkout_location: "สอน",
+            checkout_location_status: "นอกพื้นที่",
+            checkout_reason: "ประชุมที่สอนครับ"
+        },
+        {
+            key: 5,
+            date: "03/12/2025",
+            checkin_time: "08:33",
+            checkin_time_status: "ตรงเวลา",
+            checkin_location: "พระราม 3",
+            checkin_location_status: "ในพื้นที่",
+            checkin_reason: "-",
+            checkout_time: "17:33",
+            checkout_time_status: "ตรงเวลา",
+            checkout_location: "พระราม 3",
+            checkout_location_status: "ในพื้นที่",
+            checkout_reason: "-"
+        },
+        {
+            key: 6,
+            date: "04/12/2025",
+            checkin_time: "08:48",
+            checkin_time_status: "ตรงเวลา",
+            checkin_location: "พระราม 3",
+            checkin_location_status: "ในพื้นที่",
+            checkin_reason: "-",
+            checkout_time: "17:48",
+            checkout_time_status: "ตรงเวลา",
+            checkout_location: "พระราม 3",
+            checkout_location_status: "ในพื้นที่",
+            checkout_reason: "-"
+        }
+    ];
 
 
     return (
@@ -389,25 +434,55 @@ const CheckInOut = () => {
 
                             {/* Right Column: Map Placeholder */}
                             <Col md={6}>
-                                <div
-                                    style={{
-                                        width: "100%",
-                                        height: "100%",
-                                        backgroundColor: "#e0e0e0", // Grey placeholder
-                                        borderRadius: "10px",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        overflow: "hidden"
-                                    }}
-                                >
-                                    {/* Placeholder Image or Text - replicating the map look simplistically */}
-                                    <div style={{ color: "#757575", textAlign: "center" }}>
-                                        <i className="bi bi-geo-alt-fill" style={{ fontSize: "40px", color: "#db4437" }}></i>
-                                        <p>Map Placeholder</p>
-                                    </div>
+                                <div style={{ width: "100%", border: "1px solid #000" }}>
+                                    {loadError && (
+                                        <div style={{ color: "red" }}>
+                                            โหลดแผนที่ไม่สำเร็จ (เช็ค API key / เปิด Maps JavaScript API)
+                                        </div>
+                                    )}
+
+                                    {!isLoaded ? (
+                                        <div
+                                            style={{
+                                                width: "100%",
+                                                height: "320px",
+                                                backgroundColor: "#e0e0e0",
+                                                borderRadius: "10px",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                color: "#757575",
+                                            }}
+                                        >
+                                            Loading map...
+                                        </div>
+                                    ) : (
+                                        <GoogleMap
+                                            mapContainerStyle={mapContainerStyle}
+                                            center={mapCenter}
+                                            zoom={16}
+                                            options={{
+                                                clickableIcons: false,
+                                                streetViewControl: false,
+                                                mapTypeControl: false,
+                                                fullscreenControl: false,
+                                            }}
+                                        >
+                                            {coordinates.lat !== null && coordinates.long !== null && (
+                                                <MarkerF
+                                                    position={mapCenter}
+                                                    icon={{
+                                                        url: blueDotIconUrl,
+                                                        scaledSize: new window.google.maps.Size(24, 24),
+                                                        anchor: new window.google.maps.Point(12, 12),
+                                                    }}
+                                                />
+                                            )}
+                                        </GoogleMap>
+                                    )}
                                 </div>
                             </Col>
+
                         </Row>
                     </Card.Body>
 
@@ -416,8 +491,26 @@ const CheckInOut = () => {
 
                 {/* Action Buttons */}
                 <div style={{ display: "flex", justifyContent: "center", gap: "40px", marginTop: "30px" }}>
-                    <CheckInBtn onClick={handleCheckIn} />
-                    <CheckOutBtn onClick={handleCheckOut} />
+                    <CheckInBtn
+                        onClick={handleCheckIn}
+                        disabled={!buttonStatus.canCi}
+                        style={{
+                            "--bs-btn-bg": buttonStatus.canCi ? "#D7FFDB" : "#EFEFF0",
+                            "--bs-btn-disabled-bg": "#EFEFF0",
+                            "--bs-btn-disabled-border-color": "#000",
+                            opacity: 1 // Override default bootstrap disabled opacity if we want specific color
+                        }}
+                    />
+                    <CheckOutBtn
+                        onClick={handleCheckOut}
+                        disabled={!buttonStatus.canCo}
+                        style={{
+                            "--bs-btn-bg": buttonStatus.canCo ? "#FFBCBC" : "#EFEFF0",
+                            "--bs-btn-disabled-bg": "#EFEFF0",
+                            "--bs-btn-disabled-border-color": "#000",
+                            opacity: 1
+                        }}
+                    />
                 </div>
 
                 <div style={{ marginTop: "5px", fontWeight: "normal", fontSize: "22px", color: "#000000ff" }}>
@@ -427,7 +520,7 @@ const CheckInOut = () => {
                 <div style={{ marginTop: "5px" }}>
                     <TableUI
                         columns={columns}
-                        dataSource={mockData || []}
+                        dataSource={[]}
                         pagination={false}
                         bordered={true}
                         size="large"
