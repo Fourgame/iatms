@@ -8,7 +8,7 @@ class GetButton {
 
 class GetCICO {
     get_cico(payload) {
-        return api.get("getCICO", payload);
+        return api.get("getCICO", { params: payload });
     }
 }
 
