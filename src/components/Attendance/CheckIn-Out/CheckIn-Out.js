@@ -1,17 +1,126 @@
 import React, { useEffect, useState } from "react";
 import { Card, Row, Col } from 'react-bootstrap';
-import { CheckOutlined } from '@ant-design/icons';
-import { ResetLocationBtn, CheckInBtn, CheckOutBtn } from "../../Utilities/Buttons/Buttons";
+import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { ResetLocationBtn, CheckInBtn, CheckOutBtn, SaveModalBtnBootstrap, CloseModalBtnBootstrap } from "../../Utilities/Buttons/Buttons";
 import TableUI from "../../Utilities/Table/TableUI";
 import { getButton } from "../../../services/CICO.service";
 import { GoogleMap, MarkerF, useJsApiLoader } from "@react-google-maps/api";
+import { Modal, Form, Input } from "antd";
+
+const ReasonModal = ({ open, onClose, onSave, errorMessage }) => {
+    const [form] = Form.useForm();
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (open) {
+            form.resetFields();
+            setLoading(false);
+        }
+    }, [open, form]);
+
+    const handleSave = async () => {
+        try {
+            const values = await form.validateFields();
+            setLoading(true);
+            // Simulate saving or pass data back
+            onSave(values.reason);
+            setLoading(false);
+        } catch (error) {
+            console.log("Validation Failed:", error);
+        }
+    };
+
+    return (
+        <Modal
+            title={
+                <div style={{
+                    backgroundColor: '#2750B0', // Match Listofvalues header color
+                    color: 'white',
+                    padding: '16px 24px',
+                    margin: '-20px -24px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    borderTopLeftRadius: '8px',
+                    borderTopRightRadius: '8px'
+                }}>
+                    <span>ระบุเหตุผล</span>
+                    <CloseOutlined onClick={onClose} style={{ cursor: "pointer", fontSize: "20px" }} />
+                </div>
+            }
+            open={open}
+            onCancel={onClose}
+            footer={null}
+            width={600}
+            centered
+            closable={false} // Custom close icon in header
+            styles={{
+                header: { padding: 0, borderBottom: 'none' },
+                body: { padding: '24px' },
+                content: { padding: 0, overflow: 'hidden', borderRadius: '8px' }
+            }}
+        >
+            <Form
+                form={form}
+                layout="vertical"
+            >
+                {/* Warning Message Box */}
+                {errorMessage && (
+                    <div style={{
+                        backgroundColor: '#FFFBE6', // Light yellow
+                        border: '1px solid #FFE58F',
+                        borderRadius: '6px',
+                        padding: '12px',
+                        marginBottom: '20px',
+                        color: '#000',
+                        fontWeight: '500',
+                        fontSize: '16px'
+                    }}>
+                        <span style={{ fontWeight: 'bold' }}>Check-in</span> — {errorMessage}
+                    </div>
+                )}
+
+                {/* Reason Textarea */}
+                <Form.Item
+                    name="reason"
+                    label={<span style={{ fontWeight: "bold", fontSize: "16px" }}><span style={{ color: "red" }}>*</span>เหตุผล</span>}
+                    rules={[{ required: true, message: 'กรุณากรอกเหตุผล' }]}
+                >
+                    <Input.TextArea
+                        rows={5}
+                        placeholder="กรอกเหตุผล"
+                        style={{
+                            borderRadius: '6px',
+                            borderColor: '#000',
+                            borderWidth: '2px', // Thicker border as per design
+                            fontSize: '16px'
+                        }}
+                    />
+                </Form.Item>
+
+                {/* Footer Buttons */}
+                <div className="d-flex justify-content-center gap-4 mt-4">
+                    <SaveModalBtnBootstrap onClick={handleSave} loading={loading} />
+                    <CloseModalBtnBootstrap onClick={onClose} />
+                </div>
+            </Form>
+        </Modal>
+    );
+};
 
 
 const CheckInOut = () => {
 
     const [currentDateTime, setCurrentDateTime] = useState(new Date());
     const [coordinates, setCoordinates] = useState({ lat: null, long: null });
-    const [buttonStatus, setButtonStatus] = useState({ canCi: false, canCo: false });
+    const [buttonData, setButtonData] = useState(null); // Store full API response
+
+    // Modal State
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalError, setModalError] = useState("");
+    const [actionType, setActionType] = useState(""); // "CheckIn" or "CheckOut"
 
     const DEFAULT_CENTER = { lat: 13.7563, lng: 100.5018 }; // fallback (กทม.)
 
@@ -45,10 +154,7 @@ const CheckInOut = () => {
             try {
                 const response = await getButton.get_button();
                 if (response.data) {
-                    setButtonStatus({
-                        canCi: response.data.canCi,
-                        canCo: response.data.canCo
-                    });
+                    setButtonData(response.data);
                 }
             } catch (error) {
                 console.error("Error fetching button status:", error);
@@ -117,14 +223,96 @@ const CheckInOut = () => {
         }
     };
 
+    // Haversine Formula for distance calculation
+    const calculateDistance = (lat1, lon1, lat2, lon2) => {
+        const R = 6371e3; // metres
+        const φ1 = lat1 * Math.PI / 180; // φ, λ in radians
+        const φ2 = lat2 * Math.PI / 180;
+        const Δφ = (lat2 - lat1) * Math.PI / 180;
+        const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+        const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        const d = R * c; // in metres
+        return d;
+    };
+
+    const validateAction = (type) => {
+        if (!buttonData) return;
+
+        const { ciThreshold, coThreshold, wpCondition } = buttonData;
+        // Parse wpCondition: "lat, long, radius" e.g., " 13.689946114992614, 100.54990012579208, 150"
+        let targetLat, targetLong, radius;
+        if (wpCondition) {
+            const parts = wpCondition.split(',').map(s => parseFloat(s.trim()));
+            if (parts.length >= 3) {
+                [targetLat, targetLong, radius] = parts;
+            }
+        }
+
+        const currentTimeStr = currentDateTime.toTimeString().slice(0, 5); // "HH:MM"
+        const dist = (targetLat && targetLong && coordinates.lat && coordinates.long)
+            ? calculateDistance(coordinates.lat, coordinates.long, targetLat, targetLong)
+            : 0;
+        const isOutsideLocation = (radius && dist > radius);
+
+        let messages = [];
+
+        if (type === 'CheckIn') {
+            const isLate = currentTimeStr > ciThreshold;
+
+            if (isLate) {
+                messages.push(`เกินเวลา ${ciThreshold} น.`);
+            }
+            if (isOutsideLocation) {
+                messages.push("ตำแหน่งสถานที่ไม่ถูกต้อง");
+            }
+        } else if (type === 'CheckOut') {
+            // "ห้ามเร็วกว่า" -> if current time is LESS than threshold, it's early
+            const isEarly = currentTimeStr < coThreshold;
+
+            if (isEarly) {
+                messages.push(`ก่อนเวลา ${coThreshold} น.`);
+            }
+            if (isOutsideLocation) {
+                messages.push("ตำแหน่งสถานที่ไม่ถูกต้อง");
+            }
+        }
+
+        if (messages.length > 0) {
+            setModalError(messages.join(" และ"));
+            setActionType(type);
+            setModalOpen(true);
+        } else {
+            // No anomalies, proceed directly
+            console.log(`${type} Success (No Modal):`, {
+                timestamp: new Date().toISOString(),
+                coordinates,
+                type
+            });
+        }
+    };
+
     const handleCheckIn = () => {
-        // Functionality to be implemented
-        console.log("Check-In Clicked");
+        validateAction('CheckIn');
     };
 
     const handleCheckOut = () => {
-        // Functionality to be implemented
-        console.log("Check-Out Clicked");
+        validateAction('CheckOut');
+    };
+
+    const handleModalSave = (reason) => {
+        console.log(`${actionType} with Reason:`, {
+            timestamp: new Date().toISOString(),
+            coordinates,
+            type: actionType,
+            reason,
+            error: modalError
+        });
+        setModalOpen(false);
     };
 
     const columns = [
@@ -493,9 +681,9 @@ const CheckInOut = () => {
                 <div style={{ display: "flex", justifyContent: "center", gap: "40px", marginTop: "30px" }}>
                     <CheckInBtn
                         onClick={handleCheckIn}
-                        disabled={!buttonStatus.canCi}
+                        disabled={!buttonData?.canCi}
                         style={{
-                            "--bs-btn-bg": buttonStatus.canCi ? "#D7FFDB" : "#EFEFF0",
+                            "--bs-btn-bg": buttonData?.canCi ? "#D7FFDB" : "#EFEFF0",
                             "--bs-btn-disabled-bg": "#EFEFF0",
                             "--bs-btn-disabled-border-color": "#000",
                             opacity: 1 // Override default bootstrap disabled opacity if we want specific color
@@ -503,9 +691,9 @@ const CheckInOut = () => {
                     />
                     <CheckOutBtn
                         onClick={handleCheckOut}
-                        disabled={!buttonStatus.canCo}
+                        disabled={!buttonData?.canCo}
                         style={{
-                            "--bs-btn-bg": buttonStatus.canCo ? "#FFBCBC" : "#EFEFF0",
+                            "--bs-btn-bg": buttonData?.canCo ? "#FFBCBC" : "#EFEFF0",
                             "--bs-btn-disabled-bg": "#EFEFF0",
                             "--bs-btn-disabled-border-color": "#000",
                             opacity: 1
@@ -528,6 +716,13 @@ const CheckInOut = () => {
                 </div>
 
             </Card>
+
+            <ReasonModal
+                open={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onSave={handleModalSave}
+                errorMessage={modalError}
+            />
 
         </div>
     );
