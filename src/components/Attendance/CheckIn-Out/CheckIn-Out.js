@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Card, Row, Col } from 'react-bootstrap';
 import { CheckOutlined } from '@ant-design/icons';
 import { ResetLocationBtn, CheckInBtn, CheckOutBtn } from "../../Utilities/Buttons/Buttons";
 import TableUI from "../../Utilities/Table/TableUI";
-import { getButton } from "../../../services/CICO.service";
-import { GoogleMap, MarkerF, useJsApiLoader } from "@react-google-maps/api";
+import { getButton, getCICO } from "../../../services/CICO.service";
+import { GoogleMap, MarkerF, CircleF, useJsApiLoader } from "@react-google-maps/api";
 
 
 const CheckInOut = () => {
@@ -12,17 +12,29 @@ const CheckInOut = () => {
     const [currentDateTime, setCurrentDateTime] = useState(new Date());
     const [coordinates, setCoordinates] = useState({ lat: null, long: null });
     const [buttonStatus, setButtonStatus] = useState({ canCi: false, canCo: false });
+    const [geofence, setGeofence] = useState(null);
+    const [cicoHistory, setCicoHistory] = useState([]);
 
-    const DEFAULT_CENTER = { lat: 13.7563, lng: 100.5018 }; // fallback (กทม.)
+    const DEFAULT_CENTER = useMemo(() => ({ lat: 13.7563, lng: 100.5018 }), []);
 
     const { isLoaded, loadError } = useJsApiLoader({
         googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     });
 
-    const mapCenter =
-        coordinates.lat !== null && coordinates.long !== null
+    const mapCenter = useMemo(() => {
+        return coordinates.lat !== null && coordinates.long !== null
             ? { lat: coordinates.lat, lng: coordinates.long }
             : DEFAULT_CENTER;
+    }, [coordinates, DEFAULT_CENTER]);
+
+    const mapOptions = useMemo(() => ({
+        clickableIcons: false,
+        streetViewControl: false,
+        mapTypeControl: false,
+        fullscreenControl: true, // Allow fullscreen
+        zoomControl: true, // Allow zooming
+        gestureHandling: 'cooperative' // Better handling on mobile/desktop
+    }), []);
 
     // ทำ icon หมุดสีฟ้า (แนว “blue dot”)
     const blueDotSvg = `
@@ -49,12 +61,44 @@ const CheckInOut = () => {
                         canCi: response.data.canCi,
                         canCo: response.data.canCo
                     });
+
+                    if (response.data.wpCondition) {
+                        // Example: " 13.690304143229888, 100.54908036008648, 100"
+                        const parts = response.data.wpCondition.split(',').map(part => parseFloat(part.trim()));
+                        if (parts.length === 3 && !parts.some(isNaN)) {
+                            setGeofence({
+                                lat: parts[0],
+                                lng: parts[1],
+                                radius: parts[2]
+                            });
+                        }
+                    }
                 }
             } catch (error) {
                 console.error("Error fetching button status:", error);
             }
         };
+
+        const fetchCICOData = async () => {
+            try {
+                // Assuming mode=7 based on context/screenshot, or fetch all
+                const response = await getCICO.get_cico({ mode: 7 });
+                if (response.data) {
+                    // Map API data to table format if needed, or direct use if keys match
+                    // Adding key for TableUI/Antd
+                    const formattedData = response.data.map((item, index) => ({
+                        ...item,
+                        key: index
+                    }));
+                    setCicoHistory(formattedData);
+                }
+            } catch (error) {
+                console.error("Error fetching CICO history:", error);
+            }
+        };
+
         fetchButtonStatus();
+        fetchCICOData();
 
         // Update time every second
         const timer = setInterval(() => {
@@ -130,22 +174,28 @@ const CheckInOut = () => {
     const columns = [
         {
             title: 'วันที่',
-            dataIndex: 'date',
-            key: 'date',
+            dataIndex: 'attDate',
+            key: 'attDate',
             align: 'center',
             width: 150,
-            SortName: 'date',
+            SortName: 'attDate',
+            render: (text) => {
+                if (!text) return "-";
+                // Assuming format YYYY-MM-DD, convert to Thai date if needed or keep as is.
+                // For now keeping simple.
+                return text;
+            }
         },
         {
             title: 'Check-In',
             children: [
                 {
                     title: 'เวลา (น.)',
-                    dataIndex: 'checkin_time',
-                    key: 'checkin_time',
+                    dataIndex: 'ciTime',
+                    key: 'ciTime',
                     align: 'center',
                     width: 100,
-                    sorter: (a, b) => String(a.checkin_time ?? "").localeCompare(String(b.checkin_time ?? "")),
+                    sorter: (a, b) => String(a.ciTime ?? "").localeCompare(String(b.ciTime ?? "")),
                     render: (text) => (
                         <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
                             {text && text.trim() ? text : "-"}
@@ -154,24 +204,11 @@ const CheckInOut = () => {
                 },
                 {
                     title: 'สถานะเวลา',
-                    dataIndex: 'checkin_time_status',
-                    key: 'checkin_time_status',
+                    dataIndex: 'ciCorrectTime',
+                    key: 'ciCorrectTime',
                     align: 'center',
                     width: 120,
-                    sorter: (a, b) => String(a.checkin_time_status ?? "").localeCompare(String(b.checkin_time_status ?? "")),
-                    render: (text) => (
-                        <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
-                            {text && text.trim() ? text : "-"}
-                        </div>
-                    ),
-                },
-                {
-                    title: 'ตำแหน่ง',
-                    dataIndex: 'checkin_location',
-                    key: 'checkin_location',
-                    align: 'center',
-                    width: 200,
-                    sorter: (a, b) => String(a.checkin_location ?? "").localeCompare(String(b.checkin_location ?? "")),
+                    sorter: (a, b) => String(a.ciCorrectTime ?? "").localeCompare(String(b.ciCorrectTime ?? "")),
                     render: (text) => (
                         <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
                             {text && text.trim() ? text : "-"}
@@ -180,11 +217,11 @@ const CheckInOut = () => {
                 },
                 {
                     title: 'สถานะตำแหน่ง',
-                    dataIndex: 'checkin_location_status',
-                    key: 'checkin_location_status',
+                    dataIndex: 'ciCorrectZone',
+                    key: 'ciCorrectZone',
                     align: 'center',
-                    width: 150,
-                    sorter: (a, b) => String(a.checkin_location_status ?? "").localeCompare(String(b.checkin_location_status ?? "")),
+                    width: 200,
+                    sorter: (a, b) => String(a.ciCorrectZone ?? "").localeCompare(String(b.ciCorrectZone ?? "")),
                     render: (text) => (
                         <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
                             {text && text.trim() ? text : "-"}
@@ -193,11 +230,11 @@ const CheckInOut = () => {
                 },
                 {
                     title: 'เหตุผล',
-                    dataIndex: 'checkin_reason',
-                    key: 'checkin_reason',
+                    dataIndex: 'ciReason',
+                    key: 'ciReason',
                     align: 'center',
                     width: 150,
-                    sorter: (a, b) => String(a.checkin_reason ?? "").localeCompare(String(b.checkin_reason ?? "")),
+                    sorter: (a, b) => String(a.ciReason ?? "").localeCompare(String(b.ciReason ?? "")),
                     render: (text) => (
                         <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
                             {text && text.trim() ? text : "-"}
@@ -211,11 +248,11 @@ const CheckInOut = () => {
             children: [
                 {
                     title: 'เวลา (น.)',
-                    dataIndex: 'checkout_time',
-                    key: 'checkout_time',
+                    dataIndex: 'coTime',
+                    key: 'coTime',
                     align: 'center',
                     width: 100,
-                    sorter: (a, b) => String(a.checkout_time ?? "").localeCompare(String(b.checkout_time ?? "")),
+                    sorter: (a, b) => String(a.coTime ?? "").localeCompare(String(b.coTime ?? "")),
                     render: (text) => (
                         <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
                             {text && text.trim() ? text : "-"}
@@ -224,24 +261,11 @@ const CheckInOut = () => {
                 },
                 {
                     title: 'สถานะเวลา',
-                    dataIndex: 'checkout_time_status',
-                    key: 'checkout_time_status',
+                    dataIndex: 'coCorrectTime',
+                    key: 'coCorrectTime',
                     align: 'center',
                     width: 120,
-                    sorter: (a, b) => String(a.checkout_time_status ?? "").localeCompare(String(b.checkout_time_status ?? "")),
-                    render: (text) => (
-                        <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
-                            {text && text.trim() ? text : "-"}
-                        </div>
-                    ),
-                },
-                {
-                    title: 'ตำแหน่ง',
-                    dataIndex: 'checkout_location',
-                    key: 'checkout_location',
-                    align: 'center',
-                    width: 200,
-                    sorter: (a, b) => String(a.checkout_location ?? "").localeCompare(String(b.checkout_location ?? "")),
+                    sorter: (a, b) => String(a.coCorrectTime ?? "").localeCompare(String(b.coCorrectTime ?? "")),
                     render: (text) => (
                         <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
                             {text && text.trim() ? text : "-"}
@@ -250,11 +274,11 @@ const CheckInOut = () => {
                 },
                 {
                     title: 'สถานะตำแหน่ง',
-                    dataIndex: 'checkout_location_status',
-                    key: 'checkout_location_status',
+                    dataIndex: 'coCorrectZone',
+                    key: 'coCorrectZone',
                     align: 'center',
-                    width: 150,
-                    sorter: (a, b) => String(a.checkout_location_status ?? "").localeCompare(String(b.checkout_location_status ?? "")),
+                    width: 200,
+                    sorter: (a, b) => String(a.coCorrectZone ?? "").localeCompare(String(b.coCorrectZone ?? "")),
                     render: (text) => (
                         <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
                             {text && text.trim() ? text : "-"}
@@ -263,11 +287,11 @@ const CheckInOut = () => {
                 },
                 {
                     title: 'เหตุผล',
-                    dataIndex: 'checkout_reason',
-                    key: 'checkout_reason',
+                    dataIndex: 'coReason',
+                    key: 'coReason',
                     align: 'center',
                     width: 150,
-                    sorter: (a, b) => String(a.checkout_reason ?? "").localeCompare(String(b.checkout_reason ?? "")),
+                    sorter: (a, b) => String(a.coReason ?? "").localeCompare(String(b.coReason ?? "")),
                     render: (text) => (
                         <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
                             {text && text.trim() ? text : "-"}
@@ -277,108 +301,6 @@ const CheckInOut = () => {
             ]
         }
     ];
-
-    const mockData = [
-        {
-            key: 0,
-            date: "01/12/2025",
-            checkin_time: "08:25",
-            checkin_time_status: "ตรงเวลา",
-            checkin_location: "พระราม 3",
-            checkin_location_status: "ในพื้นที่",
-            checkin_reason: "-",
-            checkout_time: "17:25",
-            checkout_time_status: "ตรงเวลา",
-            checkout_location: "พระราม 3",
-            checkout_location_status: "ในพื้นที่",
-            checkout_reason: "-"
-        },
-        {
-            key: 1,
-            date: "01/12/2025",
-            checkin_time: "08:42",
-            checkin_time_status: "เกินเวลา",
-            checkin_location: "สอน",
-            checkin_location_status: "นอกพื้นที่",
-            checkin_reason: "รถติดครับ",
-            checkout_time: "17:42",
-            checkout_time_status: "ตรงเวลา",
-            checkout_location: "พระราม 3",
-            checkout_location_status: "นอกพื้นที่",
-            checkout_reason: "-"
-        },
-        {
-            key: 2,
-            date: "02/12/2025",
-            checkin_time: "08:30",
-            checkin_time_status: "ตรงเวลา",
-            checkin_location: "พระราม 3",
-            checkin_location_status: "ในพื้นที่",
-            checkin_reason: "-",
-            checkout_time: "17:30",
-            checkout_time_status: "ตรงเวลา",
-            checkout_location: "พระราม 3",
-            checkout_location_status: "ในพื้นที่",
-            checkout_reason: "-"
-        },
-        {
-            key: 3,
-            date: "02/12/2025",
-            checkin_time: "08:55",
-            checkin_time_status: "ตรงเวลา",
-            checkin_location: "พระราม 3",
-            checkin_location_status: "ในพื้นที่",
-            checkin_reason: "-",
-            checkout_time: "17:55",
-            checkout_time_status: "ตรงเวลา",
-            checkout_location: "พระราม 3",
-            checkout_location_status: "ในพื้นที่",
-            checkout_reason: "-"
-        },
-        {
-            key: 4,
-            date: "03/12/2025",
-            checkin_time: "08:18",
-            checkin_time_status: "ตรงเวลา",
-            checkin_location: "พระราม 3",
-            checkin_location_status: "ในพื้นที่",
-            checkin_reason: "-",
-            checkout_time: "17:18",
-            checkout_time_status: "ตรงเวลา",
-            checkout_location: "สอน",
-            checkout_location_status: "นอกพื้นที่",
-            checkout_reason: "ประชุมที่สอนครับ"
-        },
-        {
-            key: 5,
-            date: "03/12/2025",
-            checkin_time: "08:33",
-            checkin_time_status: "ตรงเวลา",
-            checkin_location: "พระราม 3",
-            checkin_location_status: "ในพื้นที่",
-            checkin_reason: "-",
-            checkout_time: "17:33",
-            checkout_time_status: "ตรงเวลา",
-            checkout_location: "พระราม 3",
-            checkout_location_status: "ในพื้นที่",
-            checkout_reason: "-"
-        },
-        {
-            key: 6,
-            date: "04/12/2025",
-            checkin_time: "08:48",
-            checkin_time_status: "ตรงเวลา",
-            checkin_location: "พระราม 3",
-            checkin_location_status: "ในพื้นที่",
-            checkin_reason: "-",
-            checkout_time: "17:48",
-            checkout_time_status: "ตรงเวลา",
-            checkout_location: "พระราม 3",
-            checkout_location_status: "ในพื้นที่",
-            checkout_reason: "-"
-        }
-    ];
-
 
     return (
         <div style={{ paddingLeft: '20px', paddingRight: '20px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
@@ -461,13 +383,9 @@ const CheckInOut = () => {
                                             mapContainerStyle={mapContainerStyle}
                                             center={mapCenter}
                                             zoom={16}
-                                            options={{
-                                                clickableIcons: false,
-                                                streetViewControl: false,
-                                                mapTypeControl: false,
-                                                fullscreenControl: false,
-                                            }}
+                                            options={mapOptions}
                                         >
+                                            {/* User Location Marker */}
                                             {coordinates.lat !== null && coordinates.long !== null && (
                                                 <MarkerF
                                                     position={mapCenter}
@@ -475,6 +393,21 @@ const CheckInOut = () => {
                                                         url: blueDotIconUrl,
                                                         scaledSize: new window.google.maps.Size(24, 24),
                                                         anchor: new window.google.maps.Point(12, 12),
+                                                    }}
+                                                />
+                                            )}
+
+                                            {/* Geofence Circle */}
+                                            {geofence && (
+                                                <CircleF
+                                                    center={{ lat: geofence.lat, lng: geofence.lng }}
+                                                    radius={geofence.radius}
+                                                    options={{
+                                                        strokeColor: "#FF0000",
+                                                        strokeOpacity: 0.8,
+                                                        strokeWeight: 2,
+                                                        fillColor: "#FF0000",
+                                                        fillOpacity: 0.35,
                                                     }}
                                                 />
                                             )}
@@ -520,7 +453,7 @@ const CheckInOut = () => {
                 <div style={{ marginTop: "5px" }}>
                     <TableUI
                         columns={columns}
-                        dataSource={[]}
+                        dataSource={cicoHistory}
                         pagination={false}
                         bordered={true}
                         size="large"
