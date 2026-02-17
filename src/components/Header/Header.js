@@ -83,20 +83,20 @@ const Header = () => {
                 {/* Left Side */}
                 <div className="d-flex align-items-center gap-5">
                     {/* Brand */}
-                        <Button variant="primary"
-                            onClick={goHome}
-                            className="border border-3 rounded-4 d-flex align-items-center gap-2 px-3 py-1 border-white"
-                            style={{
-                                "--bs-btn-bg": "#04318D",
-                                "--bs-btn-hover-bg": "#2e59d9",
-                                "--bs-btn-active-bg": "#2e59d9",
-                                height: "48px"
-                            }}
-                        >
-                            <span className="fw-bold me-2">IATMS</span>
-                            <i className="bi bi-calendar-check-fill"></i>
-                        </Button>
-                    
+                    <Button variant="primary"
+                        onClick={goHome}
+                        className="border border-3 rounded-4 d-flex align-items-center gap-2 px-3 py-1 border-white"
+                        style={{
+                            "--bs-btn-bg": "#04318D",
+                            "--bs-btn-hover-bg": "#2e59d9",
+                            "--bs-btn-active-bg": "#2e59d9",
+                            height: "48px"
+                        }}
+                    >
+                        <span className="fw-bold me-2">IATMS</span>
+                        <i className="bi bi-calendar-check-fill"></i>
+                    </Button>
+
                     {/* Toggler */}
                     <a
                         className="navbar-toggler"
@@ -121,9 +121,9 @@ const Header = () => {
                                         Attendance
                                     </a>
                                     <ul className="dropdown-menu shadow border-0 mt-2">
-                                        {activeMenus.func.cico && <li><Link className="dropdown-item" to="/attendance/checkinout" onClick={(e) => handleRefresh(e, "/attendance/checkinout")}>Check-in/out & Leave Request</Link></li>}
-                                        {activeMenus.func.cico && <li><Link className="dropdown-item" to="/attendance/approve" onClick={(e) => handleRefresh(e, "/attendance/approve")}>Change Request</Link></li>}
-                                        {activeMenus.func.approve && <li><Link className="dropdown-item" to="/attendance/approve" onClick={(e) => handleRefresh(e, "/attendance/approve")}>Approve Request</Link></li>}
+                                        {activeMenus.func.cico && <li><Link className="dropdown-item" to="/attendance/Check-In-&-Check-Out" onClick={(e) => handleRefresh(e, "/attendance/Check-In-&-Check-Out")}>Check-In & Check-Out</Link></li>}
+                                        {activeMenus.func.cico && <li><Link className="dropdown-item" to="/attendance/Attendance-&-Leave-Management " onClick={(e) => handleRefresh(e, "/attendance/Attendance-&-Leave-Management")}>Attendance & Leave Management</Link></li>}
+                                        {activeMenus.func.approve && <li><Link className="dropdown-item" to="/attendance/Attendance-&-Leave-Approval" onClick={(e) => handleRefresh(e, "/attendance/Attendance-&-Leave-Approval")}>Attendance & Leave Approval</Link></li>}
                                     </ul>
                                 </li>
                             )}
@@ -135,9 +135,9 @@ const Header = () => {
                                         Report
                                     </a>
                                     <ul className="dropdown-menu shadow border-0 mt-2">
-                                        {activeMenus.func.rp_attendance && <li><Link className="dropdown-item" to="/report/attendance" onClick={(e) => handleRefresh(e, "/report/attendance")}>Attendance Report</Link></li>}
-                                        {activeMenus.func.rp_work_hours && <li><Link className="dropdown-item" to="/report/workhours" onClick={(e) => handleRefresh(e, "/report/workhours")}>Work Hours Report</Link></li>}
-                                        {activeMenus.func.rp_compensation && <li><Link className="dropdown-item" to="/report/compensation" onClick={(e) => handleRefresh(e, "/report/compensation")}>Compensation Report</Link></li>}
+                                        {activeMenus.func.rp_attendance && <li><Link className="dropdown-item" to="/report/AttendanceHistory" onClick={(e) => handleRefresh(e, "/report/AttendanceHistory")}>Attendance Report</Link></li>}
+                                        {activeMenus.func.rp_work_hours && <li><Link className="dropdown-item" to="/report/WorkHours" onClick={(e) => handleRefresh(e, "/report/WorkHours")}>Work Hours Report</Link></li>}
+                                        {activeMenus.func.rp_compensation && <li><Link className="dropdown-item" to="/report/Compensation" onClick={(e) => handleRefresh(e, "/report/Compensation")}>Compensation Report</Link></li>}
                                     </ul>
                                 </li>
                             )}

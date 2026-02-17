@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from 'antd';
 import { Button as ButtonBootstrap } from 'react-bootstrap';
-import { SearchOutlined, ClearOutlined, SaveOutlined, PlusOutlined, EditOutlined, PrinterOutlined, CloseOutlined } from '@ant-design/icons';
+import { SearchOutlined, ClearOutlined, SaveOutlined, PlusOutlined, EditOutlined, PrinterOutlined, CloseOutlined, SyncOutlined, LoginOutlined, LogoutOutlined } from '@ant-design/icons';
 
 
 
@@ -15,6 +15,7 @@ export const SearchToolBtnBootstrap = ({ onClick, style, className, ...props }) 
                 "--bs-btn-bg": "#0DCAF0",
                 "--bs-btn-hover-bg": "#63d7eeff",
                 "--bs-btn-active-bg": "#63d7eeff",
+                border: "1px solid #000",
                 ...style
             }}
             {...props}
@@ -41,6 +42,7 @@ export const ClearToolBtnBootstrap = ({ onClick, style, className, ...props }) =
                 "--bs-btn-active-bg": "#E8E8E8",
                 color: "#000",
                 fontWeight: "bold",
+                border: "1px solid #000",
                 ...style
             }}
             {...props}
@@ -75,6 +77,7 @@ export const SaveModalBtnBootstrap = ({ onClick, style, className, loading, ...p
                 height: "40px",
                 fontSize: "16px",
                 fontWeight: "bold",
+                border: "1px solid #000",
                 ...style
             }}
             {...props}
@@ -120,6 +123,7 @@ export const AddToolBtnBootstrap = ({ onClick, style, className, ...props }) => 
                 "--bs-btn-active-border-color": "#15c474",
                 color: "#fff",
                 fontWeight: "bold",
+                border: "1px solid #000",
                 ...style
             }}
             {...props}
@@ -147,6 +151,7 @@ export const EditToolBtnBootstrap = ({ onClick, style, className, ...props }) =>
                 "--bs-btn-active-bg": "#ffc53d",
                 "--bs-btn-active-border-color": "#ffc53d",
                 color: "#000",
+                border: "1px solid #000", // Explicit black border
                 ...style
             }}
             {...props}
@@ -177,6 +182,7 @@ export const CloseModalBtnBootstrap = ({ onClick, style, className, ...props }) 
                 height: "40px",
                 fontSize: "16px",
                 fontWeight: "bold",
+                border: "1px solid #000",
                 ...style
             }}
             {...props}
@@ -192,5 +198,90 @@ export const CloseModalBtnBootstrap = ({ onClick, style, className, ...props }) 
 export const CloseIconBtn = ({ style, ...props }) => {
     return (
         <CloseOutlined style={{ color: 'white', fontSize: '18px', ...style }} {...props} />
+    );
+};
+
+
+export const ResetLocationBtn = ({ onClick, style, className, ...props }) => {
+    return (
+        <ButtonBootstrap
+            variant="primary"
+            onClick={onClick}
+            className={`d-inline-flex align-items-center gap-2 ${className}`}
+            style={{
+                "--bs-btn-bg": "#D7F5FF",
+                "--bs-btn-hover-bg": "#EAFBFF", // Lighter on hover
+                "--bs-btn-active-bg": "#EAFBFF",
+                "--bs-btn-border-color": "#000", // Black border
+                fontWeight: "500",
+                fontSize: "16px",
+                padding: "5px 15px",
+                color: "#000",
+                border: "1px solid #000",
+                ...style
+            }}
+            {...props}
+        >
+            <SyncOutlined style={{ fontSize: '14px' }} />
+            <span>Reset Location</span>
+        </ButtonBootstrap>
+    );
+};
+
+export const CheckInBtn = ({ onClick, style, className, ...props }) => {
+    return (
+        <ButtonBootstrap
+            variant="primary"
+            size="lg"
+            onClick={onClick}
+            className={`d-inline-flex align-items-center justify-content-center gap-2 ${className}`}
+            style={{
+                "--bs-btn-bg": "#D7FFDB",
+                "--bs-btn-hover-bg": "#EBFFF0", // Lighter on hover
+                "--bs-btn-active-bg": "#EBFFF0",
+                "--bs-btn-border-color": "#000", // Black border
+                color: "#000",
+                fontWeight: "500",
+                fontSize: "20px",
+                padding: "10px 30px",
+                borderRadius: "8px",
+                minWidth: "160px",
+                border: "1px solid #000",
+                ...style
+            }}
+            {...props}
+        >
+            <i class="bi bi-pin-map-fill"></i>
+            <span>Check-In</span>
+        </ButtonBootstrap>
+    );
+};
+
+export const CheckOutBtn = ({ onClick, style, className, ...props }) => {
+    return (
+        <ButtonBootstrap
+            variant="primary"
+            size="lg"
+            onClick={onClick}
+            className={`d-inline-flex align-items-center justify-content-center gap-2 ${className}`}
+            style={{
+                "--bs-btn-bg": "#EFEFF0",
+                "--bs-btn-hover-bg": "#F8F9FA", // Lighter on hover
+                "--bs-btn-active-bg": "#F8F9FA",
+                "--bs-btn-border-color": "#000", // Black border
+                color: "#000",
+                fontWeight: "500",
+                fontSize: "20px",
+                padding: "10px 30px",
+                borderRadius: "8px",
+                minWidth: "160px",
+                border: "1px solid #000",
+                ...style
+            }}
+            {...props}
+        >
+           <i class="bi bi-door-open"></i>
+            <span>Check-Out</span>
+        </ButtonBootstrap>
     );
 };
