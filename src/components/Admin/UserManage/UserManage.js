@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Tag, Modal, Form, Select, Checkbox, Row, Col, Space } from 'antd';
+import { Button, Input, Modal, Form, Select, Checkbox, Row, Col, Space } from 'antd';
 import { Card } from 'react-bootstrap';
 import { SearchToolBtnBootstrap, ClearToolBtnBootstrap, AddToolBtnBootstrap, EditToolBtnBootstrap, SaveModalBtnBootstrap, CloseModalBtnBootstrap, CloseIconBtn } from "../../Utilities/Buttons/Buttons";
+import { ActiveTag, InactiveTag } from "../../Utilities/StatusTag/StatusTag";
 import TableUI from '../../Utilities/Table/TableUI';
 import { getUserManage, postUserManage, getDropdown, findLdap } from '../../../services/user-manage.service';
 import TokenService from '../../../services/token.service';
@@ -402,23 +403,7 @@ const UserManage = () => {
             dataIndex: 'is_active',
             key: 'is_active',
             align: 'center',
-            render: (status) => (
-                <Tag
-                    style={{
-                        backgroundColor: status ? "#198754" : "#DC3545",
-                        color: "white",
-                        borderRadius: "20px",
-                        minWidth: "80px",
-                        textAlign: "center",
-                        fontSize: "14px",
-                        padding: "5px 10px",
-                        border: "none",
-                        fontWeight: "normal",
-                    }}
-                >
-                    {status ? "ใช้งาน" : "ไม่ใช้งาน"}
-                </Tag>
-            ),
+            render: (status) => status ? <ActiveTag /> : <InactiveTag />,
         }
     ];
 

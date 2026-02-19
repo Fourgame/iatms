@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Tag, Modal, Form, Input, Checkbox, Row, Col, Space } from 'antd';
+import { Button, Modal, Form, Input, Checkbox, Row, Col, Space } from 'antd';
 import { Card } from 'react-bootstrap';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { AddToolBtnBootstrap, EditToolBtnBootstrap, SaveModalBtnBootstrap, CloseModalBtnBootstrap, CloseIconBtn } from "../../Utilities/Buttons/Buttons";
+import { ActiveTag, InactiveTag } from "../../Utilities/StatusTag/StatusTag";
 import TableUI from '../../Utilities/Table/TableUI';
 import RoleService from '../../../services/role.service';
 import token from '../../../services/token.service';
@@ -205,23 +206,7 @@ const Role = () => {
             dataIndex: 'is_active',
             key: 'is_active',
             SortName: 'is_active',
-            render: (status) => (
-                <Tag
-                    style={{
-                        backgroundColor: status ? "#198754" : "#DC3545",
-                        color: "white",
-                        borderRadius: "20px",
-                        minWidth: "80px",
-                        textAlign: "center",
-                        fontSize: "14px",
-                        padding: "5px 10px",
-                        border: "none",
-                        fontWeight: "normal",
-                    }}
-                >
-                    {status ? "ใช้งาน" : "ไม่ใช้งาน"}
-                </Tag>
-            ),
+            render: (status) => status ? <ActiveTag /> : <InactiveTag />,
             align: 'center',
         },
         {

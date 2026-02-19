@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from 'antd';
 import { Button as ButtonBootstrap } from 'react-bootstrap';
-import { SearchOutlined, ClearOutlined, SaveOutlined, PlusOutlined, EditOutlined, PrinterOutlined, CloseOutlined, SyncOutlined, LoginOutlined, LogoutOutlined } from '@ant-design/icons';
+import { SearchOutlined, ClearOutlined, SaveOutlined, PlusOutlined, EditOutlined, PrinterOutlined, CloseOutlined, SyncOutlined, LoginOutlined, LogoutOutlined, DeleteOutlined } from '@ant-design/icons';
 
 
 
@@ -164,6 +164,34 @@ export const EditToolBtnBootstrap = ({ onClick, style, className, ...props }) =>
     );
 };
 
+export const DeleteToolBtn = ({ onClick, style, className, ...props }) => {
+    return (
+        <ButtonBootstrap
+            variant="danger" // Use danger variant for delete actions generally, but override color below
+            size="sm"
+            onClick={onClick}
+            className={`d-inline-flex align-items-center gap-2 ${className}`}
+            style={{
+                "--bs-btn-bg": "#FFBCBC", // Custom color requested
+                "--bs-btn-border-color": "#FFBCBC",
+                "--bs-btn-hover-bg": "#ffcccc", // Slightly lighter on hover
+                "--bs-btn-hover-border-color": "#ffcccc",
+                "--bs-btn-active-bg": "#ffcccc",
+                "--bs-btn-active-border-color": "#ffcccc",
+                color: "#000", // Black text/icon for contrast
+                border: "1px solid #000", // Explicit black border to match other buttons? User didn't specify border but "like other buttons" implies it.
+                ...style
+            }}
+            {...props}
+        >
+            <i className="bi bi-trash" style={{ fontSize: '14px' }}></i> {/* User requested trash icon, similar to existing DELETE placeholder but used bootstrap icon class there. User said "Delete button from button.js like the picture". Picture has trash icon and "Delete" text. */}
+            <span style={{ color: "#000", fontWeight: "400" }}>
+                Delete
+            </span>
+        </ButtonBootstrap>
+    );
+};
+
 export const CloseModalBtnBootstrap = ({ onClick, style, className, ...props }) => {
     return (
         <ButtonBootstrap
@@ -280,7 +308,7 @@ export const CheckOutBtn = ({ onClick, style, className, ...props }) => {
             }}
             {...props}
         >
-           <i class="bi bi-door-open"></i>
+            <i class="bi bi-door-open"></i>
             <span>Check-Out</span>
         </ButtonBootstrap>
     );

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import "../../Utilities/Table/Table.css";
-import { Select, Checkbox, Tag, Modal, Form, Input, DatePicker } from "antd";
+import { Select, Checkbox, Modal, Form, Input, DatePicker } from "antd";
 import { Card } from 'react-bootstrap';
 import { getHolidays, postHolidays, getHolidayYears } from "../../../services/้้holidays.service";
 import TableUI from "../../Utilities/Table/TableUI";
 import Loading from "../../Utilities/Loading";
 import { SearchToolBtnBootstrap, ClearToolBtnBootstrap, AddToolBtnBootstrap, EditToolBtnBootstrap, SaveModalBtnBootstrap, CloseModalBtnBootstrap, CloseIconBtn } from "../../Utilities/Buttons/Buttons";
+import { ActiveTag, InactiveTag } from "../../Utilities/StatusTag/StatusTag";
 import { noticeShowMessage } from '../../Utilities/Notification';
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
@@ -419,23 +420,7 @@ const Holidays = () => {
             key: "isActive",
             align: "center",
             width: "25%",
-            render: (val) => (
-                <Tag
-                    style={{
-                        backgroundColor: val ? "#198754" : "#DC3545",
-                        color: "white",
-                        borderRadius: "20px",
-                        minWidth: "80px",
-                        textAlign: "center",
-                        fontSize: "14px",
-                        padding: "5px 10px",
-                        border: "none",
-                        fontWeight: "normal",
-                    }}
-                >
-                    {val ? "ใช้งาน" : "ไม่ใช้งาน"}
-                </Tag>
-            ),
+            render: (val) => val ? <ActiveTag /> : <InactiveTag />,
         }
     ];
 

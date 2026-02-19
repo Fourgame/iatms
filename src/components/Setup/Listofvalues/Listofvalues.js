@@ -3,10 +3,11 @@ import "../../Utilities/Table/Table.css";
 import { getLov, postLov } from "../../../services/lov.service";
 import TableUI from "../../Utilities/Table/TableUI";
 import Loading from "../../Utilities/Loading";
-import { Button, Tag, Input, Alert, Modal, Form, Checkbox } from "antd";
+import { Button, Input, Alert, Modal, Form, Checkbox } from "antd";
 import { Card } from 'react-bootstrap';
 import { noticeShowMessage } from '../../Utilities/Notification';
 import { CloseIconBtn, SearchToolBtnBootstrap, ClearToolBtnBootstrap, AddToolBtnBootstrap, EditToolBtnBootstrap, CloseModalBtnBootstrap, SaveModalBtnBootstrap } from "../../Utilities/Buttons/Buttons";
+import { ActiveTag, InactiveTag } from "../../Utilities/StatusTag/StatusTag";
 
 import { Navigate, useNavigate } from "react-router-dom";
 import AuthService from "../../../services/auth.service";
@@ -446,23 +447,7 @@ const Listofvalues = () => {
             key: "isActive",
             align: "center",
             sorter: (a, b) => Number(!!a.isActive) - Number(!!b.isActive),
-            render: (val) => (
-                <Tag
-                    style={{
-                        backgroundColor: val ? "#198754" : "#DC3545",
-                        color: "white",
-                        borderRadius: "20px",
-                        minWidth: "80px",
-                        textAlign: "center",
-                        fontSize: "14px",
-                        padding: "5px 10px",
-                        border: "none",
-                        fontWeight: "normal",
-                    }}
-                >
-                    {val ? "ใช้งาน" : "ไม่ใช้งาน"}
-                </Tag>
-            ),
+            render: (val) => val ? <ActiveTag /> : <InactiveTag />,
         },
     ];
 

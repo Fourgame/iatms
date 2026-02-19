@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Card } from 'react-bootstrap';
-import { DatePicker, Select, Form } from 'antd';
-import { SearchToolBtnBootstrap, ClearToolBtnBootstrap, AddToolBtnBootstrap } from '../../Utilities/Buttons/Buttons';
+import { Input, DatePicker, Select, Form } from 'antd';
+import { SearchToolBtnBootstrap, ClearToolBtnBootstrap, AddToolBtnBootstrap, EditToolBtnBootstrap, DeleteToolBtn } from '../../Utilities/Buttons/Buttons';
+import { RejectTag, ApproveTag, PendingApproveTag } from "../../Utilities/StatusTag/StatusTag";
+import { getAttChange } from '../../../services/att-change.service';
 import TableUI from '../../Utilities/Table/TableUI';
 import { getDropdown } from '../../../services/dropdown.service';
+import { noticeShowMessage } from '../../Utilities/Notification';
+import Loading from "../../Utilities/Loading";
 
 const { Option } = Select;
 
@@ -12,29 +16,66 @@ const AttendanceLeaveMange = () => {
     const [endDate, setEndDate] = useState(null);
     const [status, setStatus] = useState();
     const [statusList, setStatusList] = useState([]);
+    const [attChangeData, setAttChangeData] = useState([]);
+    const [originalData, setOriginalData] = useState([]); // Store original data for client-side filtering
+    const [keyword, setKeyword] = useState(""); // Add keyword state
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const fetchDropdown = async () => {
+        const fetchData = async () => {
+            setLoading(true);
             try {
-                const response = await getDropdown.get_dropdown({ type: 'AttendanceChangeStatus' });
-                if (response.data) {
-                    setStatusList(response.data);
+                const dropdownResponse = await getDropdown.get_dropdown({ type: 'AttendanceChangeStatus' });
+                if (dropdownResponse.data) {
+                    setStatusList(dropdownResponse.data);
+                }
+
+                const attChangeResponse = await getAttChange.get_att_change();
+                if (attChangeResponse.data) {
+                    setAttChangeData(attChangeResponse.data);
+                    setOriginalData(attChangeResponse.data); // Keep original data
                 }
             } catch (error) {
-                console.error("Error fetching dropdown:", error);
+                console.error("Error fetching data:", error);
+            } finally {
+                setLoading(false);
             }
         };
-        fetchDropdown();
+
+        fetchData();
     }, []);
 
-    const handleSearch = () => {
-        console.log("Search:", { startDate, endDate, status });
+    const handleSearch = async () => {
+        if (endDate && !startDate) {
+            noticeShowMessage("กรุณากรอกวันที่เริ่มต้น",true);
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const payload = {
+                startDate: startDate ? startDate.format("YYYY/MM/DD") : null,
+                endDate: endDate ? endDate.format("YYYY/MM/DD") : null,
+                dropdown: status === "ทั้งหมด" ? null : status
+            };
+
+            const response = await getAttChange.get_att_change(payload);
+            if (response.data) {
+                setAttChangeData(response.data);
+            }
+        } catch (error) {
+            console.error("Error searching attendance change:", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleClear = () => {
         setStartDate(null);
         setEndDate(null);
         setStatus("ทั้งหมด");
+        setKeyword("");
+        setAttChangeData(originalData);
     };
 
     const attColumns = [
@@ -42,68 +83,94 @@ const AttendanceLeaveMange = () => {
             title: '',
             key: 'action',
             render: (text, record) => (
-                <div style={{ textAlign: 'center' }}>
-                    {/* Placeholder for action button */}
-                    <button className="btn btn-warning btn-sm"><i className="bi bi-pencil-square"></i></button>
+                <div style={{ textAlign: 'center', display: 'flex', gap: '5px', justifyContent: 'center' }}>
+                    {record.action === 'edit' && <EditToolBtnBootstrap onClick={() => console.log("Edit", record)} />}
+                    {record.action === 'delete' && <DeleteToolBtn onClick={() => console.log("Delete", record)} />}
                 </div>
             ),
-            width: 50,
+            width: 80,
             align: 'center'
         },
         {
             title: 'วันที่',
-            dataIndex: 'date',
-            key: 'date',
-            align: 'center',
-            width: 100
-        },
-        {
-            title: 'สถานะคำขอ',
-            dataIndex: 'status',
-            key: 'status',
-            align: 'center',
-            width: 120
+            dataIndex: 'attDate',
+            key: 'attDate',
+            align: 'left',
+            width: 100,
+            sorter: (a, b) => {
+                const dateA = a.attDate || '';
+                const dateB = b.attDate || '';
+                return dateA.localeCompare(dateB);
+            },
+            render: (text) => {
+                if (!text) return "-";
+                const parts = text.includes('-') ? text.split('-') : text.split('/');
+                if (parts.length === 3) {
+                    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                }
+                return text;
+            }
         },
         {
             title: 'เหตุผลคำขอ',
             dataIndex: 'requestReason',
             key: 'requestReason',
-            width: 150
+            align: 'left',
+            width: 150,
+            sorter: (a, b) => String(a.requestReason ?? "").localeCompare(String(b.requestReason ?? "")),
+            render: (text) => (
+                <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
+                    {text && text.trim() ? text : "-"}
+                </div>
+            ),
         },
         {
             title: 'Check-In',
             children: [
                 {
                     title: 'เวลา (น.)',
-                    dataIndex: 'checkInTime',
-                    key: 'checkInTime',
+                    dataIndex: 'ciTime',
+                    key: 'ciTime',
                     align: 'center',
-                    width: 80
+                    width: 80,
+                    sorter: (a, b) => String(a.ciTime ?? "").localeCompare(String(b.ciTime ?? "")),
+                    render: (text) => text ?? "-"
                 },
                 {
                     title: 'ตำแหน่ง',
-                    dataIndex: 'checkInLocation',
-                    key: 'checkInLocation',
-                    width: 120
+                    dataIndex: 'ciLocation',
+                    key: 'ciLocation',
+                    align: 'center',
+                    width: 120,
+                    render: (text) => text ?? "-"
                 },
                 {
                     title: 'เหตุผล',
-                    dataIndex: 'checkInReason',
-                    key: 'checkInReason',
-                    width: 120
+                    dataIndex: 'ciReason',
+                    key: 'ciReason',
+                    align: 'left',
+                    width: 120,
+                    render: (text) => (
+                        <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
+                            {text && text.trim() ? text : "-"}
+                        </div>
+                    ),
                 },
                 {
                     title: 'เวลาที่ขอแก้ไข (น.)',
-                    dataIndex: 'checkInEditTime',
-                    key: 'checkInEditTime',
+                    dataIndex: 'ciTimeNew',
+                    key: 'ciTimeNew',
                     align: 'center',
-                    width: 120
+                    width: 120,
+                    render: (text) => text ?? "-"
                 },
                 {
                     title: 'ตำแหน่งที่ขอแก้ไข',
-                    dataIndex: 'checkInEditLocation',
-                    key: 'checkInEditLocation',
-                    width: 120
+                    dataIndex: 'ciLocationNew',
+                    key: 'ciLocationNew',
+                    align: 'center',
+                    width: 120,
+                    render: (text) => text ?? "-"
                 }
             ]
         },
@@ -112,37 +179,69 @@ const AttendanceLeaveMange = () => {
             children: [
                 {
                     title: 'เวลา (น.)',
-                    dataIndex: 'checkOutTime',
-                    key: 'checkOutTime',
+                    dataIndex: 'coTime',
+                    key: 'coTime',
                     align: 'center',
-                    width: 80
+                    width: 80,
+                    sorter: (a, b) => String(a.coTime ?? "").localeCompare(String(b.coTime ?? "")),
+                    render: (text) => text ?? "-"
                 },
                 {
                     title: 'ตำแหน่ง',
-                    dataIndex: 'checkOutLocation',
-                    key: 'checkOutLocation',
-                    width: 120
+                    dataIndex: 'coLocation',
+                    key: 'coLocation',
+                    align: 'center',
+                    width: 120,
+                    render: (text) => text ?? "-"
                 },
                 {
                     title: 'เหตุผล',
-                    dataIndex: 'checkOutReason',
-                    key: 'checkOutReason',
-                    width: 120
+                    dataIndex: 'coReason',
+                    key: 'coReason',
+                    align: 'left',
+                    width: 120,
+                    render: (text) => (
+                        <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
+                            {text && text.trim() ? text : "-"}
+                        </div>
+                    ),
                 },
                 {
                     title: 'เวลาที่ขอแก้ไข (น.)',
-                    dataIndex: 'checkOutEditTime',
-                    key: 'checkOutEditTime',
+                    dataIndex: 'coTimeNew',
+                    key: 'coTimeNew',
                     align: 'center',
-                    width: 120
+                    width: 120,
+                    render: (text) => text ?? "-"
                 },
                 {
                     title: 'ตำแหน่งที่ขอแก้ไข',
-                    dataIndex: 'checkOutEditLocation',
-                    key: 'checkOutEditLocation',
-                    width: 120
+                    dataIndex: 'coLocationNew',
+                    key: 'coLocationNew',
+                    align: 'center',
+                    width: 120,
+                    render: (text) => text ?? "-"
                 }
             ]
+        },
+        {
+            title: 'สถานะคำขอ',
+            dataIndex: 'changeStatus',
+            key: 'changeStatus',
+            align: 'center',
+            width: 120,
+            sorter: (a, b) => String(a.changeStatus ?? "").localeCompare(String(b.changeStatus ?? "")),
+
+            render: (text) => {
+                const status = text ? String(text).trim() : "-";
+                switch (status) {
+                    case 'Rj': return <RejectTag />;
+                    case 'AP':
+                    case 'Ap': return <ApproveTag />;
+                    case 'PA': return <PendingApproveTag />;
+                    default: return status;
+                }
+            }
         }
     ];
 
@@ -216,6 +315,7 @@ const AttendanceLeaveMange = () => {
 
     return (
         <div style={{ paddingLeft: '20px', paddingRight: '20px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
+            {loading && <Loading />}
             <Card
                 className="shadow-sm border-0"
                 style={{
@@ -264,6 +364,8 @@ const AttendanceLeaveMange = () => {
                                     value={endDate}
                                     onChange={(date) => setEndDate(date)}
                                     style={{ width: 140 }}
+
+
                                 />
                             </div>
                         </div>
@@ -285,7 +387,8 @@ const AttendanceLeaveMange = () => {
                             </Form>
                         </div>
 
-                        <div style={{ marginLeft: "auto", display: 'flex', gap: '10px' }}>
+                        <div style={{ marginLeft: "auto", display: 'flex', gap: '10px', alignItems: 'center' }}>
+
                             <SearchToolBtnBootstrap onClick={handleSearch} />
                             <ClearToolBtnBootstrap onClick={handleClear} />
                         </div>
@@ -293,10 +396,11 @@ const AttendanceLeaveMange = () => {
                     <div style={{ marginTop: "5px" }}>
                         <TableUI
                             columns={attColumns}
-                            dataSource={[]}
-                            pagination={false}
+                            dataSource={attChangeData}
+                            pagination={true}
                             bordered={true}
                             size="small"
+                            rowKey={(record, index) => index}
                         />
                     </div>
                 </Card.Body>
