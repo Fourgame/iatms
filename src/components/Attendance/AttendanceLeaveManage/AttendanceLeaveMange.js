@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Card } from 'react-bootstrap';
-import { DatePicker, Select, Form } from 'antd';
+import { DatePicker, Select, Form, Tag } from 'antd';
 import { SearchToolBtnBootstrap, ClearToolBtnBootstrap, AddToolBtnBootstrap } from '../../Utilities/Buttons/Buttons';
 import TableUI from '../../Utilities/Table/TableUI';
 import { getDropdown } from '../../../services/dropdown.service';
+import { getLeave } from '../../../services/leave.service';
+import TokenService from '../../../services/token.service';
+import moment from 'moment';
 
 const { Option } = Select;
 
@@ -12,6 +15,8 @@ const AttendanceLeaveMange = () => {
     const [endDate, setEndDate] = useState(null);
     const [status, setStatus] = useState();
     const [statusList, setStatusList] = useState([]);
+    const [leaveHistory, setLeaveHistory] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const fetchDropdown = async () => {
@@ -24,17 +29,84 @@ const AttendanceLeaveMange = () => {
                 console.error("Error fetching dropdown:", error);
             }
         };
+
         fetchDropdown();
+        fetchLeaveData();
     }, []);
 
+    const fetchLeaveData = async (searchParams = {}) => {
+        setLoading(true);
+        try {
+            const user = TokenService.getUser();
+            const username = user?.profile?.oa_user;
+            if (username) {
+                const payload = {
+                    username: username,
+                    startDate: searchParams.startDate ? searchParams.startDate : null,
+                    endDate: searchParams.endDate ? searchParams.endDate : null,
+                    status: searchParams.status
+                };
+
+                // Debug log to check incoming params
+                console.log("fetchLeaveData payload:", payload);
+
+                const cleanPayload = Object.fromEntries(
+                    Object.entries(payload).filter(([_, v]) => v != null && v !== "")
+                );
+
+                const response = await getLeave.get_leave(cleanPayload);
+                if (response.data) {
+                    const formattedData = response.data.map((item, index) => {
+                        let durationDisplay = '-';
+                        if (item.total_hours) {
+                            if (item.total_hours >= 24) {
+                                const days = Math.floor(item.total_hours / 24);
+                                const workHours = days * 8;
+                                durationDisplay = `${days} วัน, ${workHours} ชั่วโมง`;
+                            } else {
+                                durationDisplay = `${item.total_hours} ชั่วโมง`;
+                            }
+                        }
+
+                        return {
+                            ...item,
+                            key: index,
+                            duration: durationDisplay,
+                            timeRange: item.start_time && item.end_time
+                                ? `${moment(item.start_time).format('HH:mm')} - ${moment(item.end_time).format('HH:mm')}`
+                                : '-',
+                            startDate: item.start_date ? moment(item.start_date).format('DD/MM/YYYY') : '-',
+                            endDate: item.end_date ? moment(item.end_date).format('DD/MM/YYYY') : '-'
+                        };
+                    });
+                    setLeaveHistory(formattedData);
+                } else {
+                    setLeaveHistory([]); // Clear table if no data
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching leave data:", error);
+            setLeaveHistory([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleSearch = () => {
-        console.log("Search:", { startDate, endDate, status });
+        const searchParams = {
+            startDate: startDate ? startDate.format("YYYY-MM-DD") : null,
+            endDate: endDate ? endDate.format("YYYY-MM-DD") : null,
+            status: status && status !== "ทั้งหมด" ? status : null
+        };
+        console.log("handleSearch params:", searchParams);
+        fetchLeaveData(searchParams);
     };
 
     const handleClear = () => {
         setStartDate(null);
         setEndDate(null);
         setStatus("ทั้งหมด");
+        fetchLeaveData();
     };
 
     const attColumns = [
@@ -150,33 +222,74 @@ const AttendanceLeaveMange = () => {
         {
             title: (
                 <div style={{ textAlign: 'center' }}>
-                    <AddToolBtnBootstrap onClick={() => console.log("Add Leave Request")} />
+                    <button
+                        className="btn btn-success btn-sm"
+                        style={{ fontWeight: 'bold' }}
+                        onClick={() => console.log("Add Leave Request")}
+                    >
+                        + Add
+                    </button>
                 </div>
             ),
             key: 'action',
             render: (text, record) => (
                 <div style={{ textAlign: 'center' }}>
-                    {/* Placeholder for action button */}
-                    <button className="btn btn-warning btn-sm"><i className="bi bi-pencil-square"></i></button>
-                    <button className="btn btn-danger btn-sm ms-2"><i className="bi bi-trash"></i></button>
+                    {/* Logic to show Edit or Delete could go here, for now showing styled Edit */}
+                    <button className="btn btn-warning btn-sm" style={{ fontWeight: 'bold', color: '#000' }}>
+                        <i className="bi bi-pencil-square me-1"></i> Edit
+                    </button>
                 </div>
             ),
-            width: 120,
+            width: 100,
             align: 'center'
         },
         {
             title: 'ประเภทวันลา',
-            dataIndex: 'leaveType',
-            key: 'leaveType',
+            dataIndex: 'type_leave',
+            key: 'type_leave',
             align: 'center',
             width: 150
         },
         {
             title: 'สถานะ',
-            dataIndex: 'status',
-            key: 'status',
+            dataIndex: 'status_request',
+            key: 'status_request',
             align: 'center',
-            width: 120
+            width: 150,
+            render: (status) => {
+                let color = '#d9d9d9'; // Default gray
+                let textColor = 'white';
+
+                // Map status to colors based on screenshot
+                // Reject -> Red
+                // Approve -> Green
+                // Pending Approve -> Yellow/Orange
+
+                const statusLower = status ? status.toLowerCase() : '';
+
+                if (statusLower.includes('approve') && !statusLower.includes('pending')) {
+                    color = '#28a745'; // Green
+                } else if (statusLower.includes('reject')) {
+                    color = '#dc3545'; // Red
+                } else if (statusLower.includes('pending')) {
+                    color = '#ffc107'; // Yellow/Orange
+                    textColor = 'black'; // Black text for yellow background
+                }
+
+                return (
+                    <div style={{
+                        backgroundColor: color,
+                        color: textColor,
+                        borderRadius: '15px',
+                        padding: '4px 12px',
+                        display: 'inline-block',
+                        fontWeight: 'bold',
+                        minWidth: '100px'
+                    }}>
+                        {status || '-'}
+                    </div>
+                );
+            }
         },
         {
             title: 'วันที่เริ่มต้น',
@@ -197,7 +310,7 @@ const AttendanceLeaveMange = () => {
             dataIndex: 'duration',
             key: 'duration',
             align: 'center',
-            width: 100
+            width: 120
         },
         {
             title: 'ช่วงเวลา (น.)',
@@ -215,7 +328,7 @@ const AttendanceLeaveMange = () => {
     ];
 
     return (
-        <div style={{ paddingLeft: '20px', paddingRight: '20px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
+        <div style={{ paddingLeft: '20px', paddingRight: '20px', paddingBottom: '40px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
             <Card
                 className="shadow-sm border-0"
                 style={{
@@ -382,10 +495,11 @@ const AttendanceLeaveMange = () => {
                     <div style={{ marginTop: "5px" }}>
                         <TableUI
                             columns={leaveColumns}
-                            dataSource={[]}
+                            dataSource={leaveHistory}
                             pagination={false}
                             bordered={true}
                             size="small"
+                            loading={loading}
                         />
                     </div>
                 </Card.Body>
