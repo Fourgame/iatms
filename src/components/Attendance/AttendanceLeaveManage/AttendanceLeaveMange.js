@@ -1,70 +1,147 @@
 import { useState, useEffect } from 'react';
 import { Card } from 'react-bootstrap';
-import { Input, DatePicker, Select, Form } from 'antd';
+import { DatePicker, Select, Form, Input } from 'antd';
 import { SearchToolBtnBootstrap, ClearToolBtnBootstrap, AddToolBtnBootstrap, EditToolBtnBootstrap, DeleteToolBtn } from '../../Utilities/Buttons/Buttons';
 import { RejectTag, ApproveTag, PendingApproveTag } from "../../Utilities/StatusTag/StatusTag";
 import { getAttChange } from '../../../services/att-change.service';
+import { getLeave } from '../../../services/leave.service';
+import TokenService from '../../../services/token.service';
 import TableUI from '../../Utilities/Table/TableUI';
 import { getDropdown } from '../../../services/dropdown.service';
 import { noticeShowMessage } from '../../Utilities/Notification';
 import Loading from "../../Utilities/Loading";
+import moment from 'moment';
 
 const { Option } = Select;
 
 const AttendanceLeaveMange = () => {
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
-    const [status, setStatus] = useState();
+    const [status, setStatus] = useState("ทั้งหมด");
     const [statusList, setStatusList] = useState([]);
+
+    // Attendance Change State
     const [attChangeData, setAttChangeData] = useState([]);
-    const [originalData, setOriginalData] = useState([]); // Store original data for client-side filtering
-    const [keyword, setKeyword] = useState(""); // Add keyword state
+    const [originalData, setOriginalData] = useState([]);
+    const [keyword, setKeyword] = useState("");
+
+    // Leave Request State
+    const [leaveHistory, setLeaveHistory] = useState([]);
+
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchInitialData = async () => {
             setLoading(true);
             try {
+                // Fetch Dropdown
                 const dropdownResponse = await getDropdown.get_dropdown({ type: 'AttendanceChangeStatus' });
                 if (dropdownResponse.data) {
                     setStatusList(dropdownResponse.data);
                 }
 
+                // Fetch Attendance Change
                 const attChangeResponse = await getAttChange.get_att_change();
                 if (attChangeResponse.data) {
                     setAttChangeData(attChangeResponse.data);
-                    setOriginalData(attChangeResponse.data); // Keep original data
+                    setOriginalData(attChangeResponse.data);
                 }
+
+                // Fetch Leave Data
+                await fetchLeaveData();
+
             } catch (error) {
-                console.error("Error fetching data:", error);
+                console.error("Error fetching initial data:", error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchData();
+        fetchInitialData();
     }, []);
+
+    const fetchLeaveData = async (searchParams = {}) => {
+        try {
+            const user = TokenService.getUser();
+            const username = user?.profile?.oa_user;
+            if (username) {
+                const payload = {
+                    username: username,
+                    startDate: searchParams.startDate || null,
+                    endDate: searchParams.endDate || null,
+                    status: searchParams.status || null
+                };
+
+                const cleanPayload = Object.fromEntries(
+                    Object.entries(payload).filter(([_, v]) => v != null && v !== "")
+                );
+
+                const response = await getLeave.get_leave(cleanPayload);
+                if (response.data) {
+                    const formattedData = response.data.map((item, index) => {
+                        let durationDisplay = '-';
+                        if (item.total_hours) {
+                            if (item.total_hours >= 24) {
+                                const days = Math.floor(item.total_hours / 24);
+                                const workHours = days * 8;
+                                durationDisplay = `${days} วัน, ${workHours} ชั่วโมง`;
+                            } else {
+                                durationDisplay = `${item.total_hours} ชั่วโมง`;
+                            }
+                        }
+
+                        return {
+                            ...item,
+                            key: index,
+                            duration: durationDisplay,
+                            timeRange: item.start_time && item.end_time
+                                ? `${moment(item.start_time).format('HH:mm')} - ${moment(item.end_time).format('HH:mm')}`
+                                : '-',
+                            startDate: item.start_date ? moment(item.start_date).format('DD/MM/YYYY') : '-',
+                            endDate: item.end_date ? moment(item.end_date).format('DD/MM/YYYY') : '-'
+                        };
+                    });
+                    setLeaveHistory(formattedData);
+                } else {
+                    setLeaveHistory([]);
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching leave data:", error);
+            setLeaveHistory([]);
+        }
+    };
 
     const handleSearch = async () => {
         if (endDate && !startDate) {
-            noticeShowMessage("กรุณากรอกวันที่เริ่มต้น",true);
+            noticeShowMessage("กรุณากรอกวันที่เริ่มต้น", true);
             return;
         }
 
         setLoading(true);
         try {
-            const payload = {
+            // 1. Search Attendance Change
+            const attPayload = {
                 startDate: startDate ? startDate.format("YYYY/MM/DD") : null,
                 endDate: endDate ? endDate.format("YYYY/MM/DD") : null,
                 dropdown: status === "ทั้งหมด" ? null : status
             };
 
-            const response = await getAttChange.get_att_change(payload);
-            if (response.data) {
-                setAttChangeData(response.data);
+            const attResponse = await getAttChange.get_att_change(attPayload);
+            if (attResponse.data) {
+                setAttChangeData(attResponse.data);
             }
+
+            // 2. Search Leave Request
+            const leaveParams = {
+                startDate: startDate ? startDate.format("YYYY-MM-DD") : null,
+                endDate: endDate ? endDate.format("YYYY-MM-DD") : null,
+                status: status === "ทั้งหมด" ? null : status
+            };
+            await fetchLeaveData(leaveParams);
+
         } catch (error) {
-            console.error("Error searching attendance change:", error);
+            console.error("Error searching:", error);
         } finally {
             setLoading(false);
         }
@@ -75,7 +152,18 @@ const AttendanceLeaveMange = () => {
         setEndDate(null);
         setStatus("ทั้งหมด");
         setKeyword("");
-        setAttChangeData(originalData);
+
+        // Refetch Initial Data
+        setLoading(true);
+        Promise.all([
+            getAttChange.get_att_change().then(res => {
+                if (res.data) {
+                    setAttChangeData(res.data);
+                    setOriginalData(res.data);
+                }
+            }),
+            fetchLeaveData()
+        ]).finally(() => setLoading(false));
     };
 
     const attColumns = [
@@ -249,33 +337,67 @@ const AttendanceLeaveMange = () => {
         {
             title: (
                 <div style={{ textAlign: 'center' }}>
-                    <AddToolBtnBootstrap onClick={() => console.log("Add Leave Request")} />
+                    <button
+                        className="btn btn-success btn-sm"
+                        style={{ fontWeight: 'bold' }}
+                        onClick={() => console.log("Add Leave Request")}
+                    >
+                        + Add
+                    </button>
                 </div>
             ),
             key: 'action',
             render: (text, record) => (
                 <div style={{ textAlign: 'center' }}>
-                    {/* Placeholder for action button */}
-                    <button className="btn btn-warning btn-sm"><i className="bi bi-pencil-square"></i></button>
-                    <button className="btn btn-danger btn-sm ms-2"><i className="bi bi-trash"></i></button>
+                    <button className="btn btn-warning btn-sm" style={{ fontWeight: 'bold', color: '#000' }}>
+                        <i className="bi bi-pencil-square me-1"></i> Edit
+                    </button>
                 </div>
             ),
-            width: 120,
+            width: 100,
             align: 'center'
         },
         {
             title: 'ประเภทวันลา',
-            dataIndex: 'leaveType',
-            key: 'leaveType',
+            dataIndex: 'type_leave',
+            key: 'type_leave',
             align: 'center',
             width: 150
         },
         {
             title: 'สถานะ',
-            dataIndex: 'status',
-            key: 'status',
+            dataIndex: 'status_request',
+            key: 'status_request',
             align: 'center',
-            width: 120
+            width: 150,
+            render: (status) => {
+                let color = '#d9d9d9';
+                let textColor = 'white';
+                const statusLower = status ? status.toLowerCase() : '';
+
+                if (statusLower.includes('approve') && !statusLower.includes('pending')) {
+                    color = '#28a745';
+                } else if (statusLower.includes('reject')) {
+                    color = '#dc3545';
+                } else if (statusLower.includes('pending')) {
+                    color = '#ffc107';
+                    textColor = 'black';
+                }
+
+                return (
+                    <div style={{
+                        backgroundColor: color,
+                        color: textColor,
+                        borderRadius: '15px',
+                        padding: '4px 12px',
+                        display: 'inline-block',
+                        fontWeight: 'bold',
+                        minWidth: '100px'
+                    }}>
+                        {status || '-'}
+                    </div>
+                );
+            }
         },
         {
             title: 'วันที่เริ่มต้น',
@@ -296,7 +418,7 @@ const AttendanceLeaveMange = () => {
             dataIndex: 'duration',
             key: 'duration',
             align: 'center',
-            width: 100
+            width: 120
         },
         {
             title: 'ช่วงเวลา (น.)',
@@ -314,8 +436,10 @@ const AttendanceLeaveMange = () => {
     ];
 
     return (
-        <div style={{ paddingLeft: '20px', paddingRight: '20px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
+        <div style={{ paddingLeft: '20px', paddingRight: '20px', paddingBottom: '40px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
             {loading && <Loading />}
+
+            {/* Attendance Change Card */}
             <Card
                 className="shadow-sm border-0"
                 style={{
@@ -364,8 +488,6 @@ const AttendanceLeaveMange = () => {
                                     value={endDate}
                                     onChange={(date) => setEndDate(date)}
                                     style={{ width: 140 }}
-
-
                                 />
                             </div>
                         </div>
@@ -379,6 +501,7 @@ const AttendanceLeaveMange = () => {
                                         onChange={(value) => setStatus(value)}
                                         style={{ width: 150 }}
                                     >
+                                        <Option value="ทั้งหมด">ทั้งหมด</Option>
                                         {statusList.map((item) => (
                                             <Option key={item.value} value={item.value}>{item.label}</Option>
                                         ))}
@@ -388,7 +511,6 @@ const AttendanceLeaveMange = () => {
                         </div>
 
                         <div style={{ marginLeft: "auto", display: 'flex', gap: '10px', alignItems: 'center' }}>
-
                             <SearchToolBtnBootstrap onClick={handleSearch} />
                             <ClearToolBtnBootstrap onClick={handleClear} />
                         </div>
@@ -404,10 +526,9 @@ const AttendanceLeaveMange = () => {
                         />
                     </div>
                 </Card.Body>
-
-
             </Card>
 
+            {/* Leave Request Card */}
             <Card
                 className="shadow-sm border-0"
                 style={{
@@ -470,6 +591,7 @@ const AttendanceLeaveMange = () => {
                                         onChange={(value) => setStatus(value)}
                                         style={{ width: 150 }}
                                     >
+                                        <Option value="ทั้งหมด">ทั้งหมด</Option>
                                         {statusList.map((item) => (
                                             <Option key={item.value} value={item.value}>{item.label}</Option>
                                         ))}
@@ -486,15 +608,14 @@ const AttendanceLeaveMange = () => {
                     <div style={{ marginTop: "5px" }}>
                         <TableUI
                             columns={leaveColumns}
-                            dataSource={[]}
+                            dataSource={leaveHistory}
                             pagination={false}
                             bordered={true}
                             size="small"
+                            loading={loading}
                         />
                     </div>
                 </Card.Body>
-
-
             </Card>
         </div>
     );

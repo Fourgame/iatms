@@ -108,6 +108,10 @@ export const TableUI = (props) => {
       }
       expandable={props.expandable}
       rowClassName={(record, index) => {
+        if (typeof props.rowClassName === 'function') {
+          return props.rowClassName(record, index);
+        }
+
         return props.rowClassName || "";
       }}
       rowSelection={

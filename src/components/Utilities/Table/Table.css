@@ -17,11 +17,12 @@ thead[class="ant-table-thead"] th {
   /* / ให้ภาพเต็มพื้นที่ / */
   background-position: center;
   color: #000000 !important;
-  /* / ปรับสีตัวอักษรให้ตัดกับพื้นหลัง */ 
+  /* / ปรับสีตัวอักษรให้ตัดกับพื้นหลัง */
   text-align: center !important;
   z-index: 0;
   font-weight: bold;
 }
+
 .ant-table {
   background-color: #ffffff17 !important;
   z-index: 0;
@@ -32,9 +33,20 @@ thead[class="ant-table-thead"] th {
   background-color: #ffffffeb;
 }
 
+
 .table-row-dark {
   background-color: transparent;
 }
+
+/* เจาะจงไปที่ td ทุกตัวที่อยู่ในแถวที่เป็น error */
+.table-row-error td {
+  color: #000000 !important;
+}
+
+.table-striped-rows tr.table-row-error:nth-child(n) td {
+  background-color: #ffa9a9 !important;
+}
+
 
 .table-striped-rows tr:nth-child(2n) td {
   background-color: #f7f7f7f3;
