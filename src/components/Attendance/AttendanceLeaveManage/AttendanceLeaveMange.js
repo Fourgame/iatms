@@ -384,23 +384,7 @@ const AttendanceLeaveMange = () => {
             align: 'center',
             width: 150
         },
-        {
-            title: 'สถานะ',
-            dataIndex: 'status_request',
-            key: 'status_request',
-            align: 'center',
-            width: 120,
-            sorter: (a, b) => String(a.status_request ?? "").localeCompare(String(b.status_request ?? "")),
-            render: (text) => {
-                const status = text ? String(text).trim() : "-";
-                switch (status) {
-                    case 'Rejected': return <RejectTag />;
-                    case 'Approved': return <ApproveTag />;
-                    case 'Pending Approval': return <PendingApproveTag />;
-                    default: return status;
-                }
-            }
-        },
+
         {
             title: 'วันที่เริ่มต้น',
             dataIndex: 'startDate',
@@ -434,7 +418,24 @@ const AttendanceLeaveMange = () => {
             dataIndex: 'reason',
             key: 'reason',
             width: 200
-        }
+        },
+        {
+            title: 'สถานะ',
+            dataIndex: 'status_request',
+            key: 'status_request',
+            align: 'center',
+            width: 120,
+            sorter: (a, b) => String(a.status_request ?? "").localeCompare(String(b.status_request ?? "")),
+            render: (text) => {
+                const status = text ? String(text).trim() : "-";
+                switch (status) {
+                    case 'Rejected': return <RejectTag />;
+                    case 'Approved': return <ApproveTag />;
+                    case 'Pending Approval': return <PendingApproveTag />;
+                    default: return status;
+                }
+            }
+        },
     ];
 
     return (
