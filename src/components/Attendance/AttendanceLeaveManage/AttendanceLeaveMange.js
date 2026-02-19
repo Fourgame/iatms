@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card } from 'react-bootstrap';
-import { DatePicker, Select, Form, Input } from 'antd';
+import { DatePicker, Select, Form } from 'antd';
 import { SearchToolBtnBootstrap, ClearToolBtnBootstrap, AddToolBtnBootstrap, EditToolBtnBootstrap, DeleteToolBtn } from '../../Utilities/Buttons/Buttons';
 import { RejectTag, ApproveTag, PendingApproveTag } from "../../Utilities/StatusTag/StatusTag";
 import { getAttChange } from '../../../services/att-change.service';
@@ -15,17 +15,24 @@ import moment from 'moment';
 const { Option } = Select;
 
 const AttendanceLeaveMange = () => {
-    const [startDate, setStartDate] = useState(null);
-    const [endDate, setEndDate] = useState(null);
-    const [status, setStatus] = useState("ทั้งหมด");
-    const [statusList, setStatusList] = useState([]);
-
     // Attendance Change State
+    const [attStartDate, setAttStartDate] = useState(null);
+    const [attEndDate, setAttEndDate] = useState(null);
+    const [attStatus, setAttStatus] = useState("ทั้งหมด");
+    const [attStatusList, setAttStatusList] = useState([]);
     const [attChangeData, setAttChangeData] = useState([]);
     const [originalData, setOriginalData] = useState([]);
-    const [keyword, setKeyword] = useState("");
 
     // Leave Request State
+    const [leaveStartDate, setLeaveStartDate] = useState(null);
+    const [leaveEndDate, setLeaveEndDate] = useState(null);
+    const [leaveStatus, setLeaveStatus] = useState("ทั้งหมด");
+    // const [leaveStatusList, setLeaveStatusList] = useState([]); // Use status tag if API fails
+    // But since user tried LeaveStatus, let's keep it consistent or use fixed list based on "status tag"
+    // "pull status from status tag" implies hardcoded list matching tags?
+    // Let's use a fixed list based on tags: Reject, Approve, Pending Approve
+    // Or if there is an API, use it. But I should add the state anyway.
+    const [leaveStatusList, setLeaveStatusList] = useState([]);
     const [leaveHistory, setLeaveHistory] = useState([]);
 
     const [loading, setLoading] = useState(false);
@@ -34,10 +41,15 @@ const AttendanceLeaveMange = () => {
         const fetchInitialData = async () => {
             setLoading(true);
             try {
-                // Fetch Dropdown
-                const dropdownResponse = await getDropdown.get_dropdown({ type: 'AttendanceChangeStatus' });
-                if (dropdownResponse.data) {
-                    setStatusList(dropdownResponse.data);
+                // Fetch Dropdowns
+                const attDropdownResponse = await getDropdown.get_dropdown({ type: 'AttendanceChangeStatus' });
+                if (attDropdownResponse.data) {
+                    setAttStatusList(attDropdownResponse.data);
+                }
+
+                const leaveDropdownResponse = await getDropdown.get_dropdown({ type: 'LeaveStatus' });
+                if (leaveDropdownResponse.data) {
+                    setLeaveStatusList(leaveDropdownResponse.data);
                 }
 
                 // Fetch Attendance Change
@@ -112,58 +124,75 @@ const AttendanceLeaveMange = () => {
         }
     };
 
-    const handleSearch = async () => {
-        if (endDate && !startDate) {
+    // --- Attendance Change Handlers ---
+    const handleAttSearch = async () => {
+        if (attEndDate && !attStartDate) {
             noticeShowMessage("กรุณากรอกวันที่เริ่มต้น", true);
             return;
         }
 
         setLoading(true);
         try {
-            // 1. Search Attendance Change
             const attPayload = {
-                startDate: startDate ? startDate.format("YYYY/MM/DD") : null,
-                endDate: endDate ? endDate.format("YYYY/MM/DD") : null,
-                dropdown: status === "ทั้งหมด" ? null : status
+                startDate: attStartDate ? attStartDate.format("YYYY/MM/DD") : null,
+                endDate: attEndDate ? attEndDate.format("YYYY/MM/DD") : null,
+                dropdown: attStatus === "ทั้งหมด" ? null : attStatus
             };
 
             const attResponse = await getAttChange.get_att_change(attPayload);
             if (attResponse.data) {
                 setAttChangeData(attResponse.data);
             }
-
-            // 2. Search Leave Request
-            const leaveParams = {
-                startDate: startDate ? startDate.format("YYYY-MM-DD") : null,
-                endDate: endDate ? endDate.format("YYYY-MM-DD") : null,
-                status: status === "ทั้งหมด" ? null : status
-            };
-            await fetchLeaveData(leaveParams);
-
         } catch (error) {
-            console.error("Error searching:", error);
+            console.error("Error searching attendance:", error);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleClear = () => {
-        setStartDate(null);
-        setEndDate(null);
-        setStatus("ทั้งหมด");
-        setKeyword("");
+    const handleAttClear = () => {
+        setAttStartDate(null);
+        setAttEndDate(null);
+        setAttStatus("ทั้งหมด");
 
-        // Refetch Initial Data
         setLoading(true);
-        Promise.all([
-            getAttChange.get_att_change().then(res => {
-                if (res.data) {
-                    setAttChangeData(res.data);
-                    setOriginalData(res.data);
-                }
-            }),
-            fetchLeaveData()
-        ]).finally(() => setLoading(false));
+        getAttChange.get_att_change().then(res => {
+            if (res.data) {
+                setAttChangeData(res.data);
+                setOriginalData(res.data);
+            }
+        }).finally(() => setLoading(false));
+    };
+
+    // --- Leave Request Handlers ---
+    const handleLeaveSearch = async () => {
+        if (leaveEndDate && !leaveStartDate) {
+            noticeShowMessage("กรุณากรอกวันที่เริ่มต้น", true);
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const leaveParams = {
+                startDate: leaveStartDate ? leaveStartDate.format("YYYY-MM-DD") : null,
+                endDate: leaveEndDate ? leaveEndDate.format("YYYY-MM-DD") : null,
+                status: leaveStatus === "ทั้งหมด" ? null : leaveStatus
+            };
+            await fetchLeaveData(leaveParams);
+        } catch (error) {
+            console.error("Error searching leave:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleLeaveClear = () => {
+        setLeaveStartDate(null);
+        setLeaveEndDate(null);
+        setLeaveStatus("ทั้งหมด");
+
+        setLoading(true);
+        fetchLeaveData().finally(() => setLoading(false));
     };
 
     const attColumns = [
@@ -324,7 +353,6 @@ const AttendanceLeaveMange = () => {
                 const status = text ? String(text).trim() : "-";
                 switch (status) {
                     case 'Rj': return <RejectTag />;
-                    case 'AP':
                     case 'Ap': return <ApproveTag />;
                     case 'PA': return <PendingApproveTag />;
                     default: return status;
@@ -337,21 +365,13 @@ const AttendanceLeaveMange = () => {
         {
             title: (
                 <div style={{ textAlign: 'center' }}>
-                    <button
-                        className="btn btn-success btn-sm"
-                        style={{ fontWeight: 'bold' }}
-                        onClick={() => console.log("Add Leave Request")}
-                    >
-                        + Add
-                    </button>
+                    <AddToolBtnBootstrap onClick={() => console.log("Add Leave Request")} />
                 </div>
             ),
             key: 'action',
             render: (text, record) => (
                 <div style={{ textAlign: 'center' }}>
-                    <button className="btn btn-warning btn-sm" style={{ fontWeight: 'bold', color: '#000' }}>
-                        <i className="bi bi-pencil-square me-1"></i> Edit
-                    </button>
+                    <EditToolBtnBootstrap onClick={() => console.log("Edit Leave", record)} />
                 </div>
             ),
             width: 100,
@@ -364,41 +384,7 @@ const AttendanceLeaveMange = () => {
             align: 'center',
             width: 150
         },
-        {
-            title: 'สถานะ',
-            dataIndex: 'status_request',
-            key: 'status_request',
-            align: 'center',
-            width: 150,
-            render: (status) => {
-                let color = '#d9d9d9';
-                let textColor = 'white';
-                const statusLower = status ? status.toLowerCase() : '';
 
-                if (statusLower.includes('approve') && !statusLower.includes('pending')) {
-                    color = '#28a745';
-                } else if (statusLower.includes('reject')) {
-                    color = '#dc3545';
-                } else if (statusLower.includes('pending')) {
-                    color = '#ffc107';
-                    textColor = 'black';
-                }
-
-                return (
-                    <div style={{
-                        backgroundColor: color,
-                        color: textColor,
-                        borderRadius: '15px',
-                        padding: '4px 12px',
-                        display: 'inline-block',
-                        fontWeight: 'bold',
-                        minWidth: '100px'
-                    }}>
-                        {status || '-'}
-                    </div>
-                );
-            }
-        },
         {
             title: 'วันที่เริ่มต้น',
             dataIndex: 'startDate',
@@ -432,7 +418,24 @@ const AttendanceLeaveMange = () => {
             dataIndex: 'reason',
             key: 'reason',
             width: 200
-        }
+        },
+        {
+            title: 'สถานะ',
+            dataIndex: 'status_request',
+            key: 'status_request',
+            align: 'center',
+            width: 120,
+            sorter: (a, b) => String(a.status_request ?? "").localeCompare(String(b.status_request ?? "")),
+            render: (text) => {
+                const status = text ? String(text).trim() : "-";
+                switch (status) {
+                    case 'Rejected': return <RejectTag />;
+                    case 'Approved': return <ApproveTag />;
+                    case 'Pending Approval': return <PendingApproveTag />;
+                    default: return status;
+                }
+            }
+        },
     ];
 
     return (
@@ -476,8 +479,8 @@ const AttendanceLeaveMange = () => {
                                     format="DD/MM/YYYY"
                                     placeholder="DD/MM/YYYY"
                                     inputReadOnly={true}
-                                    value={startDate}
-                                    onChange={(date) => setStartDate(date)}
+                                    value={attStartDate}
+                                    onChange={(date) => setAttStartDate(date)}
                                     style={{ width: 140 }}
                                 />
                                 <span>-</span>
@@ -485,8 +488,8 @@ const AttendanceLeaveMange = () => {
                                     format="DD/MM/YYYY"
                                     placeholder="DD/MM/YYYY"
                                     inputReadOnly={true}
-                                    value={endDate}
-                                    onChange={(date) => setEndDate(date)}
+                                    value={attEndDate}
+                                    onChange={(date) => setAttEndDate(date)}
                                     style={{ width: 140 }}
                                 />
                             </div>
@@ -497,12 +500,12 @@ const AttendanceLeaveMange = () => {
                                 <Form.Item label={<span style={{ fontWeight: 700, fontSize: '16px' }}>สถานะคำขอ:</span>} style={{ marginBottom: 0 }}>
                                     <Select
                                         placeholder="-เลือก-"
-                                        value={status}
-                                        onChange={(value) => setStatus(value)}
+                                        value={attStatus}
+                                        onChange={(value) => setAttStatus(value)}
                                         style={{ width: 150 }}
                                     >
                                         <Option value="ทั้งหมด">ทั้งหมด</Option>
-                                        {statusList.map((item) => (
+                                        {attStatusList.map((item) => (
                                             <Option key={item.value} value={item.value}>{item.label}</Option>
                                         ))}
                                     </Select>
@@ -511,8 +514,8 @@ const AttendanceLeaveMange = () => {
                         </div>
 
                         <div style={{ marginLeft: "auto", display: 'flex', gap: '10px', alignItems: 'center' }}>
-                            <SearchToolBtnBootstrap onClick={handleSearch} />
-                            <ClearToolBtnBootstrap onClick={handleClear} />
+                            <SearchToolBtnBootstrap onClick={handleAttSearch} />
+                            <ClearToolBtnBootstrap onClick={handleAttClear} />
                         </div>
                     </div>
                     <div style={{ marginTop: "5px" }}>
@@ -566,8 +569,8 @@ const AttendanceLeaveMange = () => {
                                     format="DD/MM/YYYY"
                                     placeholder="DD/MM/YYYY"
                                     inputReadOnly={true}
-                                    value={startDate}
-                                    onChange={(date) => setStartDate(date)}
+                                    value={leaveStartDate}
+                                    onChange={(date) => setLeaveStartDate(date)}
                                     style={{ width: 140 }}
                                 />
                                 <span>-</span>
@@ -575,8 +578,8 @@ const AttendanceLeaveMange = () => {
                                     format="DD/MM/YYYY"
                                     placeholder="DD/MM/YYYY"
                                     inputReadOnly={true}
-                                    value={endDate}
-                                    onChange={(date) => setEndDate(date)}
+                                    value={leaveEndDate}
+                                    onChange={(date) => setLeaveEndDate(date)}
                                     style={{ width: 140 }}
                                 />
                             </div>
@@ -587,12 +590,12 @@ const AttendanceLeaveMange = () => {
                                 <Form.Item label={<span style={{ fontWeight: 700, fontSize: '16px' }}>สถานะคำขอ:</span>} style={{ marginBottom: 0 }}>
                                     <Select
                                         placeholder="-เลือก-"
-                                        value={status}
-                                        onChange={(value) => setStatus(value)}
+                                        value={leaveStatus}
+                                        onChange={(value) => setLeaveStatus(value)}
                                         style={{ width: 150 }}
                                     >
                                         <Option value="ทั้งหมด">ทั้งหมด</Option>
-                                        {statusList.map((item) => (
+                                        {leaveStatusList.map((item) => (
                                             <Option key={item.value} value={item.value}>{item.label}</Option>
                                         ))}
                                     </Select>
@@ -601,8 +604,8 @@ const AttendanceLeaveMange = () => {
                         </div>
 
                         <div style={{ marginLeft: "auto", display: 'flex', gap: '10px' }}>
-                            <SearchToolBtnBootstrap onClick={handleSearch} />
-                            <ClearToolBtnBootstrap onClick={handleClear} />
+                            <SearchToolBtnBootstrap onClick={handleLeaveSearch} />
+                            <ClearToolBtnBootstrap onClick={handleLeaveClear} />
                         </div>
                     </div>
                     <div style={{ marginTop: "5px" }}>
