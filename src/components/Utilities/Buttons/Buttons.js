@@ -223,11 +223,43 @@ export const CloseModalBtnBootstrap = ({ onClick, style, className, ...props }) 
     );
 };
 
+export const SubmitModalBtnBootstrap = ({ onClick, style, className, ...props }) => {
+    return (
+        <ButtonBootstrap
+            variant="primary"
+            onClick={onClick}
+            className={`d-inline-flex align-items-center justify-content-center gap-2 ${className}`}
+            style={{
+                "--bs-btn-bg": "#BCD0FF",
+                "--bs-btn-border-color": "#000000ff",
+                "--bs-btn-hover-bg": "#dce7ffff",
+                "--bs-btn-hover-border-color": "#000000ff",
+                "--bs-btn-active-bg": "#dce7ffff",
+                "--bs-btn-active-border-color": "#000000ff",
+                color: "#000",
+                width: "150px",
+                height: "40px",
+                fontSize: "16px",
+                fontWeight: "bold",
+                border: "1px solid #000",
+                ...style
+            }}
+            {...props}
+        >
+            <i class="bi bi-save-fill"></i>
+            <span>
+                Submit
+            </span>
+        </ButtonBootstrap>
+    );
+};
+
 export const CloseIconBtn = ({ style, ...props }) => {
     return (
         <CloseOutlined style={{ color: 'white', fontSize: '18px', ...style }} {...props} />
     );
 };
+
 
 
 export const ResetLocationBtn = ({ onClick, style, className, ...props }) => {
