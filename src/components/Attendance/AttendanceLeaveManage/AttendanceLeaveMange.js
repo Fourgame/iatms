@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Card } from 'react-bootstrap';
-import { DatePicker, Select, Form } from 'antd';
+import { DatePicker, Select, Form, Input, TimePicker, Modal, Button, Checkbox } from 'antd';
 import { SearchToolBtnBootstrap, ClearToolBtnBootstrap, AddToolBtnBootstrap, EditToolBtnBootstrap, DeleteToolBtn } from '../../Utilities/Buttons/Buttons';
 import { RejectTag, ApproveTag, PendingApproveTag } from "../../Utilities/StatusTag/StatusTag";
 import { getAttChange } from '../../../services/att-change.service';
-import { getLeave } from '../../../services/leave.service';
+import { getLeave, postLeave, deleteLeave } from '../../../services/leave.service';
 import TokenService from '../../../services/token.service';
 import TableUI from '../../Utilities/Table/TableUI';
 import { getDropdown } from '../../../services/dropdown.service';
 import { noticeShowMessage } from '../../Utilities/Notification';
 import Loading from "../../Utilities/Loading";
 import moment from 'moment';
+
+const { TextArea } = Input;
 
 const { Option } = Select;
 
@@ -27,11 +29,14 @@ const AttendanceLeaveMange = () => {
     const [leaveStartDate, setLeaveStartDate] = useState(null);
     const [leaveEndDate, setLeaveEndDate] = useState(null);
     const [leaveStatus, setLeaveStatus] = useState("ทั้งหมด");
-    // const [leaveStatusList, setLeaveStatusList] = useState([]); // Use status tag if API fails
-    // But since user tried LeaveStatus, let's keep it consistent or use fixed list based on "status tag"
-    // "pull status from status tag" implies hardcoded list matching tags?
-    // Let's use a fixed list based on tags: Reject, Approve, Pending Approve
-    // Or if there is an API, use it. But I should add the state anyway.
+
+    // Leave Modal State
+    const [showLeaveModal, setShowLeaveModal] = useState(false);
+    const [modalMode, setModalMode] = useState("add"); // "add" or "edit"
+    const [leaveTypeOptions, setLeaveTypeOptions] = useState([]);
+    const [leaveForm, setLeaveForm] = useState({ id: null, type_leave: null, startDate: null, endDate: null, startTime: null, endTime: null, reason: "", isFullDay: true });
+    const [leaveFormErrors, setLeaveFormErrors] = useState({ type_leave: "", startDate: "", endDate: "", time: "", reason: "" });
+
     const [leaveStatusList, setLeaveStatusList] = useState([]);
     const [leaveHistory, setLeaveHistory] = useState([]);
 
@@ -46,6 +51,11 @@ const AttendanceLeaveMange = () => {
                 if (attDropdownResponse.data) {
                     setAttStatusList(attDropdownResponse.data);
                 }
+
+                if (attDropdownResponse.data) {
+                    setAttStatusList(attDropdownResponse.data);
+                }
+
 
                 const leaveDropdownResponse = await getDropdown.get_dropdown({ type: 'LeaveStatus' });
                 if (leaveDropdownResponse.data) {
@@ -92,14 +102,19 @@ const AttendanceLeaveMange = () => {
                 if (response.data) {
                     const formattedData = response.data.map((item, index) => {
                         let durationDisplay = '-';
-                        if (item.total_hours) {
-                            if (item.total_hours >= 24) {
-                                const days = Math.floor(item.total_hours / 24);
-                                const workHours = days * 8;
-                                durationDisplay = `${days} วัน, ${workHours} ชั่วโมง`;
-                            } else {
-                                durationDisplay = `${item.total_hours} ชั่วโมง`;
-                            }
+                        if (item.total_minute) {
+                            let minutes = item.total_minute;
+                            let days = Math.floor(minutes / 510); // 8.5 hours * 60 minutes
+                            minutes %= 510;
+                            let hours = Math.floor(minutes / 60);
+                            let mins = minutes % 60;
+
+                            let parts = [];
+                            if (days > 0) parts.push(`${days} วัน`);
+                            if (hours > 0) parts.push(`${hours} ชั่วโมง`);
+                            if (mins > 0) parts.push(`${mins} นาที`);
+
+                            durationDisplay = parts.length > 0 ? parts.join(', ') : '0 นาที';
                         }
 
                         return {
@@ -194,6 +209,143 @@ const AttendanceLeaveMange = () => {
         setLoading(true);
         fetchLeaveData().finally(() => setLoading(false));
     };
+
+    // --- Leave Modal Handlers ---
+    const openLeaveModal = () => {
+        setModalMode("add");
+        setLeaveForm({ id: null, type_leave: null, startDate: null, endDate: null, startTime: null, endTime: null, reason: "", isFullDay: true });
+        setLeaveFormErrors({ type_leave: "", startDate: "", endDate: "", time: "", reason: "" });
+        setShowLeaveModal(true);
+    };
+
+    const openEditLeaveModal = (record) => {
+        setModalMode("edit");
+        const isFullDayStr = record.start_time ? record.start_time.includes("00:00:00") && record.end_time?.includes("00:00:00") : false;
+        const isFullDay = (!record.start_time && !record.end_time) || isFullDayStr;
+        setLeaveForm({
+            id: record.leave_id || record.id || record.key, type_leave: record.type_leave,
+            startDate: record.start_date ? moment(record.start_date) : null,
+            endDate: record.end_date ? moment(record.end_date) : null,
+            startTime: record.start_time && !isFullDayStr ? moment(record.start_time) : null,
+            endTime: record.end_time && !isFullDayStr ? moment(record.end_time) : null,
+            reason: record.reason || "", isFullDay: isFullDay
+        });
+        setLeaveFormErrors({ type_leave: "", startDate: "", endDate: "", time: "", reason: "" });
+        setShowLeaveModal(true);
+    };
+
+    const closeLeaveModal = () => {
+        setShowLeaveModal(false);
+        setLeaveFormErrors({ type_leave: "", startDate: "", endDate: "", time: "", reason: "" });
+    };
+
+    const checkDuplicateDate = (start, end, excludeId = null) => {
+        if (!start || !end) return false;
+        const startStr = typeof start.format === 'function' ? start.format('YYYY-MM-DD') : null;
+        const endStr = typeof end.format === 'function' ? end.format('YYYY-MM-DD') : null;
+        if (!startStr || !endStr) return false;
+        const startClone = moment(startStr, 'YYYY-MM-DD').startOf('day');
+        const endClone = moment(endStr, 'YYYY-MM-DD').startOf('day');
+
+        return leaveHistory.some(item => {
+            if (excludeId && (item.leave_id === excludeId || item.id === excludeId || item.key === excludeId)) return false;
+            if (item.status_request === 'Rejected' || item.status_request === 'Rj') return false;
+            if (!item.start_date || !item.end_date) return false;
+            const itemStart = moment(item.start_date).startOf('day');
+            const itemEnd = moment(item.end_date).startOf('day');
+            return (startClone.isSameOrBefore(itemEnd) && endClone.isSameOrAfter(itemStart));
+        });
+    };
+
+    const handleSaveLeave = async () => {
+        let hasError = false;
+        let errors = { type_leave: "", startDate: "", endDate: "", time: "", reason: "" };
+
+        if (modalMode === "add" && !leaveForm.type_leave) { errors.type_leave = "กรุณาเลือกประเภทการลา"; hasError = true; }
+        if (!leaveForm.startDate || !leaveForm.endDate) {
+            if (!leaveForm.startDate) errors.startDate = "กรุณาเลือกวันที่เริ่มต้น";
+            if (!leaveForm.endDate) errors.endDate = "กรุณาเลือกวันที่สิ้นสุด";
+            hasError = true;
+        } else if (checkDuplicateDate(leaveForm.startDate, leaveForm.endDate, leaveForm.id)) {
+            errors.startDate = "วันลานี้มีการลางานแล้ว (ซ้ำ)"; errors.endDate = "วันลานี้มีการลางานแล้ว (ซ้ำ)"; hasError = true;
+        }
+
+        if (!leaveForm.isFullDay) {
+            if (!leaveForm.startTime || !leaveForm.endTime) { errors.time = "กรุณาระบุช่วงเวลา"; hasError = true; }
+            else if (leaveForm.startDate && leaveForm.endDate && leaveForm.startDate.isSame(leaveForm.endDate, 'day')) {
+                const st = moment(typeof leaveForm.startTime.format === 'function' ? leaveForm.startTime.format("HH:mm") : leaveForm.startTime, "HH:mm");
+                const et = moment(typeof leaveForm.endTime.format === 'function' ? leaveForm.endTime.format("HH:mm") : leaveForm.endTime, "HH:mm");
+                if (st.isSameOrAfter(et)) { errors.time = "เวลาเริ่มต้นต้องน้อยกว่าเวลาสิ้นสุด"; hasError = true; }
+            }
+        }
+
+        if (!leaveForm.reason || !leaveForm.reason.trim()) { errors.reason = "กรุณาระบุเหตุผล"; hasError = true; }
+        setLeaveFormErrors(errors);
+        if (hasError) return;
+
+        setLoading(true);
+        try {
+            const user = TokenService.getUser();
+            const payload = {
+                oa_user: user?.profile?.oa_user, type_leave: leaveForm.type_leave,
+                start_date: leaveForm.startDate.format("YYYY-MM-DD"), end_date: leaveForm.endDate.format("YYYY-MM-DD"),
+                start_time: !leaveForm.isFullDay && leaveForm.startTime ? leaveForm.startDate.format("YYYY-MM-DD") + "T" + leaveForm.startTime.format("HH:mm:ss") : null,
+                end_time: !leaveForm.isFullDay && leaveForm.endTime ? leaveForm.endDate.format("YYYY-MM-DD") + "T" + leaveForm.endTime.format("HH:mm:ss") : null,
+                reason: leaveForm.reason
+            };
+
+            const response = await postLeave.post_leave(payload);
+
+            if (response.status === 200) {
+                noticeShowMessage("บันทึกข้อมูลเรียบร้อยแล้ว", false); setShowLeaveModal(false); fetchLeaveData();
+            } else { noticeShowMessage("เกิดข้อผิดพลาดในการบันทึกข้อมูล", true); }
+        } catch (error) { console.error("Error saving leave:", error); noticeShowMessage("เกิดข้อผิดพลาดในการบันทึกข้อมูล", true); } finally { setLoading(false); }
+    };
+
+    const handleDeleteLeave = (record) => {
+        Modal.confirm({
+            title: 'ยืนยันการลบ',
+            content: 'คุณแน่ใจหรือไม่ว่าต้องการลบรายการลานี้?',
+            okText: 'ลบ',
+            okType: 'danger',
+            cancelText: 'ยกเลิก',
+            onOk: async () => {
+                try {
+                    setLoading(true);
+                    const payload = {
+                        start_date: record.start_date ? moment(record.start_date).format('YYYY-MM-DD') : null,
+                        end_date: record.end_date ? moment(record.end_date).format('YYYY-MM-DD') : null
+                    };
+                    const response = await deleteLeave.delete_leave(payload);
+                    if (response.status === 200) {
+                        noticeShowMessage("ลบข้อมูลสำเร็จ", false);
+                        fetchLeaveData();
+                    } else {
+                        noticeShowMessage("เกิดข้อผิดพลาดในการลบข้อมูล", true);
+                    }
+                } catch (error) {
+                    console.error("Error deleting leave:", error);
+                    noticeShowMessage("เกิดข้อผิดพลาดในการลบข้อมูล", true);
+                } finally {
+                    setLoading(false);
+                }
+            }
+        });
+    };
+
+    const handleLeaveTypeDropdownOpen = async (open) => {
+        if (open) {
+            try {
+                const leaveTypeResponse = await getDropdown.get_dropdown({ type: 'TypeLeave' });
+                if (leaveTypeResponse.data) {
+                    setLeaveTypeOptions(leaveTypeResponse.data);
+                }
+            } catch (error) {
+                console.error("Error fetching leave types:", error);
+            }
+        }
+    };
+
 
     const attColumns = [
         {
@@ -365,15 +517,33 @@ const AttendanceLeaveMange = () => {
         {
             title: (
                 <div style={{ textAlign: 'center' }}>
-                    <AddToolBtnBootstrap onClick={() => console.log("Add Leave Request")} />
+                    <AddToolBtnBootstrap onClick={openLeaveModal} />
                 </div>
             ),
             key: 'action',
-            render: (text, record) => (
-                <div style={{ textAlign: 'center' }}>
-                    <EditToolBtnBootstrap onClick={() => console.log("Edit Leave", record)} />
-                </div>
-            ),
+            render: (text, record) => {
+                const statusLabel = record.status_request ? String(record.status_request).trim() : "-";
+                const matchedStatus = leaveStatusList.find(item => item.label === statusLabel);
+                const statusCode = matchedStatus ? matchedStatus.value : statusLabel;
+
+                let diffDays = 0;
+                if (record.start_date) {
+                    const startDate = moment(record.start_date, 'YYYY-MM-DD').startOf('day');
+                    const today = moment().startOf('day');
+                    diffDays = today.diff(startDate, 'days');
+                }
+
+                return (
+                    <div style={{ textAlign: 'center' }}>
+                        {statusCode === 'Rj' && diffDays <= 7 && (
+                            <EditToolBtnBootstrap onClick={() => openEditLeaveModal(record)} />
+                        )}
+                        {statusCode === 'Rj' && diffDays > 7 && (
+                            <DeleteToolBtn onClick={() => handleDeleteLeave(record)} />
+                        )}
+                    </div>
+                );
+            },
             width: 100,
             align: 'center'
         },
@@ -382,7 +552,8 @@ const AttendanceLeaveMange = () => {
             dataIndex: 'type_leave',
             key: 'type_leave',
             align: 'center',
-            width: 150
+            width: 150,
+            sorter: (a, b) => String(a.type_leave ?? "").localeCompare(String(b.type_leave ?? ""))
         },
 
         {
@@ -390,34 +561,60 @@ const AttendanceLeaveMange = () => {
             dataIndex: 'startDate',
             key: 'startDate',
             align: 'center',
-            width: 120
+            width: 120,
+            sorter: (a, b) => {
+                const dateA = moment(a.startDate, 'DD/MM/YYYY');
+                const dateB = moment(b.startDate, 'DD/MM/YYYY');
+                return dateA.diff(dateB);
+            }
         },
         {
             title: 'วันที่สิ้นสุด',
             dataIndex: 'endDate',
             key: 'endDate',
             align: 'center',
-            width: 120
-        },
-        {
-            title: 'ระยะเวลา',
-            dataIndex: 'duration',
-            key: 'duration',
-            align: 'center',
-            width: 120
+            width: 120,
+            sorter: (a, b) => {
+                const dateA = moment(a.endDate, 'DD/MM/YYYY');
+                const dateB = moment(b.endDate, 'DD/MM/YYYY');
+                return dateA.diff(dateB);
+            }
         },
         {
             title: 'ช่วงเวลา (น.)',
             dataIndex: 'timeRange',
             key: 'timeRange',
             align: 'center',
-            width: 120
+            width: 120,
+            sorter: (a, b) => String(a.timeRange ?? "").localeCompare(String(b.timeRange ?? ""))
+        },
+        {
+            title: 'ระยะเวลา',
+            dataIndex: 'duration',
+            key: 'duration',
+            align: 'center',
+            width: 120,
+            sorter: (a, b) => String(a.duration ?? "").localeCompare(String(b.duration ?? ""))
         },
         {
             title: 'เหตุผล',
             dataIndex: 'reason',
             key: 'reason',
-            width: 200
+            width: 200,
+            sorter: (a, b) => String(a.reason ?? "").localeCompare(String(b.reason ?? ""))
+        },
+        {
+            title: 'เหตุผลที่ถูกปฏิเสธ',
+            dataIndex: 'reject_reason',
+            key: 'reject_reason',
+            align: 'center',
+            width: 200,
+            sorter: (a, b) => String(a.reject_reason ?? "").localeCompare(String(b.reject_reason ?? "")),
+            render: (text) => (
+                <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
+                    {text && text.trim() ? text : "-"}
+                </div>
+            ),
         },
         {
             title: 'สถานะ',
@@ -427,12 +624,15 @@ const AttendanceLeaveMange = () => {
             width: 120,
             sorter: (a, b) => String(a.status_request ?? "").localeCompare(String(b.status_request ?? "")),
             render: (text) => {
-                const status = text ? String(text).trim() : "-";
-                switch (status) {
-                    case 'Rejected': return <RejectTag />;
-                    case 'Approved': return <ApproveTag />;
-                    case 'Pending Approval': return <PendingApproveTag />;
-                    default: return status;
+                const statusLabel = text ? String(text).trim() : "-";
+                const matchedStatus = leaveStatusList.find(item => item.label === statusLabel);
+                const statusCode = matchedStatus ? matchedStatus.value : statusLabel;
+
+                switch (statusCode) {
+                    case 'Rj': return <RejectTag />;
+                    case 'Ap': return <ApproveTag />;
+                    case 'PA': return <PendingApproveTag />;
+                    default: return statusLabel;
                 }
             }
         },
@@ -463,6 +663,7 @@ const AttendanceLeaveMange = () => {
                     Attendance Change
                 </Card.Header>
                 <Card.Body className="p-3">
+
                     <div
                         style={{
                             display: "flex",
@@ -481,6 +682,7 @@ const AttendanceLeaveMange = () => {
                                     inputReadOnly={true}
                                     value={attStartDate}
                                     onChange={(date) => setAttStartDate(date)}
+                                    disabledDate={(current) => attEndDate ? current && current.isAfter(attEndDate, 'day') : false}
                                     style={{ width: 140 }}
                                 />
                                 <span>-</span>
@@ -490,6 +692,7 @@ const AttendanceLeaveMange = () => {
                                     inputReadOnly={true}
                                     value={attEndDate}
                                     onChange={(date) => setAttEndDate(date)}
+                                    disabledDate={(current) => attStartDate ? current && current.isBefore(attStartDate, 'day') : false}
                                     style={{ width: 140 }}
                                 />
                             </div>
@@ -571,6 +774,7 @@ const AttendanceLeaveMange = () => {
                                     inputReadOnly={true}
                                     value={leaveStartDate}
                                     onChange={(date) => setLeaveStartDate(date)}
+                                    disabledDate={(current) => leaveEndDate ? current && current.isAfter(leaveEndDate, 'day') : false}
                                     style={{ width: 140 }}
                                 />
                                 <span>-</span>
@@ -580,6 +784,7 @@ const AttendanceLeaveMange = () => {
                                     inputReadOnly={true}
                                     value={leaveEndDate}
                                     onChange={(date) => setLeaveEndDate(date)}
+                                    disabledDate={(current) => leaveStartDate ? current && current.isBefore(leaveStartDate, 'day') : false}
                                     style={{ width: 140 }}
                                 />
                             </div>
@@ -620,7 +825,196 @@ const AttendanceLeaveMange = () => {
                     </div>
                 </Card.Body>
             </Card>
-        </div>
+
+            <Modal
+                title={
+                    <div style={{ backgroundColor: '#2750B0', color: 'white', padding: '16px 24px', margin: '-20px -24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '18px', fontWeight: '600', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
+                        <span>{modalMode === 'add' ? 'Add' : 'Edit'} - Leave</span>
+                        <i className="bi bi-x-lg" onClick={closeLeaveModal} style={{ cursor: "pointer", fontSize: "20px" }}></i>
+                    </div>
+                }
+                open={showLeaveModal} onCancel={closeLeaveModal} closable={false} width={750} centered
+                styles={{ header: { padding: 0, borderBottom: 'none' }, body: { padding: '24px' }, content: { padding: 0, overflow: 'hidden', borderRadius: '8px' }, mask: { backgroundColor: 'rgba(0, 0, 0, 0.5)' } }}
+                footer={[
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', paddingBottom: '20px' }} key="footer">
+                        <Button key="submit" onClick={handleSaveLeave} style={{ backgroundColor: '#A0BDFF', borderColor: '#A0BDFF', color: 'black', fontWeight: 'bold', borderRadius: '8px', height: '40px', minWidth: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                            <i className="bi bi-file-earmark-check-fill" style={{ fontSize: '1.2em' }}></i> Submit
+                        </Button>
+                        <Button key="close" onClick={closeLeaveModal} style={{ backgroundColor: '#d9d9d9', borderColor: '#d9d9d9', color: 'black', fontWeight: 'bold', borderRadius: '8px', height: '40px', minWidth: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                            <i className="bi bi-x-lg" style={{ fontSize: '1.2em' }}></i> Close
+                        </Button>
+                    </div>
+                ]}
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '25px', fontSize: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                        <span style={{ width: '130px', fontWeight: 'bold', marginTop: modalMode === 'add' ? '10px' : '0' }}>{modalMode === 'add' && <span style={{ color: 'red', marginRight: '5px' }}>*</span>}ประเภทการลา</span>
+                        {modalMode === 'add' ? (
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <Select placeholder="-เลือก-" style={{ width: 250, height: '40px', ...(leaveFormErrors.type_leave ? { border: '1px solid #ff4d4f', borderRadius: '6px' } : {}) }} status={leaveFormErrors.type_leave ? "error" : ""} value={leaveForm.type_leave} onChange={(v) => { setLeaveForm({ ...leaveForm, type_leave: v }); setLeaveFormErrors({ ...leaveFormErrors, type_leave: "" }); }} onDropdownVisibleChange={handleLeaveTypeDropdownOpen}>
+                                    <Option value="">-เลือก-</Option>
+                                    {leaveTypeOptions.map(o => <Option key={o.value} value={o.value}>{o.label}</Option>)}
+                                </Select>
+                                {leaveFormErrors.type_leave && <span style={{ color: '#ff4d4f', fontSize: '14px', marginTop: '5px' }}>{leaveFormErrors.type_leave}</span>}
+                            </div>
+                        ) : (<span>{leaveForm.type_leave || '-'}</span>)}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                        <span style={{ width: '130px', fontWeight: 'bold', marginTop: '10px' }}><span style={{ color: 'red', marginRight: '5px' }}>*</span>วันที่</span>
+                        <div style={{ display: 'flex', gap: '20px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <style>
+                                    {`
+                                        .custom-disabled-datepicker.ant-picker.ant-picker-disabled {
+                                            background-color: white !important;
+                                        }
+                                        .custom-disabled-datepicker.ant-picker.ant-picker-disabled input {
+                                            color: #000 !important;
+                                            -webkit-text-fill-color: #000 !important;
+                                            opacity: 1 !important;
+                                        }
+                                    `}
+                                </style>
+                                <div style={{ position: 'relative' }}>
+                                    <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.startDate ? '#ff4d4f' : '#666', zIndex: 1 }}>start</span>
+                                    <DatePicker
+                                        className={modalMode === "edit" ? "custom-disabled-datepicker" : ""}
+                                        disabled={modalMode === "edit"}
+                                        format="DD/MM/YYYY"
+                                        placeholder="DD/MM/YYYY"
+                                        status={leaveFormErrors.startDate ? "error" : ""}
+                                        value={leaveForm.startDate}
+                                        suffixIcon={modalMode === "edit" ? null : <i className="bi bi-calendar"></i>}
+                                        onChange={(date) => {
+                                            setLeaveForm({ ...leaveForm, startDate: date });
+                                            let errs = { ...leaveFormErrors, startDate: "", endDate: "" };
+                                            if (checkDuplicateDate(date, leaveForm.endDate, leaveForm.id)) {
+                                                errs.startDate = "วันลานี้มีการลางานแล้ว (ซ้ำ)";
+                                                errs.endDate = "วันลานี้มีการลางานแล้ว (ซ้ำ)";
+                                            }
+                                            setLeaveFormErrors(errs);
+                                        }}
+                                        disabledDate={(current) => leaveForm.endDate ? current && current.isAfter(leaveForm.endDate, 'day') : false}
+                                        style={{ width: 180, height: '40px', borderRadius: '6px', border: leaveFormErrors.startDate ? '1px solid #ff4d4f' : '1px solid #888', backgroundColor: modalMode === "edit" ? 'white' : undefined, color: modalMode === "edit" ? 'black' : undefined }}
+                                    />
+                                </div>
+                                {leaveFormErrors.startDate && <span style={{ color: '#ff4d4f', fontSize: '14px', marginTop: '5px' }}>{leaveFormErrors.startDate}</span>}
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <div style={{ position: 'relative' }}>
+                                    <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.endDate ? '#ff4d4f' : '#666', zIndex: 1 }}>End</span>
+                                    <DatePicker
+                                        className={modalMode === "edit" ? "custom-disabled-datepicker" : ""}
+                                        disabled={modalMode === "edit"}
+                                        format="DD/MM/YYYY"
+                                        placeholder="DD/MM/YYYY"
+                                        status={leaveFormErrors.endDate ? "error" : ""}
+                                        value={leaveForm.endDate}
+                                        suffixIcon={modalMode === "edit" ? null : <i className="bi bi-calendar"></i>}
+                                        onChange={(date) => {
+                                            setLeaveForm({ ...leaveForm, endDate: date });
+                                            let errs = { ...leaveFormErrors, startDate: "", endDate: "" };
+                                            if (checkDuplicateDate(leaveForm.startDate, date, leaveForm.id)) {
+                                                errs.startDate = "วันลานี้มีการลางานแล้ว (ซ้ำ)";
+                                                errs.endDate = "วันลานี้มีการลางานแล้ว (ซ้ำ)";
+                                            }
+                                            setLeaveFormErrors(errs);
+                                        }}
+                                        disabledDate={(current) => leaveForm.startDate ? current && current.isBefore(leaveForm.startDate, 'day') : false}
+                                        style={{ width: 180, height: '40px', borderRadius: '6px', border: leaveFormErrors.endDate ? '1px solid #ff4d4f' : '1px solid #888', backgroundColor: modalMode === "edit" ? 'white' : undefined, color: modalMode === "edit" ? 'black' : undefined }}
+                                    />
+                                </div>
+                                {leaveFormErrors.endDate && <span style={{ color: '#ff4d4f', fontSize: '14px', marginTop: '5px' }}>{leaveFormErrors.endDate}</span>}
+                            </div>
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                        <span style={{ width: '130px', fontWeight: 'bold', marginTop: '10px' }}><span style={{ color: 'red', marginRight: '5px' }}>*</span>ช่วงเวลา</span>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                <Checkbox checked={leaveForm.isFullDay} onChange={() => { setLeaveForm({ ...leaveForm, isFullDay: true }); setLeaveFormErrors({ ...leaveFormErrors, time: "" }); }}>ทั้งวัน</Checkbox>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <Checkbox checked={!leaveForm.isFullDay} onChange={() => setLeaveForm({ ...leaveForm, isFullDay: false })} />
+                                    <div style={{ position: 'relative', opacity: leaveForm.isFullDay ? 0.6 : 1 }}>
+                                        <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.time ? '#ff4d4f' : '#666', zIndex: 1 }}>Start</span>
+                                        <div style={{ display: 'flex', alignItems: 'center', border: leaveFormErrors.time ? '1px solid #ff4d4f' : '1px solid #888', borderRadius: '6px', paddingRight: '10px', height: '40px' }}>
+                                            <TimePicker
+                                                disabled={leaveForm.isFullDay}
+                                                format="HH:mm"
+                                                placeholder="08:30"
+                                                value={leaveForm.startTime}
+                                                status={leaveFormErrors.time ? "error" : ""}
+                                                hideDisabledOptions={modalMode === "edit"}
+                                                disabledTime={() => {
+                                                    const { endTime } = leaveForm;
+                                                    if (endTime) {
+                                                        const endHour = endTime.hour();
+                                                        const endMin = endTime.minute();
+                                                        return {
+                                                            disabledHours: () => Array.from({ length: 24 }, (_, i) => i).filter(h => h > endHour),
+                                                            disabledMinutes: (sH) => sH === endHour ? Array.from({ length: 60 }, (_, i) => i).filter(m => m >= endMin) : []
+                                                        };
+                                                    }
+                                                    return {};
+                                                }}
+                                                onChange={(time) => {
+                                                    const isSameDay = leaveForm.startDate?.isSame(leaveForm.endDate, 'day');
+                                                    const endInv = isSameDay && leaveForm.endTime && time && (time.hour() * 60 + time.minute() >= leaveForm.endTime.hour() * 60 + leaveForm.endTime.minute());
+                                                    setLeaveForm({ ...leaveForm, startTime: time, ...(endInv && { endTime: null }) });
+                                                    setLeaveFormErrors({ ...leaveFormErrors, time: "" });
+                                                }}
+                                                style={{ width: 100, border: 'none', boxShadow: 'none' }}
+                                                suffixIcon={<i className="bi bi-clock"></i>}
+                                            />
+                                            <span style={{ fontWeight: 500 }}>น.</span>
+                                        </div>
+                                    </div>
+                                    <span style={{ fontWeight: 'bold' }}>-</span>
+                                    <div style={{ position: 'relative', opacity: leaveForm.isFullDay ? 0.6 : 1 }}>
+                                        <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.time ? '#ff4d4f' : '#666', zIndex: 1 }}>End</span>
+                                        <div style={{ display: 'flex', alignItems: 'center', border: leaveFormErrors.time ? '1px solid #ff4d4f' : '1px solid #888', borderRadius: '6px', paddingRight: '10px', height: '40px' }}>
+                                            <TimePicker
+                                                disabled={leaveForm.isFullDay}
+                                                format="HH:mm"
+                                                placeholder="17:00"
+                                                value={leaveForm.endTime}
+                                                status={leaveFormErrors.time ? "error" : ""}
+                                                hideDisabledOptions={modalMode === "edit"}
+                                                disabledTime={() => {
+                                                    const { startTime } = leaveForm;
+                                                    if (startTime) {
+                                                        const startHour = startTime.hour();
+                                                        const startMin = startTime.minute();
+                                                        return {
+                                                            disabledHours: () => Array.from({ length: 24 }, (_, i) => i).filter(h => h < startHour),
+                                                            disabledMinutes: (sH) => sH === startHour ? Array.from({ length: startMin + 1 }, (_, i) => i) : []
+                                                        };
+                                                    }
+                                                    return {};
+                                                }}
+                                                onChange={(time) => {
+                                                    setLeaveForm({ ...leaveForm, endTime: time });
+                                                    setLeaveFormErrors({ ...leaveFormErrors, time: "" });
+                                                }}
+                                                style={{ width: 100, border: 'none', boxShadow: 'none' }}
+                                                suffixIcon={<i className="bi bi-clock"></i>}
+                                            />
+                                            <span style={{ fontWeight: 500 }}>น.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {leaveFormErrors.time && <span style={{ color: '#ff4d4f', fontSize: '14px', marginTop: '5px' }}>{leaveFormErrors.time}</span>}
+                        </div>
+                    </div>
+                    <div>
+                        <div style={{ marginBottom: '10px', fontWeight: 'bold' }}><span style={{ color: 'red', marginRight: '5px' }}>*</span>เหตุผล</div>
+                        <TextArea rows={5} placeholder="กรอกเหตุผล" value={leaveForm.reason} status={leaveFormErrors.reason ? "error" : ""} onChange={(e) => { setLeaveForm({ ...leaveForm, reason: e.target.value }); setLeaveFormErrors({ ...leaveFormErrors, reason: "" }); }} style={{ border: leaveFormErrors.reason ? '2px solid #ff4d4f' : '3px solid black', borderRadius: '8px', fontSize: '16px', padding: '10px' }} />
+                        {leaveFormErrors.reason && <div style={{ color: '#ff4d4f', fontSize: '14px', marginTop: '5px' }}>{leaveFormErrors.reason}</div>}
+                    </div>
+                </div>
+            </Modal>
+        </div >
     );
 };
 

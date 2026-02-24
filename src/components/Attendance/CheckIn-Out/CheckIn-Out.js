@@ -23,8 +23,8 @@ const ReasonModal = ({ open, onClose, onSave, errorMessage, actionType }) => {
 
     const handleSave = async () => {
         try {
-            const values = await form.validateFields();
             setLoading(true);
+            const values = await form.validateFields();
             // Simulate saving or pass data back
             onSave(values.reason);
             setLoading(false);
@@ -114,6 +114,23 @@ const ReasonModal = ({ open, onClose, onSave, errorMessage, actionType }) => {
 };
 
 
+// Haversine Formula for distance calculation
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371e3; // metres
+    const φ1 = lat1 * Math.PI / 180; // φ, λ in radians
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+        Math.cos(φ1) * Math.cos(φ2) *
+        Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    const d = R * c; // in metres
+    return d;
+};
+
 const CheckInOut = () => {
 
     const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -122,6 +139,7 @@ const CheckInOut = () => {
     const [geofence, setGeofence] = useState(null);
     const [cicoHistory, setCicoHistory] = useState([]);
     const [loadingLocation, setLoadingLocation] = useState(false);
+    const [pageLoading, setPageLoading] = useState(true);
     // Modal State
     const [modalOpen, setModalOpen] = useState(false);
     const [modalError, setModalError] = useState("");
@@ -152,6 +170,7 @@ const CheckInOut = () => {
         return false;
     };
 
+
     const DEFAULT_CENTER = useMemo(() => ({ lat: null, long: null }), []);
 
     const { isLoaded, loadError } = useJsApiLoader({
@@ -172,20 +191,60 @@ const CheckInOut = () => {
         mapTypeControl: false,
         fullscreenControl: true, // Allow fullscreen
         zoomControl: true, // Allow zooming
-        gestureHandling: 'cooperative' // Better handling on mobile/desktop
+        gestureHandling: 'cooperative',
+        styles: [
+            {
+                "featureType": "water",
+                "elementType": "geometry",
+                "stylers": [{ "color": "#CEDDFF" }]
+            }
+        ]
     }), []);
 
     // ทำ icon หมุดสีฟ้า (แนว “blue dot”)
-    const blueDotSvg = `
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24">
-    <circle cx="12" cy="12" r="8" fill="#1a73e8" stroke="white" stroke-width="3"/>
+
+    const markerIconUrl = useMemo(() => {
+        let fillColor = "#2750B0"; // Default Blue
+
+        if (geofence && coordinates.lat && coordinates.long) {
+            const dist = calculateDistance(coordinates.lat, coordinates.long, geofence.lat, geofence.lng);
+            if (dist <= geofence.radius) {
+                fillColor = "#1eff00ff"; // Green
+            } else {
+                fillColor = "#ff0000ff"; // Red
+            }
+        }
+
+        const personSvg = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22">
+    <path fill="${fillColor}" stroke="#000000ff" stroke-width="2" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-12-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/>
   </svg>
 `;
-    const blueDotIconUrl = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(blueDotSvg)}`;
+        return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(personSvg)}`;
+    }, [coordinates, geofence]);
+
+    const circleOptions = useMemo(() => {
+        let color = "#FF0000"; // Default Red (Outside)
+
+        if (geofence && coordinates.lat && coordinates.long) {
+            const dist = calculateDistance(coordinates.lat, coordinates.long, geofence.lat, geofence.lng);
+            if (dist <= geofence.radius) {
+                color = "#28a745"; // Green (Inside)
+            }
+        }
+
+        return {
+            strokeColor: color,
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: color,
+            fillOpacity: 0.35,
+        };
+    }, [coordinates, geofence]);
 
     const mapContainerStyle = {
         width: "100%",
-        height: "320px", // ปรับสูง-ต่ำได้ตามต้องการ
+        height: "400px", // ปรับสูง-ต่ำได้ตามต้องการ
         borderRadius: "10px",
         overflow: "hidden",
     };
@@ -235,8 +294,12 @@ const CheckInOut = () => {
             }
         };
 
-        fetchButtonStatus();
-        fetchCICOData();
+        const loadInitialData = async () => {
+            setPageLoading(true);
+            await Promise.all([fetchButtonStatus(), fetchCICOData()]);
+            setPageLoading(false);
+        };
+        loadInitialData();
 
         // Update time every second
         const timer = setInterval(() => {
@@ -330,22 +393,7 @@ const CheckInOut = () => {
         }
     };
 
-    // Haversine Formula for distance calculation
-    const calculateDistance = (lat1, lon1, lat2, lon2) => {
-        const R = 6371e3; // metres
-        const φ1 = lat1 * Math.PI / 180; // φ, λ in radians
-        const φ2 = lat2 * Math.PI / 180;
-        const Δφ = (lat2 - lat1) * Math.PI / 180;
-        const Δλ = (lon2 - lon1) * Math.PI / 180;
 
-        const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-            Math.cos(φ1) * Math.cos(φ2) *
-            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        const d = R * c; // in metres
-        return d;
-    };
 
     const validateAction = (type) => {
         if (!buttonData) return;
@@ -589,239 +637,216 @@ const CheckInOut = () => {
 
     return (
         <div style={{ paddingLeft: '20px', paddingRight: '20px', paddingBottom: '60px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
-
-            {/* Main Card */}
-            <Card
-                className="shadow-sm border-0 p-3 "
-                style={{
-                    borderRadius: "6px",
-                    overflow: "hidden",
-                    boxShadow: "0px 4px 4px rgba(0,0,0,0.25)",
-                }}
-            >
+            <Spin spinning={pageLoading} size="large" tip="กำลังโหลดข้อมูล...">
+                {/* Main Card */}
                 <Card
-                    style={{ backgroundColor: "#F8F8F8" }}
-                    className="rounded-4">
+                    className="shadow-sm border-0 p-3 "
+                    style={{
+                        borderRadius: "6px",
+                        overflow: "hidden",
+                        boxShadow: "0px 4px 4px rgba(0,0,0,0.25)",
+                    }}
+                >
+                    <Spin spinning={loadingLocation}>
+                        <Card
+                            style={{ backgroundColor: "#F8F8F8" }}
+                            className="rounded-4">
 
-                    <Card.Body style={{ padding: "30px" }}
-                        className="border border-3 border-black  rounded-4" >
-                        <Spin spinning={loadingLocation}>
-                            <Row>
-                                {/* Left Column: Details */}
-                                <Col md={6}>
+                            <Card.Body style={{ padding: "30px" }}
+                                className="border border-3 border-black  rounded-4" >
 
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                        {/* Date */}
-                                        <div style={{ fontSize: '20px', fontWeight: 'bold' }}>
-                                            {formatDate(currentDateTime)}
-                                        </div>
-                                        {/* Time */}
-                                        <div style={{ fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            {formatTime(currentDateTime)}
-                                            {/* Time check */}
-                                            {(() => {
-                                                if (!buttonData) return <CheckOutlined style={{ color: 'green', fontSize: '20px' }} />;
+                                <Row>
+                                    {/* Left Column: Details */}
+                                    <Col md={6}>
 
-                                                const { canCi, canCo, ciThreshold, coThreshold, attDate } = buttonData;
-                                                const currentTimeStr = currentDateTime.toTimeString().slice(0, 5);
-
-                                                // Format current date to YYYY-MM-DD
-                                                const year = currentDateTime.getFullYear();
-                                                const month = String(currentDateTime.getMonth() + 1).padStart(2, '0');
-                                                const day = String(currentDateTime.getDate()).padStart(2, '0');
-                                                const currentDateStr = `${year}-${month}-${day}`;
-
-                                                let isValid = true;
-
-                                                // Check if the current date matches the attendance date
-                                                if (attDate !== currentDateStr) {
-                                                    isValid = false;
-                                                } else {
-                                                    if (canCi) {
-                                                        // Late Check-in: If current time > threshold, it's invalid (late)
-                                                        if (currentTimeStr > ciThreshold) isValid = false;
-                                                    } else if (canCo) {
-                                                        // Early Check-out: If current time < threshold, it's invalid (early)
-                                                        if (currentTimeStr < coThreshold) isValid = false;
-                                                    }
-                                                }
-
-                                                return isValid ? (
-                                                    <CheckOutlined style={{ color: 'green', fontSize: '20px' }} />
-                                                ) : (
-                                                    <CloseOutlined style={{ color: 'red', fontSize: '20px' }} />
-                                                );
-                                            })()}
-                                        </div>
-                                        {/* Location Name */}
-                                        <div style={{ fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <span>{currentAddress !== null ? currentAddress : ""}</span>
-                                            {/* Address check: Based on geofence */}
-                                            {(() => {
-                                                const { wpCondition } = buttonData || {};
-                                                let isInside = false;
-                                                if (wpCondition) {
-                                                    const parts = wpCondition.split(',').map(s => parseFloat(s.trim()));
-                                                    if (parts.length >= 3 && coordinates.lat && coordinates.long) {
-                                                        const [targetLat, targetLong, radius] = parts;
-                                                        const dist = calculateDistance(coordinates.lat, coordinates.long, targetLat, targetLong);
-                                                        isInside = dist <= radius;
-                                                    }
-                                                }
-                                                // If no geofence data, maybe don't show? Or assume correct if we have address?
-                                                // Assuming we want to show Check if inside, Close if outside
-                                                if (wpCondition && coordinates.lat) {
-                                                    return isInside
-                                                        ? <CheckOutlined style={{ color: 'green', fontSize: '20px' }} />
-                                                        : <CloseOutlined style={{ color: 'red', fontSize: '20px' }} />;
-                                                }
-                                                return null;
-                                            })()}
-                                        </div>
-                                        {/* Coordinates */}
-                                        <div style={{ fontSize: '20px', fontWeight: 'normal', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <span>
-                                                {coordinates.lat !== null ? coordinates.lat.toFixed(7) : "-"}
-                                                ,
-                                                {coordinates.long !== null ? coordinates.long.toFixed(7) : "-"}
-                                            </span>
-                                            {(() => {
-                                                const { wpCondition } = buttonData || {};
-                                                let isInside = false;
-                                                if (wpCondition) {
-                                                    const parts = wpCondition.split(',').map(s => parseFloat(s.trim()));
-                                                    if (parts.length >= 3 && coordinates.lat && coordinates.long) {
-                                                        const [targetLat, targetLong, radius] = parts;
-                                                        const dist = calculateDistance(coordinates.lat, coordinates.long, targetLat, targetLong);
-                                                        isInside = dist <= radius;
-                                                    }
-                                                }
-                                                if (wpCondition && coordinates.lat) {
-                                                    return isInside
-                                                        ? <CheckOutlined style={{ color: 'green', fontSize: '20px' }} />
-                                                        : <CloseOutlined style={{ color: 'red', fontSize: '20px' }} />;
-                                                }
-                                                return null;
-                                            })()}
-                                        </div>
-
-                                        {/* Reset Location Button */}
-                                        <div style={{ marginTop: '20px' }}>
-                                            <ResetLocationBtn onClick={handleResetLocation} />
-                                        </div>
-                                    </div>
-
-                                </Col>
-
-                                {/* Right Column: Map Placeholder */}
-                                <Col md={6}>
-                                    <div style={{ width: "100%", border: "1px solid #000" }}>
-                                        {loadError && (
-                                            <div style={{ color: "red" }}>
-                                                โหลดแผนที่ไม่สำเร็จ (เช็ค API key / เปิด Maps JavaScript API)
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                            {/* Date */}
+                                            <div style={{ fontSize: '20px', fontWeight: 'bold' }}>
+                                                {formatDate(currentDateTime)}
                                             </div>
-                                        )}
+                                            {/* Time */}
+                                            <div style={{ fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                {formatTime(currentDateTime)}
+                                                {/* Time check */}
+                                                {(() => {
+                                                    if (!buttonData) return <CheckOutlined style={{ color: 'green', fontSize: '20px' }} />;
 
-                                        {!isLoaded ? (
-                                            <div
-                                                style={{
-                                                    width: "100%",
-                                                    height: "320px",
-                                                    backgroundColor: "#e0e0e0",
-                                                    borderRadius: "10px",
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    color: "#757575",
-                                                }}
-                                            >
-                                                Loading map...
+                                                    const { canCi, canCo, ciThreshold, coThreshold, attDate } = buttonData;
+                                                    const currentTimeStr = currentDateTime.toTimeString().slice(0, 5);
+
+                                                    // Format current date to YYYY-MM-DD
+                                                    const year = currentDateTime.getFullYear();
+                                                    const month = String(currentDateTime.getMonth() + 1).padStart(2, '0');
+                                                    const day = String(currentDateTime.getDate()).padStart(2, '0');
+                                                    const currentDateStr = `${year}-${month}-${day}`;
+
+                                                    let isValid = true;
+
+                                                    // Check if the current date matches the attendance date
+                                                    if (attDate !== currentDateStr) {
+                                                        isValid = false;
+                                                    } else {
+                                                        if (canCi) {
+                                                            // Late Check-in: If current time > threshold, it's invalid (late)
+                                                            if (currentTimeStr > ciThreshold) isValid = false;
+                                                        } else if (canCo) {
+                                                            // Early Check-out: If current time < threshold, it's invalid (early)
+                                                            if (currentTimeStr < coThreshold) isValid = false;
+                                                        }
+                                                    }
+
+                                                    return isValid ? (
+                                                        <CheckOutlined style={{ color: 'green', fontSize: '20px' }} />
+                                                    ) : (
+                                                        <CloseOutlined style={{ color: 'red', fontSize: '20px' }} />
+                                                    );
+                                                })()}
                                             </div>
-                                        ) : (
-                                            <GoogleMap
-                                                mapContainerStyle={mapContainerStyle}
-                                                center={mapCenter}
-                                                zoom={16}
-                                                options={mapOptions}
-                                            >
-                                                {/* User Location Marker */}
-                                                {coordinates.lat !== null && coordinates.long !== null && (
-                                                    <MarkerF
-                                                        position={mapCenter}
-                                                        icon={{
-                                                            url: blueDotIconUrl,
-                                                            scaledSize: new window.google.maps.Size(24, 24),
-                                                            anchor: new window.google.maps.Point(12, 12),
-                                                        }}
-                                                    />
-                                                )}
+                                            {/* Location Name */}
+                                            <div style={{ fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <span>{currentAddress !== null ? currentAddress : ""}</span>
+                                            </div>
+                                            {/* Coordinates */}
+                                            <div style={{ fontSize: '20px', fontWeight: 'normal', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <span>
+                                                    {coordinates.lat !== null ? coordinates.lat.toFixed(7) : "-"}
+                                                    ,
+                                                    {coordinates.long !== null ? coordinates.long.toFixed(7) : "-"}
+                                                </span>
+                                                {(() => {
+                                                    const { wpCondition } = buttonData || {};
+                                                    let isInside = false;
+                                                    if (wpCondition) {
+                                                        const parts = wpCondition.split(',').map(s => parseFloat(s.trim()));
+                                                        if (parts.length >= 3 && coordinates.lat && coordinates.long) {
+                                                            const [targetLat, targetLong, radius] = parts;
+                                                            const dist = calculateDistance(coordinates.lat, coordinates.long, targetLat, targetLong);
+                                                            isInside = dist <= radius;
+                                                        }
+                                                    }
+                                                    if (wpCondition && coordinates.lat) {
+                                                        return isInside
+                                                            ? <CheckOutlined style={{ color: 'green', fontSize: '20px' }} />
+                                                            : <CloseOutlined style={{ color: 'red', fontSize: '20px' }} />;
+                                                    }
+                                                    return null;
+                                                })()}
+                                            </div>
 
-                                                {/* Geofence Circle */}
-                                                {geofence && (
-                                                    <CircleF
-                                                        center={{ lat: geofence.lat, lng: geofence.lng }}
-                                                        radius={geofence.radius}
-                                                        options={{
-                                                            strokeColor: "#FF0000",
-                                                            strokeOpacity: 0.8,
-                                                            strokeWeight: 2,
-                                                            fillColor: "#FF0000",
-                                                            fillOpacity: 0.35,
-                                                        }}
-                                                    />
-                                                )}
-                                            </GoogleMap>
-                                        )}
-                                    </div>
-                                </Col>
-                            </Row>
-                        </Spin>
+                                            {/* Reset Location Button */}
+                                            <div style={{ marginTop: '20px' }}>
+                                                <ResetLocationBtn onClick={handleResetLocation} />
+                                            </div>
+                                        </div>
 
-                    </Card.Body>
+                                    </Col>
 
+                                    {/* Right Column: Map Placeholder */}
+                                    <Col md={6}>
+                                        <div style={{ width: "100%", border: "1px solid #000" }}>
+                                            {loadError && (
+                                                <div style={{ color: "red" }}>
+                                                    โหลดแผนที่ไม่สำเร็จ (เช็ค API key / เปิด Maps JavaScript API)
+                                                </div>
+                                            )}
+
+                                            {!isLoaded ? (
+                                                <div
+                                                    style={{
+                                                        width: "100%",
+                                                        height: "320px",
+                                                        backgroundColor: "#e0e0e0",
+                                                        borderRadius: "10px",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        color: "#757575",
+                                                    }}
+                                                >
+                                                    Loading map...
+                                                </div>
+                                            ) : (
+                                                <GoogleMap
+                                                    mapContainerStyle={mapContainerStyle}
+                                                    center={mapCenter}
+                                                    zoom={16}
+                                                    options={mapOptions}
+                                                >
+                                                    {/* User Location Marker */}
+                                                    {coordinates.lat !== null && coordinates.long !== null && (
+                                                        <MarkerF
+                                                            position={mapCenter}
+                                                            icon={{
+                                                                url: markerIconUrl,
+                                                                scaledSize: new window.google.maps.Size(24, 24),
+                                                                anchor: new window.google.maps.Point(12, 12),
+                                                            }}
+                                                        />
+                                                    )}
+
+                                                    {/* Geofence Circle */}
+                                                    {geofence && (
+                                                        <CircleF
+                                                            center={{ lat: geofence.lat, lng: geofence.lng }}
+                                                            radius={geofence.radius}
+                                                            options={circleOptions}
+                                                        />
+                                                    )}
+                                                </GoogleMap>
+                                            )}
+                                        </div>
+                                    </Col>
+                                </Row>
+
+
+                            </Card.Body>
+
+
+                        </Card>
+
+                        {/* Action Buttons */}
+                        <div style={{ display: "flex", justifyContent: "center", gap: "40px", marginTop: "30px" }}>
+                            <CheckInBtn
+                                onClick={handleCheckIn}
+                                disabled={!buttonData?.canCi}
+                                style={{
+                                    "--bs-btn-bg": buttonData?.canCi ? "#D7FFDB" : "#EFEFF0",
+                                    "--bs-btn-disabled-bg": "#EFEFF0",
+                                    borderColor: !buttonData?.canCi ? "#a0a0a0" : "#000",
+                                    color: !buttonData?.canCi ? "#a0a0a0" : "#000",
+                                    opacity: 1 // Override default bootstrap disabled opacity if we want specific color
+                                }}
+                            />
+                            <CheckOutBtn
+                                onClick={handleCheckOut}
+                                disabled={!buttonData?.canCo}
+                                style={{
+                                    "--bs-btn-bg": buttonData?.canCo ? "#FFBCBC" : "#EFEFF0",
+                                    "--bs-btn-disabled-bg": "#EFEFF0",
+                                    borderColor: !buttonData?.canCo ? "#a0a0a0" : "#000",
+                                    color: !buttonData?.canCo ? "#a0a0a0" : "#000",
+                                    opacity: 1
+                                }}
+                            />
+                        </div>
+                    </Spin>
+                    <div style={{ marginTop: "5px", fontWeight: "normal", fontSize: "22px", color: "#000000ff" }}>
+                        Attendance History
+                    </div>
+
+                    <div style={{ marginTop: "5px" }}>
+                        <TableUI
+                            columns={columns}
+                            dataSource={cicoHistory}
+                            pagination={false}
+                            bordered={true}
+                            size="large"
+                            rowClassName={(record) => record.isNomal ? "table-row-error" : ""}
+                        />
+                    </div>
 
                 </Card>
-
-                {/* Action Buttons */}
-                <div style={{ display: "flex", justifyContent: "center", gap: "40px", marginTop: "30px" }}>
-                    <CheckInBtn
-                        onClick={handleCheckIn}
-                        disabled={!buttonData?.canCi}
-                        style={{
-                            "--bs-btn-bg": buttonData?.canCi ? "#D7FFDB" : "#EFEFF0",
-                            "--bs-btn-disabled-bg": "#EFEFF0",
-                            "--bs-btn-disabled-border-color": "#000",
-                            opacity: 1 // Override default bootstrap disabled opacity if we want specific color
-                        }}
-                    />
-                    <CheckOutBtn
-                        onClick={handleCheckOut}
-                        disabled={!buttonData?.canCo}
-                        style={{
-                            "--bs-btn-bg": buttonData?.canCo ? "#FFBCBC" : "#EFEFF0",
-                            "--bs-btn-disabled-bg": "#EFEFF0",
-                            "--bs-btn-disabled-border-color": "#000",
-                            opacity: 1
-                        }}
-                    />
-                </div>
-
-                <div style={{ marginTop: "5px", fontWeight: "normal", fontSize: "22px", color: "#000000ff" }}>
-                    Attendance History
-                </div>
-
-                <div style={{ marginTop: "5px" }}>
-                    <TableUI
-                        columns={columns}
-                        dataSource={cicoHistory}
-                        pagination={false}
-                        bordered={true}
-                        size="large"
-                        rowClassName={(record) => record.isNomal ? "table-row-error" : ""}
-                    />
-                </div>
-
-            </Card>
+            </Spin>
 
             <ReasonModal
                 open={modalOpen}
