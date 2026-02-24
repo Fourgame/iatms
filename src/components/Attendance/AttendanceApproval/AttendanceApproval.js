@@ -95,7 +95,6 @@ const AttendanceApproval = () => {
                 return text;
             }
         },
-
         {
             title: 'OA User',
             dataIndex: 'oa_user',
@@ -174,7 +173,6 @@ const AttendanceApproval = () => {
                 }
             ]
         },
-
         {
             title: 'Check-Out',
             children: [
@@ -273,7 +271,6 @@ const AttendanceApproval = () => {
             align: 'center',
             width: 100,
         },
-
         {
             title: 'ประเภทการลา',
             dataIndex: 'leaveType',
