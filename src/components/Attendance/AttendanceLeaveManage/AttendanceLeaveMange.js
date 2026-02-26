@@ -595,6 +595,11 @@ const AttendanceLeaveMange = () => {
                     setLeaveStatusList(leaveDropdownResponse.data);
                 }
 
+                const leaveTypeResponse = await getDropdown.get_dropdown({ type: 'TypeLeave' });
+                if (leaveTypeResponse.data) {
+                    setLeaveTypeOptions(leaveTypeResponse.data);
+                }
+
                 // Fetch Attendance Change
                 const attChangeResponse = await getAttChange.get_att_change();
                 if (attChangeResponse.data) {
@@ -746,7 +751,7 @@ const AttendanceLeaveMange = () => {
     // --- Leave Modal Handlers ---
     const openLeaveModal = () => {
         setModalMode("add");
-        setLeaveForm({ id: null, type_leave: null, startDate: null, endDate: null, startTime: null, endTime: null, reason: "", isFullDay: true });
+        setLeaveForm({ id: null, type_leave: null, startDate: null, endDate: null, startTime: null, endTime: null, reason: "", original_reason: "", reject_reason: "", isFullDay: true });
         setLeaveFormErrors({ type_leave: "", startDate: "", endDate: "", time: "", reason: "" });
         setShowLeaveModal(true);
     };
@@ -761,7 +766,7 @@ const AttendanceLeaveMange = () => {
             endDate: record.end_date ? moment(record.end_date) : null,
             startTime: record.start_time && !isFullDayStr ? moment(record.start_time) : null,
             endTime: record.end_time && !isFullDayStr ? moment(record.end_time) : null,
-            reason: record.reason || "", isFullDay: isFullDay
+            reason: "", original_reason: record.reason || "", reject_reason: record.reject_reason || "", isFullDay: isFullDay
         });
         setLeaveFormErrors({ type_leave: "", startDate: "", endDate: "", time: "", reason: "" });
         setShowLeaveModal(true);
@@ -929,19 +934,6 @@ const AttendanceLeaveMange = () => {
                 }
             }
         });
-    };
-
-    const handleLeaveTypeDropdownOpen = async (open) => {
-        if (open) {
-            try {
-                const leaveTypeResponse = await getDropdown.get_dropdown({ type: 'TypeLeave' });
-                if (leaveTypeResponse.data) {
-                    setLeaveTypeOptions(leaveTypeResponse.data);
-                }
-            } catch (error) {
-                console.error("Error fetching leave types:", error);
-            }
-        }
     };
 
 
@@ -1128,23 +1120,14 @@ const AttendanceLeaveMange = () => {
             ),
             key: 'action',
             render: (text, record) => {
-                const statusLabel = record.status_request ? String(record.status_request).trim() : "-";
-                const matchedStatus = leaveStatusList.find(item => item.label === statusLabel);
-                const statusCode = matchedStatus ? matchedStatus.value : statusLabel;
-
-                let diffDays = 0;
-                if (record.start_date) {
-                    const startDate = moment(record.start_date, 'YYYY-MM-DD').startOf('day');
-                    const today = moment().startOf('day');
-                    diffDays = today.diff(startDate, 'days');
-                }
+                const availableActions = record.available_actions || '';
 
                 return (
-                    <div style={{ textAlign: 'center' }}>
-                        {statusCode === 'Rj' && diffDays <= 7 && (
+                    <div style={{ textAlign: 'center', display: 'flex', gap: '5px', justifyContent: 'center' }}>
+                        {availableActions.includes('EDIT') && (
                             <EditToolBtnBootstrap onClick={() => openEditLeaveModal(record)} />
                         )}
-                        {statusCode === 'Rj' && diffDays > 7 && (
+                        {availableActions.includes('DELETE') && (
                             <DeleteToolBtn onClick={() => handleDeleteLeave(record)} />
                         )}
                     </div>
@@ -1468,7 +1451,7 @@ const AttendanceLeaveMange = () => {
                         <span style={{ width: '130px', fontWeight: 'bold', marginTop: modalMode === 'add' ? '10px' : '0' }}>{modalMode === 'add' && <span style={{ color: 'red', marginRight: '5px' }}>*</span>}ประเภทการลา</span>
                         {modalMode === 'add' ? (
                             <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <Select placeholder="-เลือก-" style={{ width: 250, height: '40px', ...(leaveFormErrors.type_leave ? { border: '1px solid #ff4d4f', borderRadius: '6px' } : {}) }} status={leaveFormErrors.type_leave ? "error" : ""} value={leaveForm.type_leave} onChange={(v) => { setLeaveForm({ ...leaveForm, type_leave: v }); setLeaveFormErrors({ ...leaveFormErrors, type_leave: "" }); }} onDropdownVisibleChange={handleLeaveTypeDropdownOpen}>
+                                <Select placeholder="-เลือก-" style={{ width: 250, height: '40px', ...(leaveFormErrors.type_leave ? { border: '1px solid #ff4d4f', borderRadius: '6px' } : {}) }} status={leaveFormErrors.type_leave ? "error" : ""} value={leaveForm.type_leave} onChange={(v) => { setLeaveForm({ ...leaveForm, type_leave: v }); setLeaveFormErrors({ ...leaveFormErrors, type_leave: "" }); }}>
                                     <Option value="">-เลือก-</Option>
                                     {leaveTypeOptions.map(o => <Option key={o.value} value={o.value}>{o.label}</Option>)}
                                 </Select>
@@ -1477,73 +1460,79 @@ const AttendanceLeaveMange = () => {
                         ) : (<span>{leaveForm.type_leave || '-'}</span>)}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-                        <span style={{ width: '130px', fontWeight: 'bold', marginTop: '10px' }}><span style={{ color: 'red', marginRight: '5px' }}>*</span>วันที่</span>
-                        <div style={{ display: 'flex', gap: '20px' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <style>
-                                    {`
-                                        .custom-disabled-datepicker.ant-picker.ant-picker-disabled {
-                                            background-color: white !important;
-                                        }
-                                        .custom-disabled-datepicker.ant-picker.ant-picker-disabled input {
-                                            color: #000 !important;
-                                            -webkit-text-fill-color: #000 !important;
-                                            opacity: 1 !important;
-                                        }
-                                    `}
-                                </style>
-                                <div style={{ position: 'relative' }}>
-                                    <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.startDate ? '#ff4d4f' : '#666', zIndex: 1 }}>start</span>
-                                    <DatePicker
-                                        className={modalMode === "edit" ? "custom-disabled-datepicker" : ""}
-                                        disabled={modalMode === "edit"}
-                                        format="DD/MM/YYYY"
-                                        placeholder="DD/MM/YYYY"
-                                        status={leaveFormErrors.startDate ? "error" : ""}
-                                        value={leaveForm.startDate}
-                                        suffixIcon={modalMode === "edit" ? null : <i className="bi bi-calendar"></i>}
-                                        onChange={(date) => {
-                                            setLeaveForm({ ...leaveForm, startDate: date });
-                                            let errs = { ...leaveFormErrors, startDate: "", endDate: "" };
-                                            if (checkDuplicateDate(date, leaveForm.endDate, leaveForm.id)) {
-                                                errs.startDate = "วันลานี้มีการลางานแล้ว (ซ้ำ)";
-                                                errs.endDate = "วันลานี้มีการลางานแล้ว (ซ้ำ)";
-                                            }
-                                            setLeaveFormErrors(errs);
-                                        }}
-                                        disabledDate={(current) => leaveForm.endDate ? current && current.isAfter(leaveForm.endDate, 'day') : false}
-                                        style={{ width: 180, height: '40px', borderRadius: '6px', border: leaveFormErrors.startDate ? '1px solid #ff4d4f' : '1px solid #888', backgroundColor: modalMode === "edit" ? 'white' : undefined, color: modalMode === "edit" ? 'black' : undefined }}
-                                    />
+                        <span style={{ width: '130px', fontWeight: 'bold', marginTop: modalMode === 'add' ? '10px' : '0' }}>{modalMode === 'add' && <span style={{ color: 'red', marginRight: '5px' }}>*</span>}วันที่</span>
+                        {modalMode === 'add' ? (
+                            <div style={{ display: 'flex', gap: '20px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <div style={{ position: 'relative' }}>
+                                        <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.startDate ? '#ff4d4f' : '#666', zIndex: 1 }}>start</span>
+                                        <DatePicker
+                                            format="DD/MM/YYYY"
+                                            placeholder="DD/MM/YYYY"
+                                            status={leaveFormErrors.startDate ? "error" : ""}
+                                            value={leaveForm.startDate}
+                                            suffixIcon={<i className="bi bi-calendar"></i>}
+                                            onChange={(date) => {
+                                                setLeaveForm({ ...leaveForm, startDate: date });
+                                                let errs = { ...leaveFormErrors, startDate: "", endDate: "" };
+                                                if (checkDuplicateDate(date, leaveForm.endDate, leaveForm.id)) {
+                                                    errs.startDate = "วันลานี้มีการลางานแล้ว (ซ้ำ)";
+                                                    errs.endDate = "วันลานี้มีการลางานแล้ว (ซ้ำ)";
+                                                }
+                                                setLeaveFormErrors(errs);
+                                            }}
+                                            disabledDate={(current) => {
+                                                if (!current) return false;
+                                                const minDate = moment().subtract(7, 'days').startOf('day');
+                                                const maxDate = moment().add(365, 'days').endOf('day');
+                                                const isOutOfRange = current.isBefore(minDate) || current.isAfter(maxDate);
+                                                const isAfterEndDate = leaveForm.endDate ? current.isAfter(leaveForm.endDate, 'day') : false;
+                                                return isOutOfRange || isAfterEndDate;
+                                            }}
+                                            style={{ width: 180, height: '40px', borderRadius: '6px', border: leaveFormErrors.startDate ? '1px solid #ff4d4f' : '1px solid #888' }}
+                                        />
+                                    </div>
+                                    {leaveFormErrors.startDate && <span style={{ color: '#ff4d4f', fontSize: '14px', marginTop: '5px' }}>{leaveFormErrors.startDate}</span>}
                                 </div>
-                                {leaveFormErrors.startDate && <span style={{ color: '#ff4d4f', fontSize: '14px', marginTop: '5px' }}>{leaveFormErrors.startDate}</span>}
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <div style={{ position: 'relative' }}>
-                                    <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.endDate ? '#ff4d4f' : '#666', zIndex: 1 }}>End</span>
-                                    <DatePicker
-                                        className={modalMode === "edit" ? "custom-disabled-datepicker" : ""}
-                                        disabled={modalMode === "edit"}
-                                        format="DD/MM/YYYY"
-                                        placeholder="DD/MM/YYYY"
-                                        status={leaveFormErrors.endDate ? "error" : ""}
-                                        value={leaveForm.endDate}
-                                        suffixIcon={modalMode === "edit" ? null : <i className="bi bi-calendar"></i>}
-                                        onChange={(date) => {
-                                            setLeaveForm({ ...leaveForm, endDate: date });
-                                            let errs = { ...leaveFormErrors, startDate: "", endDate: "" };
-                                            if (checkDuplicateDate(leaveForm.startDate, date, leaveForm.id)) {
-                                                errs.startDate = "วันลานี้มีการลางานแล้ว (ซ้ำ)";
-                                                errs.endDate = "วันลานี้มีการลางานแล้ว (ซ้ำ)";
-                                            }
-                                            setLeaveFormErrors(errs);
-                                        }}
-                                        disabledDate={(current) => leaveForm.startDate ? current && current.isBefore(leaveForm.startDate, 'day') : false}
-                                        style={{ width: 180, height: '40px', borderRadius: '6px', border: leaveFormErrors.endDate ? '1px solid #ff4d4f' : '1px solid #888', backgroundColor: modalMode === "edit" ? 'white' : undefined, color: modalMode === "edit" ? 'black' : undefined }}
-                                    />
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <div style={{ position: 'relative' }}>
+                                        <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.endDate ? '#ff4d4f' : '#666', zIndex: 1 }}>End</span>
+                                        <DatePicker
+                                            format="DD/MM/YYYY"
+                                            placeholder="DD/MM/YYYY"
+                                            status={leaveFormErrors.endDate ? "error" : ""}
+                                            value={leaveForm.endDate}
+                                            suffixIcon={<i className="bi bi-calendar"></i>}
+                                            onChange={(date) => {
+                                                setLeaveForm({ ...leaveForm, endDate: date });
+                                                let errs = { ...leaveFormErrors, startDate: "", endDate: "" };
+                                                if (checkDuplicateDate(leaveForm.startDate, date, leaveForm.id)) {
+                                                    errs.startDate = "วันลานี้มีการลางานแล้ว (ซ้ำ)";
+                                                    errs.endDate = "วันลานี้มีการลางานแล้ว (ซ้ำ)";
+                                                }
+                                                setLeaveFormErrors(errs);
+                                            }}
+                                            disabledDate={(current) => {
+                                                if (!current) return false;
+                                                const minDate = moment().subtract(7, 'days').startOf('day');
+                                                const maxDate = moment().add(365, 'days').endOf('day');
+                                                const isOutOfRange = current.isBefore(minDate) || current.isAfter(maxDate);
+                                                const isBeforeStartDate = leaveForm.startDate ? current.isBefore(leaveForm.startDate, 'day') : false;
+                                                return isOutOfRange || isBeforeStartDate;
+                                            }}
+                                            style={{ width: 180, height: '40px', borderRadius: '6px', border: leaveFormErrors.endDate ? '1px solid #ff4d4f' : '1px solid #888' }}
+                                        />
+                                    </div>
+                                    {leaveFormErrors.endDate && <span style={{ color: '#ff4d4f', fontSize: '14px', marginTop: '5px' }}>{leaveFormErrors.endDate}</span>}
                                 </div>
-                                {leaveFormErrors.endDate && <span style={{ color: '#ff4d4f', fontSize: '14px', marginTop: '5px' }}>{leaveFormErrors.endDate}</span>}
                             </div>
-                        </div>
+                        ) : (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                <span>{leaveForm.startDate ? leaveForm.startDate.format('DD/MM/YYYY') : '-'}</span>
+                                <span style={{ fontWeight: 'bold' }}>-</span>
+                                <span>{leaveForm.endDate ? leaveForm.endDate.format('DD/MM/YYYY') : '-'}</span>
+                            </div>
+                        )}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'flex-start' }}>
                         <span style={{ width: '130px', fontWeight: 'bold', marginTop: '10px' }}><span style={{ color: 'red', marginRight: '5px' }}>*</span>ช่วงเวลา</span>
@@ -1624,8 +1613,20 @@ const AttendanceLeaveMange = () => {
                             {leaveFormErrors.time && <span style={{ color: '#ff4d4f', fontSize: '14px', marginTop: '5px' }}>{leaveFormErrors.time}</span>}
                         </div>
                     </div>
+                    {modalMode === 'edit' && (
+                        <>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                <div style={{ fontWeight: 'bold' }}>เหตุผลเดิม</div>
+                                <div style={{ marginLeft: '15px' }}>{leaveForm.original_reason || '-'}</div>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                <div style={{ fontWeight: 'bold' }}>เหตุผลที่ปฏิเสธ</div>
+                                <div style={{ marginLeft: '15px' }}>{leaveForm.reject_reason || '-'}</div>
+                            </div>
+                        </>
+                    )}
                     <div>
-                        <div style={{ marginBottom: '10px', fontWeight: 'bold' }}><span style={{ color: 'red', marginRight: '5px' }}>*</span>เหตุผล</div>
+                        <div style={{ marginBottom: '10px', fontWeight: 'bold' }}><span style={{ color: 'red', marginRight: '5px' }}>*</span>{modalMode === 'edit' ? 'เหตุผลคำขอใหม่' : 'เหตุผล'}</div>
                         <TextArea rows={5} placeholder="กรอกเหตุผล" value={leaveForm.reason} status={leaveFormErrors.reason ? "error" : ""} onChange={(e) => { setLeaveForm({ ...leaveForm, reason: e.target.value }); setLeaveFormErrors({ ...leaveFormErrors, reason: "" }); }} style={{ border: leaveFormErrors.reason ? '2px solid #ff4d4f' : '3px solid black', borderRadius: '8px', fontSize: '16px', padding: '10px' }} />
                         {leaveFormErrors.reason && <div style={{ color: '#ff4d4f', fontSize: '14px', marginTop: '5px' }}>{leaveFormErrors.reason}</div>}
                     </div>

@@ -92,6 +92,10 @@ const UserManage = () => {
                 navigate("/signin", { state: { message: "session expire" } });
                 return true;
             }
+            if (error.response.data && error.response.data.message) {
+                noticeShowMessage(error.response.data.message, true);
+                return false;
+            }
             const messages = { 403: "access-denied", 404: "not-found" };
             noticeShowMessage(messages[status] || "error", true);
         } else if (error.request) {

@@ -345,3 +345,26 @@ export const CheckOutBtn = ({ onClick, style, className, ...props }) => {
         </ButtonBootstrap>
     );
 };
+export const Approve_RejectBtn = ({ onClick, style, className, ...props }) => {
+    return (
+        <ButtonBootstrap
+            variant="primary"
+            size="sm"
+            onClick={onClick}
+            className={`d-inline-flex align-items-center justify-content-center gap-2 ${className}`}
+            style={{
+                "--bs-btn-bg": "#8FB1FF",
+                "--bs-btn-hover-bg": "#DCE8FF", // Lighter on hover
+                "--bs-btn-active-bg": "#DCE8FF",
+                "--bs-btn-border-color": "#000", // Black border
+                color: "#000",
+
+                ...style
+            }}
+            {...props}
+        >
+            <i class="bi bi-file-earmark-text"></i>
+            <span>Approve/Reject</span>
+        </ButtonBootstrap>
+    );
+};

@@ -156,6 +156,10 @@ const CheckInOut = () => {
                 navigate("/signin", { state: { message: "session expire" } });
                 return true;
             }
+            if (error.response.data && error.response.data.message) {
+                noticeShowMessage(error.response.data.message, true);
+                return false;
+            }
             if (status === 403) return navigate("/signin", { state: { message: "access-denied" } });
             if (status === 404) return navigate("/signin", { state: { message: "not-found" } });
 
