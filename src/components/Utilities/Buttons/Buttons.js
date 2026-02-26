@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from 'antd';
+import { BsList, BsXCircleFill } from "react-icons/bs";
 import { Button as ButtonBootstrap } from 'react-bootstrap';
 import { SearchOutlined, ClearOutlined, SaveOutlined, PlusOutlined, EditOutlined, PrinterOutlined, CloseOutlined, SyncOutlined, LoginOutlined, LogoutOutlined, DeleteOutlined } from '@ant-design/icons';
 
@@ -365,6 +366,72 @@ export const Approve_RejectBtn = ({ onClick, style, className, ...props }) => {
         >
             <i class="bi bi-file-earmark-text"></i>
             <span>Approve/Reject</span>
+        </ButtonBootstrap>
+    );
+};
+
+export const ApproveModalBtnBootstrap = ({ onClick, style, className, ...props }) => {
+    return (
+        <ButtonBootstrap
+            variant="primary"
+            onClick={onClick}
+            className={`d-inline-flex align-items-center justify-content-center gap-2 ${className}`}
+            style={{
+                "--bs-btn-bg": "#BCD0FF",
+                "--bs-btn-border-color": "#000000ff",
+                "--bs-btn-hover-bg": "#dce7ffff",
+                "--bs-btn-hover-border-color": "#000000ff",
+                "--bs-btn-active-bg": "#dce7ffff",
+                "--bs-btn-active-border-color": "#000000ff",
+                color: "#000",
+                width: "150px",
+                height: "40px",
+                fontSize: "16px",
+                fontWeight: "bold",
+                border: "1px solid #000",
+                ...style
+            }}
+            {...props}
+        >
+            {/* <i class="bi bi-save-fill"></i> */}
+            <span style={{ position: "relative", display: "inline-block" }}>
+                <BsList size={24} />
+                <BsXCircleFill style={{ position: "absolute", right: -2, bottom: -2 }} size={14} />
+            </span>
+            <span>
+                Approve
+            </span>
+        </ButtonBootstrap>
+    );
+};
+
+export const RejectModalBtnBootstrap = ({ onClick, style, className, ...props }) => {
+    return (
+        <ButtonBootstrap
+            variant="primary"
+            onClick={onClick}
+            className={`d-inline-flex align-items-center justify-content-center gap-2 ${className}`}
+            style={{
+                "--bs-btn-bg": "#FFBCBC",
+                "--bs-btn-border-color": "#000000ff",
+                "--bs-btn-hover-bg": "#ffcccc",
+                "--bs-btn-hover-border-color": "#000000ff",
+                "--bs-btn-active-bg": "#ffcccc",
+                "--bs-btn-active-border-color": "#000000ff",
+                color: "#000",
+                width: "150px",
+                height: "40px",
+                fontSize: "16px",
+                fontWeight: "bold",
+                border: "1px solid #000",
+                ...style
+            }}
+            {...props}
+        >
+            <i class="bi bi-x-circle"></i>
+            <span>
+                Reject
+            </span>
         </ButtonBootstrap>
     );
 };

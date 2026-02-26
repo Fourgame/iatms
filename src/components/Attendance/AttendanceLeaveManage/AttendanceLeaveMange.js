@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, Row, Col } from 'react-bootstrap';
 import { GoogleMap, MarkerF, CircleF, useJsApiLoader } from "@react-google-maps/api";
 import { DatePicker, Select, Form, Input, TimePicker, Modal, Button, Checkbox } from 'antd';
@@ -555,6 +555,17 @@ const AttendanceLeaveMange = () => {
     const [attStartDate, setAttStartDate] = useState(null);
     const [attEndDate, setAttEndDate] = useState(null);
     const [attStatus, setAttStatus] = useState("ทั้งหมด");
+
+    const [openAttStatusDropdown, setOpenAttStatusDropdown] = useState(false);
+    const attFilterRef = useRef(null);
+
+    const handleAttKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            setOpenAttStatusDropdown(false);
+            handleAttSearch();
+        }
+    };
     const [attStatusList, setAttStatusList] = useState([]);
     const [attChangeData, setAttChangeData] = useState([]);
     const [originalData, setOriginalData] = useState([]);
@@ -567,6 +578,17 @@ const AttendanceLeaveMange = () => {
     const [leaveStartDate, setLeaveStartDate] = useState(null);
     const [leaveEndDate, setLeaveEndDate] = useState(null);
     const [leaveStatus, setLeaveStatus] = useState("ทั้งหมด");
+
+    const [openLeaveStatusDropdown, setOpenLeaveStatusDropdown] = useState(false);
+    const leaveFilterRef = useRef(null);
+
+    const handleLeaveKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            setOpenLeaveStatusDropdown(false);
+            handleLeaveSearch();
+        }
+    };
 
     // Leave Modal State
     const [showLeaveModal, setShowLeaveModal] = useState(false);
@@ -679,10 +701,10 @@ const AttendanceLeaveMange = () => {
 
     // --- Attendance Change Handlers ---
     const handleAttSearch = async () => {
-        if (attEndDate && !attStartDate) {
-            noticeShowMessage("กรุณากรอกวันที่เริ่มต้น", true);
-            return;
-        }
+        // if (attEndDate && !attStartDate) {
+        //     noticeShowMessage("กรุณากรอกวันที่เริ่มต้น", true);
+        //     return;
+        // }
 
         setLoading(true);
         try {
@@ -719,10 +741,10 @@ const AttendanceLeaveMange = () => {
 
     // --- Leave Request Handlers ---
     const handleLeaveSearch = async () => {
-        if (leaveEndDate && !leaveStartDate) {
-            noticeShowMessage("กรุณากรอกวันที่เริ่มต้น", true);
-            return;
-        }
+        // if (leaveEndDate && !leaveStartDate) {
+        //     noticeShowMessage("กรุณากรอกวันที่เริ่มต้น", true);
+        //     return;
+        // }
 
         setLoading(true);
         try {
@@ -889,7 +911,6 @@ const AttendanceLeaveMange = () => {
                 if (Array.isArray(modalData)) {
                     modalData = modalData.length > 0 ? modalData[0] : null;
                 }
-
                 if (modalData) {
                     console.log("Setting Modal Data:", modalData);
                     setEditModalData(modalData);
@@ -993,7 +1014,11 @@ const AttendanceLeaveMange = () => {
                     align: 'center',
                     width: 80,
                     sorter: (a, b) => String(a.ciTime ?? "").localeCompare(String(b.ciTime ?? "")),
-                    render: (text) => text ?? "-"
+                    render: (text) => (
+                        <div style={{ textAlign: text && text.trim() ? "center" : "center" }}>
+                            {text && text.trim() ? text : "-"}
+                        </div>
+                    )
                 },
                 {
                     title: 'ตำแหน่ง',
@@ -1002,7 +1027,11 @@ const AttendanceLeaveMange = () => {
                     align: 'left',
                     width: 120,
                     sorter: (a, b) => String(a.ciLocation ?? "").localeCompare(String(b.ciLocation ?? "")),
-                    render: (text) => text ?? "-"
+                    render: (text) => (
+                        <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
+                            {text && text.trim() ? text : "-"}
+                        </div>
+                    )
                 },
                 {
                     title: 'เหตุผล',
@@ -1024,7 +1053,11 @@ const AttendanceLeaveMange = () => {
                     align: 'center',
                     width: 120,
                     sorter: (a, b) => String(a.ciTimeNew ?? "").localeCompare(String(b.ciTimeNew ?? "")),
-                    render: (text) => text ?? "-"
+                    render: (text) => (
+                        <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
+                            {text && text.trim() ? text : "-"}
+                        </div>
+                    )
                 },
                 {
                     title: 'ตำแหน่งที่ขอแก้ไข',
@@ -1033,7 +1066,11 @@ const AttendanceLeaveMange = () => {
                     align: 'left',
                     width: 120,
                     sorter: (a, b) => String(a.ciLocationNew ?? "").localeCompare(String(b.ciLocationNew ?? "")),
-                    render: (text) => text ?? "-"
+                    render: (text) => (
+                        <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
+                            {text && text.trim() ? text : "-"}
+                        </div>
+                    )
                 }
             ]
         },
@@ -1078,7 +1115,11 @@ const AttendanceLeaveMange = () => {
                     align: 'center',
                     width: 120,
                     sorter: (a, b) => String(a.coTimeNew ?? "").localeCompare(String(b.coTimeNew ?? "")),
-                    render: (text) => text ?? "-"
+                    render: (text) => (
+                        <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
+                            {text && text.trim() ? text : "-"}
+                        </div>
+                    )
                 },
                 {
                     title: 'ตำแหน่งที่ขอแก้ไข',
@@ -1087,7 +1128,11 @@ const AttendanceLeaveMange = () => {
                     align: 'left',
                     width: 120,
                     sorter: (a, b) => String(a.coLocationNew ?? "").localeCompare(String(b.coLocationNew ?? "")),
-                    render: (text) => text ?? "-"
+                    render: (text) => (
+                        <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
+                            {text && text.trim() ? text : "-"}
+                        </div>
+                    )
                 }
             ]
         },
@@ -1254,12 +1299,16 @@ const AttendanceLeaveMange = () => {
                 <Card.Body className="p-3">
 
                     <div
+                        ref={attFilterRef}
+                        tabIndex={-1}
+                        onKeyDown={handleAttKeyDown}
                         style={{
                             display: "flex",
                             alignItems: "center",
                             flexWrap: "wrap",
                             gap: "15px",
                             background: "white",
+                            outline: "none"
                         }}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -1270,7 +1319,10 @@ const AttendanceLeaveMange = () => {
                                     placeholder="DD/MM/YYYY"
                                     inputReadOnly={true}
                                     value={attStartDate}
-                                    onChange={(date) => setAttStartDate(date)}
+                                    onChange={(date) => {
+                                        setAttStartDate(date);
+                                        requestAnimationFrame(() => attFilterRef.current?.focus());
+                                    }}
                                     disabledDate={(current) => {
                                         return attEndDate ? current && current > attEndDate.endOf('day') : false;
                                     }}
@@ -1282,7 +1334,10 @@ const AttendanceLeaveMange = () => {
                                     placeholder="DD/MM/YYYY"
                                     inputReadOnly={true}
                                     value={attEndDate}
-                                    onChange={(date) => setAttEndDate(date)}
+                                    onChange={(date) => {
+                                        setAttEndDate(date);
+                                        requestAnimationFrame(() => attFilterRef.current?.focus());
+                                    }}
                                     disabledDate={(current) => {
                                         return attStartDate ? current && current < attStartDate.startOf('day') : false;
                                     }}
@@ -1292,21 +1347,23 @@ const AttendanceLeaveMange = () => {
                         </div>
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <Form component={false}>
-                                <Form.Item label={<span style={{ fontWeight: 700, fontSize: '16px' }}>สถานะคำขอ</span>} style={{ marginBottom: 0 }}>
-                                    <Select
-                                        placeholder="-เลือก-"
-                                        value={attStatus}
-                                        onChange={(value) => setAttStatus(value)}
-                                        style={{ width: 150 }}
-                                    >
-                                        <Option value="ทั้งหมด">ทั้งหมด</Option>
-                                        {attStatusList.map((item) => (
-                                            <Option key={item.value} value={item.value}>{item.label}</Option>
-                                        ))}
-                                    </Select>
-                                </Form.Item>
-                            </Form>
+                            <span style={{ fontWeight: 700, fontSize: '16px' }}>สถานะคำขอ:</span>
+                            <Select
+                                placeholder="-เลือก-"
+                                value={attStatus}
+                                open={openAttStatusDropdown}
+                                onDropdownVisibleChange={(open) => setOpenAttStatusDropdown(open)}
+                                onChange={(value) => {
+                                    setAttStatus(value);
+                                    requestAnimationFrame(() => attFilterRef.current?.focus());
+                                }}
+                                style={{ width: 150 }}
+                            >
+                                <Option value="ทั้งหมด">ทั้งหมด</Option>
+                                {attStatusList.map((item) => (
+                                    <Option key={item.value} value={item.value}>{item.label}</Option>
+                                ))}
+                            </Select>
                         </div>
 
                         <div style={{ marginLeft: "auto", display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -1357,12 +1414,16 @@ const AttendanceLeaveMange = () => {
                 </Card.Header>
                 <Card.Body className="p-3">
                     <div
+                        ref={leaveFilterRef}
+                        tabIndex={-1}
+                        onKeyDown={handleLeaveKeyDown}
                         style={{
                             display: "flex",
                             alignItems: "center",
                             flexWrap: "wrap",
                             gap: "15px",
                             background: "white",
+                            outline: "none"
                         }}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -1373,7 +1434,10 @@ const AttendanceLeaveMange = () => {
                                     placeholder="DD/MM/YYYY"
                                     inputReadOnly={true}
                                     value={leaveStartDate}
-                                    onChange={(date) => setLeaveStartDate(date)}
+                                    onChange={(date) => {
+                                        setLeaveStartDate(date);
+                                        requestAnimationFrame(() => leaveFilterRef.current?.focus());
+                                    }}
                                     disabledDate={(current) => leaveEndDate ? current && current.isAfter(leaveEndDate, 'day') : false}
                                     style={{ width: 140 }}
                                 />
@@ -1383,7 +1447,10 @@ const AttendanceLeaveMange = () => {
                                     placeholder="DD/MM/YYYY"
                                     inputReadOnly={true}
                                     value={leaveEndDate}
-                                    onChange={(date) => setLeaveEndDate(date)}
+                                    onChange={(date) => {
+                                        setLeaveEndDate(date);
+                                        requestAnimationFrame(() => leaveFilterRef.current?.focus());
+                                    }}
                                     disabledDate={(current) => leaveStartDate ? current && current.isBefore(leaveStartDate, 'day') : false}
                                     style={{ width: 140 }}
                                 />
@@ -1396,7 +1463,12 @@ const AttendanceLeaveMange = () => {
                                     <Select
                                         placeholder="-เลือก-"
                                         value={leaveStatus}
-                                        onChange={(value) => setLeaveStatus(value)}
+                                        open={openLeaveStatusDropdown}
+                                        onDropdownVisibleChange={(open) => setOpenLeaveStatusDropdown(open)}
+                                        onChange={(value) => {
+                                            setLeaveStatus(value);
+                                            requestAnimationFrame(() => leaveFilterRef.current?.focus());
+                                        }}
                                         style={{ width: 150 }}
                                     >
                                         <Option value="ทั้งหมด">ทั้งหมด</Option>
