@@ -169,23 +169,16 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
         return (
             <Row className="mt-3">
                 <Col md={6}>
-                    <span style={{ color: "red" }}> * </span>
                     <span style={{ fontWeight: 'bold', marginBottom: '5px' }}>ตำแหน่งที่ผิดปกติ</span>
 
                     {/* Display Original Address */}
                     <div style={{
                         marginBottom: '10px',
-                        padding: '8px',
-                        border: '1px solid #ff4d4f',
-                        borderRadius: '4px',
-                        backgroundColor: '#fff1f0',
+                        color: 'red',
                         display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        height: '42px'
+                        alignItems: 'center'
                     }}>
                         <span>{originalAddress || "-"}</span>
-                        <CloseIconBtn style={{ color: 'red', cursor: 'default' }} />
                     </div>
 
                     {/* ✅ keep equal vertical space with the right column help */}
@@ -237,10 +230,10 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
                                     help={fixedHelp(err)}
                                 >
                                     <div style={{
-                                        marginBottom: '10px',
+                                        marginBottom: '3px',
                                         padding: '8px',
-                                        border: '1px solid #000',
-                                        borderRadius: '4px',
+                                        // border: '1px solid #000',
+                                        // borderRadius: '4px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'space-between',
@@ -248,12 +241,12 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
                                         color: newLocation ? "#000" : '#888888ff'
                                     }}>
                                         {newLocation ? (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', wordBreak: 'break-word' }}>
                                                 <i className="fas fa-map-marker-alt" ></i>
                                                 <span title={newAddress}>{newAddress}</span>
                                             </div>
                                         ) : (
-                                            "กรุณาเลือกตำแหน่งในแผนที่เพื่อระบุตำแหน่ง"
+                                            ""
                                         )}
                                         <i className="fas fa-chevron-down"></i>
                                     </div>
@@ -321,26 +314,16 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
             <Row className="mb-2 align-items-start">
                 <Col md={6}>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <span style={{ color: "red" }}> * </span>
                         <div style={{ width: '80px', fontWeight: 'bold' }}>เวลา</div>
 
                         {/* Invalid Time Display */}
                         <div style={{
                             flex: 1,
-                            padding: '4px 8px',
-                            border: '1px solid #ff0000ff',
-                            borderRadius: '4px',
-                            backgroundColor: '#fff1f0',
+                            color: 'red',
                             display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            height: '35px'
+                            alignItems: 'center'
                         }}>
-                            <span>{timeStr || "-"}</span>
-                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                <div style={{ borderLeft: '1px dotted #ff4d4f', paddingLeft: '5px', marginLeft: '5px', color: '#ff4d4f' }}>น.</div>
-                                <CloseIconBtn style={{ color: 'red', cursor: 'default', marginLeft: '5px' }} />
-                            </div>
+                            <span>{timeStr || "-"} น.</span>
                         </div>
                     </div>
 
@@ -349,38 +332,43 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
                 </Col>
 
                 <Col md={6}>
-                    <Form.Item shouldUpdate noStyle>
-                        {() => {
-                            const err = form.getFieldError(fieldName)?.[0];
+                    <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                        <div style={{ fontWeight: 'bold', height: '35px', display: 'flex', alignItems: 'center', marginRight: '15px', whiteSpace: 'nowrap' }}>เลือกเวลาใหม่</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <Form.Item shouldUpdate noStyle>
+                                {() => {
+                                    const err = form.getFieldError(fieldName)?.[0];
 
-                            return (
-                                <Form.Item
-                                    name={fieldName}
-                                    style={{ marginBottom: 0, width: '100%' }}
-                                    rules={[{ required: isInvalid, message: msg }]}
-                                    validateStatus={err ? "error" : undefined}
-                                    help={fixedHelp(err)}
-                                >
-                                    <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #000', borderRadius: '4px', padding: '0 5px', height: '35px', width: '100%' }}>
-                                        <TimePicker
-                                            value={newTime}
-                                            onChange={(time) => {
-                                                setNewTime(time);
-                                                form.setFieldValue(fieldName, time);
-                                                form.setFields([{ name: fieldName, errors: [] }]);
-                                            }}
-                                            format="HH:mm"
-                                            placeholder="00:00"
-                                            bordered={false}
-                                            style={{ flex: 1 }}
-                                            suffixIcon={<i className="far fa-clock" style={{ color: '#000' }}></i>}
-                                        />
-                                        <div style={{ borderLeft: '1px solid #000', paddingLeft: '5px', height: '100%', display: 'flex', alignItems: 'center' }}>น.</div>
-                                    </div>
-                                </Form.Item>
-                            );
-                        }}
-                    </Form.Item>
+                                    return (
+                                        <Form.Item
+                                            name={fieldName}
+                                            style={{ marginBottom: 0, width: '100%' }}
+                                            rules={[{ required: isInvalid, message: msg }]}
+                                            validateStatus={err ? "error" : undefined}
+                                            help={fixedHelp(err)}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #000', borderRadius: '4px', padding: '0 5px', height: '35px', width: '100%' }}>
+                                                <TimePicker
+                                                    value={newTime}
+                                                    onChange={(time) => {
+                                                        setNewTime(time);
+                                                        form.setFieldValue(fieldName, time);
+                                                        form.setFields([{ name: fieldName, errors: [] }]);
+                                                    }}
+                                                    format="HH:mm"
+                                                    placeholder="00:00"
+                                                    bordered={false}
+                                                    style={{ flex: 1 }}
+                                                    suffixIcon={<i className="far fa-clock" style={{ color: '#000' }}></i>}
+                                                />
+                                                <div style={{ borderLeft: '1px solid #000', paddingLeft: '5px', height: '100%', display: 'flex', alignItems: 'center' }}>น.</div>
+                                            </div>
+                                        </Form.Item>
+                                    );
+                                }}
+                            </Form.Item>
+                        </div>
+                    </div>
                 </Col>
             </Row>
         );
@@ -486,7 +474,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
                                     <div style={{ flex: 1 }}>{data?.ciAddress || "-"}</div>
                                 </div>
                             )}
-                            <div style={{ display: 'flex', marginBottom: '0' }}>
+                            <div style={{ display: 'flex', marginBottom: '0' ,paddingTop: '10px'}}>
                                 <div style={{ width: '80px', fontWeight: 'bold' }}>เหตุผล</div>
                                 <div style={{ flex: 1 }}>{data?.ciReason || "-"}</div>
                             </div>
@@ -508,12 +496,26 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
                                     <div style={{ flex: 1 }}>{data?.coAddress || "-"}</div>
                                 </div>
                             )}
-                            <div style={{ display: 'flex', marginBottom: '0' }}>
+                            <div style={{ display: 'flex', marginBottom: '0', paddingTop: '10px' }}>
                                 <div style={{ width: '80px', fontWeight: 'bold' }}>เหตุผล</div>
                                 <div style={{ flex: 1 }}>{data?.coReason || "-"}</div>
                             </div>
                         </Card.Body>
                     </Card>
+                </div>
+
+                {/* Reason Display */}
+                <div style={{ marginBottom: '15px', padding: '0 5px' }}>
+                    <div style={{ display: 'flex', marginBottom: '8px' }}>
+                        <div style={{ width: '120px', fontWeight: 'bold' }}>เหตุผลที่ร้องขอ :</div>
+                        <div style={{ flex: 1 }}>{data?.requestReason || "-"}</div>
+                    </div>
+
+                    <div style={{ display: 'flex' }}>
+                        <div style={{ width: '120px', fontWeight: 'bold' }}>เหตุผลที่ปฏิเสธ :</div>
+                        <div style={{ flex: 1 }}>{data?.rejectReason || "-"}</div>
+                    </div>
+
                 </div>
 
                 {/* Request Reason Card */}
