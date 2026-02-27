@@ -108,9 +108,6 @@ const Home = (props) => {
                     <div>
                         <span className="fw-bold">Workplace :</span> {user.profile.work_Place}
                     </div>
-                    <div>
-                        <span className="fw-bold">Role Level :</span> {user.profile.role_level}
-                    </div>
                 </div>
             </div>
 

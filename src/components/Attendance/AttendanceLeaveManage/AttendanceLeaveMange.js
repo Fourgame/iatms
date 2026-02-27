@@ -573,6 +573,8 @@ const AttendanceLeaveMange = () => {
     const [editModalData, setEditModalData] = useState(null);
     const [isRejectReasonModalOpen, setIsRejectReasonModalOpen] = useState(false);
     const [rejectReasonText, setRejectReasonText] = useState("");
+    const [isDeleteAttModalOpen, setIsDeleteAttModalOpen] = useState(false);
+    const [attToDelete, setAttToDelete] = useState(null);
 
     // Leave Request State
     const [leaveStartDate, setLeaveStartDate] = useState(null);
@@ -592,6 +594,8 @@ const AttendanceLeaveMange = () => {
 
     // Leave Modal State
     const [showLeaveModal, setShowLeaveModal] = useState(false);
+    const [isDeleteLeaveModalOpen, setIsDeleteLeaveModalOpen] = useState(false);
+    const [leaveToDelete, setLeaveToDelete] = useState(null);
     const [modalMode, setModalMode] = useState("add"); // "add" or "edit"
     const [leaveTypeOptions, setLeaveTypeOptions] = useState([]);
     const [leaveForm, setLeaveForm] = useState({ id: null, type_leave: null, startDate: null, endDate: null, startTime: null, endTime: null, reason: "", isFullDay: true });
@@ -856,41 +860,49 @@ const AttendanceLeaveMange = () => {
 
             const response = await postLeave.post_leave(payload);
 
-            if (response.status === 200) {
-                noticeShowMessage("บันทึกข้อมูลเรียบร้อยแล้ว", false); setShowLeaveModal(false); fetchLeaveData();
-            } else { noticeShowMessage("เกิดข้อผิดพลาดในการบันทึกข้อมูล", true); }
-        } catch (error) { console.error("Error saving leave:", error); noticeShowMessage("เกิดข้อผิดพลาดในการบันทึกข้อมูล", true); } finally { setLoading(false); }
+            if (response.data && response.data.message === "Success") {
+                noticeShowMessage("บันทึกข้อมูลสำเร็จ", false);
+                setShowLeaveModal(false);
+                fetchLeaveData();
+            } else {
+                noticeShowMessage("เกิดข้อผิดพลาดในการบันทึกข้อมูล", true);
+            }
+        } catch (error) {
+            console.error("Error saving leave:", error);
+            noticeShowMessage("เกิดข้อผิดพลาดในการบันทึกข้อมูล", true);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleDeleteLeave = (record) => {
-        Modal.confirm({
-            title: 'ยืนยันการลบ',
-            content: 'คุณแน่ใจหรือไม่ว่าต้องการลบรายการลานี้?',
-            okText: 'ลบ',
-            okType: 'danger',
-            cancelText: 'ยกเลิก',
-            onOk: async () => {
-                try {
-                    setLoading(true);
-                    const payload = {
-                        start_date: record.start_date ? moment(record.start_date).format('YYYY-MM-DD') : null,
-                        end_date: record.end_date ? moment(record.end_date).format('YYYY-MM-DD') : null
-                    };
-                    const response = await deleteLeave.delete_leave(payload);
-                    if (response.status === 200) {
-                        noticeShowMessage("ลบข้อมูลสำเร็จ", false);
-                        fetchLeaveData();
-                    } else {
-                        noticeShowMessage("เกิดข้อผิดพลาดในการลบข้อมูล", true);
-                    }
-                } catch (error) {
-                    console.error("Error deleting leave:", error);
-                    noticeShowMessage("เกิดข้อผิดพลาดในการลบข้อมูล", true);
-                } finally {
-                    setLoading(false);
-                }
+        setLeaveToDelete(record);
+        setIsDeleteLeaveModalOpen(true);
+    };
+
+    const confirmDeleteLeave = async () => {
+        if (!leaveToDelete) return;
+        try {
+            setLoading(true);
+            const payload = {
+                start_date: leaveToDelete.start_date ? moment(leaveToDelete.start_date).format('YYYY-MM-DD') : null,
+                end_date: leaveToDelete.end_date ? moment(leaveToDelete.end_date).format('YYYY-MM-DD') : null
+            };
+            const response = await deleteLeave.delete_leave(payload);
+            if (response.status === 200) {
+                noticeShowMessage("ลบข้อมูลสำเร็จ", false);
+                setIsDeleteLeaveModalOpen(false);
+                setLeaveToDelete(null);
+                fetchLeaveData();
+            } else {
+                noticeShowMessage("เกิดข้อผิดพลาดในการลบข้อมูล", true);
             }
-        });
+        } catch (error) {
+            console.error("Error deleting leave:", error);
+            noticeShowMessage("เกิดข้อผิดพลาดในการลบข้อมูล", true);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleShowRejectReason = (reason) => {
@@ -930,31 +942,29 @@ const AttendanceLeaveMange = () => {
     };
 
     const handleDeleteAtt = (record) => {
-        Modal.confirm({
-            title: 'ยืนยันการลบข้อมูล',
-            content: `คุณต้องการลบข้อมูลการขอแก้ไขเวลาของวันที่ ${record.attDate ? moment(record.attDate).format("DD/MM/YYYY") : "-"} ใช่หรือไม่?`,
-            okText: 'ยืนยัน',
-            okType: 'danger',
-            cancelText: 'ยกเลิก',
-            centered: true,
-            onOk: async () => {
-                setLoading(true);
-                try {
-                    const response = await deleteAttChange.delete_att_change({ Date: record.attDate });
-                    if (response.data || response.status === 200) {
-                        noticeShowMessage("ลบข้อมูลสำเร็จ", false);
-                        handleAttSearch();
-                    } else {
-                        noticeShowMessage("เกิดข้อผิดพลาดในการลบข้อมูล", true);
-                    }
-                } catch (error) {
-                    console.error("Error deleting attendance change:", error);
-                    noticeShowMessage("เกิดข้อผิดพลาดในการลบข้อมูล", true);
-                } finally {
-                    setLoading(false);
-                }
+        setAttToDelete(record);
+        setIsDeleteAttModalOpen(true);
+    };
+
+    const confirmDeleteAtt = async () => {
+        if (!attToDelete) return;
+        setLoading(true);
+        try {
+            const response = await deleteAttChange.delete_att_change({ Date: attToDelete.attDate });
+            if (response.data || response.status === 200) {
+                noticeShowMessage("ลบข้อมูลสำเร็จ", false);
+                setIsDeleteAttModalOpen(false);
+                setAttToDelete(null);
+                handleAttSearch();
+            } else {
+                noticeShowMessage("เกิดข้อผิดพลาดในการลบข้อมูล", true);
             }
-        });
+        } catch (error) {
+            console.error("Error deleting attendance change:", error);
+            noticeShowMessage("เกิดข้อผิดพลาดในการลบข้อมูล", true);
+        } finally {
+            setLoading(false);
+        }
     };
 
 
@@ -1731,6 +1741,60 @@ const AttendanceLeaveMange = () => {
             >
                 <div style={{ fontSize: '16px', wordWrap: 'break-word', color: '#000' }}>
                     {rejectReasonText}
+                </div>
+            </Modal>
+
+            {/* Delete Attendance Modal */}
+            <Modal
+                title={
+                    <div style={{ backgroundColor: '#2750B0', color: 'white', padding: '16px 24px', margin: '-20px -24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '18px', fontWeight: '600', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
+                        <span>Delete</span>
+                        <i className="bi bi-x-lg" onClick={() => setIsDeleteAttModalOpen(false)} style={{ cursor: "pointer", fontSize: "20px" }}></i>
+                    </div>
+                }
+                open={isDeleteAttModalOpen} onCancel={() => setIsDeleteAttModalOpen(false)} closable={false} width={600} centered
+                styles={{ header: { padding: 0, borderBottom: 'none' }, body: { padding: '24px' }, content: { padding: 0, overflow: 'hidden', borderRadius: '8px' }, mask: { backgroundColor: 'rgba(0, 0, 0, 0.5)' } }}
+                footer={[
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', paddingBottom: '20px' }} key="footer">
+                        <Button key="delete" onClick={confirmDeleteAtt} style={{ backgroundColor: '#FFBCBC', borderColor: '#000', color: 'black', fontWeight: 'bold', borderRadius: '4px', height: '40px', minWidth: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                            <i className="bi bi-trash" style={{ fontSize: '1.2em' }}></i> Delete
+                        </Button>
+                        <Button key="close" onClick={() => setIsDeleteAttModalOpen(false)} style={{ backgroundColor: '#d9d9d9', borderColor: '#000', color: 'black', fontWeight: 'bold', borderRadius: '4px', height: '40px', minWidth: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                            <i className="bi bi-x-lg" style={{ fontSize: '1.2em' }}></i> cancel
+                        </Button>
+                    </div>
+                ]}
+            >
+                <div style={{ fontSize: '18px', color: '#000', marginTop: '20px', marginBottom: '40px' }}>
+                    <div style={{ fontWeight: 'bold', fontSize: '20px', marginBottom: '10px' }}>ยืนยันการลบข้อมูล</div>
+                    <div>คุณต้องการลบข้อมูลการขอแก้ไขเวลาของวันที่ {attToDelete?.attDate ? moment(attToDelete.attDate).format("DD/MM/YYYY") : "-"} ใช่หรือไม่?</div>
+                </div>
+            </Modal>
+
+            {/* Delete Leave Modal */}
+            <Modal
+                title={
+                    <div style={{ backgroundColor: '#2750B0', color: 'white', padding: '16px 24px', margin: '-20px -24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '18px', fontWeight: '600', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
+                        <span>Delete</span>
+                        <i className="bi bi-x-lg" onClick={() => setIsDeleteLeaveModalOpen(false)} style={{ cursor: "pointer", fontSize: "20px" }}></i>
+                    </div>
+                }
+                open={isDeleteLeaveModalOpen} onCancel={() => setIsDeleteLeaveModalOpen(false)} closable={false} width={600} centered
+                styles={{ header: { padding: 0, borderBottom: 'none' }, body: { padding: '24px' }, content: { padding: 0, overflow: 'hidden', borderRadius: '8px' }, mask: { backgroundColor: 'rgba(0, 0, 0, 0.5)' } }}
+                footer={[
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', paddingBottom: '20px' }} key="footer">
+                        <Button key="delete" onClick={confirmDeleteLeave} style={{ backgroundColor: '#FFBCBC', borderColor: '#000', color: 'black', fontWeight: 'bold', borderRadius: '4px', height: '40px', minWidth: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                            <i className="bi bi-trash" style={{ fontSize: '1.2em' }}></i> Delete
+                        </Button>
+                        <Button key="close" onClick={() => setIsDeleteLeaveModalOpen(false)} style={{ backgroundColor: '#d9d9d9', borderColor: '#000', color: 'black', fontWeight: 'bold', borderRadius: '4px', height: '40px', minWidth: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                            <i className="bi bi-x-lg" style={{ fontSize: '1.2em' }}></i> cancel
+                        </Button>
+                    </div>
+                ]}
+            >
+                <div style={{ fontSize: '18px', color: '#000', marginTop: '20px', marginBottom: '40px' }}>
+                    <div style={{ fontWeight: 'bold', fontSize: '20px', marginBottom: '10px' }}>ยืนยันการลบ</div>
+                    <div>คุณแน่ใจหรือไม่ว่าต้องการลบรายการลานี้?</div>
                 </div>
             </Modal>
         </div>

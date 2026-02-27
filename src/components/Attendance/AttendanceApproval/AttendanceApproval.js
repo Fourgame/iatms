@@ -10,7 +10,7 @@ import { getAttApproval, getModalAttApproval, postAttApproval } from '../../../s
 import { noticeShowMessage } from '../../Utilities/Notification';
 import Loading from "../../Utilities/Loading";
 import moment from 'moment';
-import { getLeaveApproval } from '../../../services/leaveapproval.service';
+import { getLeaveApproval, postLeaveApproval } from '../../../services/leaveapproval.service';
 
 const { Option } = Select;
 
@@ -58,7 +58,7 @@ const AttendanceApproval = () => {
             }
         } catch (error) {
             console.error("Error fetching attendance approval data:", error);
-            noticeShowMessage("เกิดข้อผิดพลาดในการดึงข้อมูล Attendance Approval", true);
+            noticeShowMessage("เกิดข้อผิดพลาดในการดึงข้อมูล", true);
             setAttApprovalData([]);
         } finally {
             setLoading(false);
@@ -119,7 +119,7 @@ const AttendanceApproval = () => {
 
         } catch (error) {
             console.error("Error fetching modal data:", error);
-            noticeShowMessage("เกิดข้อผิดพลาดในการดึงข้อมูลรายละเอียด", true);
+            noticeShowMessage("เกิดข้อผิดพลาดในการดึงข้อมูล", true);
         } finally {
             setModalLoading(false);
         }
@@ -168,15 +168,15 @@ const AttendanceApproval = () => {
         try {
             const res = await postAttApproval.post_att_approval(payload);
             if (res && (res.status === 200 || res.data)) {
-                noticeShowMessage(isApprove ? "Approve สำเร็จ" : "Reject สำเร็จ", false);
+                noticeShowMessage("บันทึกข้อมูลสำเร็จ", false);
                 handleCloseModal();
                 fetchAttApprovalData(attKeyword, attTeam);
             } else {
-                noticeShowMessage(res?.message || (isApprove ? "เกิดข้อผิดพลาดในการ Approve" : "เกิดข้อผิดพลาดในการ Reject"), true);
+                noticeShowMessage(res?.message || "เกิดข้อผิดพลาดในการบันทึกข้อมูล", true);
             }
         } catch (error) {
             console.error("Error submit approval:", error);
-            noticeShowMessage("เกิดข้อผิดพลาดจากระบบ", true);
+            noticeShowMessage("เกิดข้อผิดพลาดในการบันทึกข้อมูล", true);
         } finally {
             setModalLoading(false);
         }
@@ -280,18 +280,18 @@ const AttendanceApproval = () => {
                 reject_reason: action === 'Reject' ? rejectReasonInput : null
             };
 
-            const response = await getLeaveApproval.post_leave_approval(payload);
+            const response = await postLeaveApproval.post_leave_approval(payload);
             if (response.data && response.data.message === "Success") {
-                noticeShowMessage("ทำรายการสำเร็จ");
+                noticeShowMessage("บันทึกข้อมูลสำเร็จ", false);
                 setIsLeaveDetailModalOpen(false);
                 fetchLeaveApproval();
             }
         } catch (error) {
             console.error(`Error ${action} leave approval:`, error);
             if (error.response && error.response.data && error.response.data.message) {
-                noticeShowMessage("error", error.response.data.message);
+                noticeShowMessage(error.response.data.message, true);
             } else {
-                noticeShowMessage("error", `เกิดข้อผิดพลาดในการทำรายการ`);
+                noticeShowMessage("เกิดข้อผิดพลาดในการบันทึกข้อมูล", true);
             }
         } finally {
             setLoading(false);
@@ -577,18 +577,6 @@ const AttendanceApproval = () => {
             dataIndex: 'reason',
             key: 'reason',
             align: 'left',
-            width: 150,
-            render: (text) => (
-                <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
-                    {text && text.trim() ? text : "-"}
-                </div>
-            ),
-        },
-        {
-            title: 'เหตุผลที่ถูกปฏิเสธ',
-            dataIndex: 'reject_reason',
-            key: 'reject_reason',
-            align: 'center',
             width: 150,
             render: (text) => (
                 <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
@@ -931,38 +919,38 @@ const AttendanceApproval = () => {
 
             <Modal
                 title={
-                    <div style={{ backgroundColor: '#2750B0', color: 'white', padding: '16px 24px', margin: '-20px -24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '18px', fontWeight: '600', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
+                    <div style={{
+                        backgroundColor: '#2750B0',
+                        color: 'white',
+                        padding: '16px 24px',
+                        margin: '-24px -24px 0 -24px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        borderTopLeftRadius: '8px',
+                        borderTopRightRadius: '8px',
+                    }}>
                         <span>Leave Detail</span>
-                        <i className="bi bi-x-lg" onClick={() => setIsLeaveDetailModalOpen(false)} style={{ cursor: "pointer", fontSize: "20px" }}></i>
                     </div>
                 }
                 open={isLeaveDetailModalOpen}
                 onCancel={() => setIsLeaveDetailModalOpen(false)}
-                closable={false}
+                footer={null}
                 width={700}
                 centered
-                styles={{ header: { padding: 0, borderBottom: 'none' }, body: { padding: '24px' }, content: { padding: 0, overflow: 'hidden', borderRadius: '8px' }, mask: { backgroundColor: 'rgba(0, 0, 0, 0.5)' } }}
-                footer={[
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', paddingBottom: '20px' }} key="footer">
-                        <ButtonBootstrap onClick={() => handleLeaveApprovalAction('Approve')} style={{ backgroundColor: '#BCD0FF', borderColor: '#000', color: 'black', fontWeight: 'bold', borderRadius: '8px', height: '40px', minWidth: '130px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                            <i className="bi bi-file-earmark-check-fill" style={{ fontSize: '1.2em' }}></i> Approve
-                        </ButtonBootstrap>
-                        <ButtonBootstrap onClick={() => handleLeaveApprovalAction('Reject')} style={{ backgroundColor: '#FFBCBC', borderColor: '#000', color: 'black', fontWeight: 'bold', borderRadius: '8px', height: '40px', minWidth: '130px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                            <i className="bi bi-list-task" style={{ fontSize: '1.2em', position: 'relative' }}>
-                                <i className="bi bi-x" style={{ position: 'absolute', bottom: '-4px', right: '-6px', fontSize: '14px', WebkitTextStroke: '1px black' }}></i>
-                            </i> Reject
-                        </ButtonBootstrap>
-                        <ButtonBootstrap onClick={() => setIsLeaveDetailModalOpen(false)} style={{ backgroundColor: '#e9ecef', borderColor: '#000', color: 'black', fontWeight: 'bold', borderRadius: '8px', height: '40px', minWidth: '130px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                            <i className="bi bi-x-lg" style={{ fontSize: '1.2em' }}></i> Close
-                        </ButtonBootstrap>
-                    </div>
-                ]}
+                closeIcon={<CloseIconBtn />}
+                className="leave-detail-modal"
+                styles={{ header: { padding: 0, borderBottom: 'none' }, body: { padding: '24px' }, content: { padding: 0, overflow: 'hidden', borderRadius: '8px' } }}
             >
                 {selectedLeave && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', fontSize: '15px' }}>
-                        {/* ข้อมูลลา */}
-                        <div style={{ border: '2px solid black', borderRadius: '8px', padding: '15px', position: 'relative', marginTop: '10px' }}>
-                            <span style={{ position: 'absolute', top: '-12px', left: '15px', backgroundColor: 'white', padding: '0 5px', fontWeight: 'bold' }}>ข้อมูลลา</span>
+                    <div style={{ marginTop: '10px', fontSize: '15px' }}>
+                        {/* ข้อมูลลา Fieldset */}
+                        <fieldset style={{ border: '2px solid #333', borderRadius: '8px', padding: '10px 20px 20px', marginBottom: '15px' }}>
+                            <legend style={{ width: 'auto', padding: '0 10px', fontSize: '14px', fontWeight: 'bold', marginBottom: '0', float: 'none', lineHeight: '1' }}>
+                                ข้อมูลลา
+                            </legend>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                 <div style={{ display: 'flex' }}><span style={{ width: '130px', fontWeight: 'bold' }}>ประเภทการลา</span><span>{selectedLeave.type_leave_display || '-'}</span></div>
                                 <div style={{ display: 'flex' }}><span style={{ width: '130px', fontWeight: 'bold' }}>วันที่เริ่มต้น</span>
@@ -982,27 +970,42 @@ const AttendanceApproval = () => {
                                 )}
                                 <div style={{ display: 'flex' }}><span style={{ width: '130px', fontWeight: 'bold' }}>ระยะเวลา</span><span>{selectedLeave.duration || '-'}</span></div>
                             </div>
-                        </div>
+                        </fieldset>
 
-                        {/* เหตุผลที่ร้องขอ */}
-                        <div style={{ border: '2px solid black', borderRadius: '8px', padding: '15px', position: 'relative', marginTop: '10px' }}>
-                            <span style={{ position: 'absolute', top: '-12px', left: '15px', backgroundColor: 'white', padding: '0 5px', fontWeight: 'bold' }}>เหตุผลที่ร้องขอ</span>
-                            <div>{selectedLeave.reason || '-'}</div>
-                        </div>
+                        {/* เหตุผลที่ร้องขอ Fieldset */}
+                        <fieldset style={{ border: '2px solid #333', borderRadius: '8px', padding: '10px 20px 20px', marginBottom: '15px' }}>
+                            <legend style={{ width: 'auto', padding: '0 10px', fontSize: '14px', fontWeight: 'bold', marginBottom: '0', float: 'none', lineHeight: '1' }}>
+                                เหตุผลที่ร้องขอ
+                            </legend>
+                            <div style={{ paddingLeft: '20px' }}>
+                                {selectedLeave.reason || '-'}
+                            </div>
+                        </fieldset>
 
-                        {/* เหตุผลที่ Reject */}
-                        <div style={{ border: rejectReasonError ? '2px solid red' : '2px solid black', borderRadius: '8px', padding: '15px', position: 'relative', marginTop: '10px' }}>
-                            <span style={{ position: 'absolute', top: '-12px', left: '15px', backgroundColor: 'white', padding: '0 5px', fontWeight: 'bold', color: rejectReasonError ? 'red' : 'black' }}>เหตุผลที่ Reject</span>
-                            <Input
-                                placeholder="กรอก เหตุผลที่ Reject"
+                        {/* เหตุผลที่ Reject Fieldset */}
+                        <fieldset style={{ border: rejectReasonError ? '2px solid red' : '2px solid #333', borderRadius: '8px', padding: '10px 20px 20px', marginBottom: '20px' }}>
+                            <legend style={{ width: 'auto', padding: '0 10px', fontSize: '14px', fontWeight: 'bold', marginBottom: '0', float: 'none', lineHeight: '1', color: rejectReasonError ? 'red' : 'black' }}>
+                                เหตุผลที่ Reject
+                            </legend>
+                            <Input.TextArea
+                                placeholder="กรอกเหตุผลที่ Reject"
                                 value={rejectReasonInput}
                                 onChange={(e) => {
                                     setRejectReasonInput(e.target.value);
                                     if (e.target.value.trim() !== '') setRejectReasonError('');
                                 }}
-                                style={{ border: rejectReasonError ? '1px solid red' : '1px solid black', borderRadius: '4px', height: '40px' }}
+                                rows={2}
+                                style={{ border: rejectReasonError ? '1px solid red' : '1px solid #d9d9d9', resize: 'none' }}
                             />
                             {rejectReasonError && <div style={{ color: 'red', marginTop: '5px', fontSize: '13px' }}>{rejectReasonError}</div>}
+                        </fieldset>
+
+                        {/* Footer Buttons */}
+                        <div className="modal-footer justify-content-center border-top-0 pb-0 pt-3" style={{ gap: '20px' }}>
+                            <ApproveModalBtnBootstrap onClick={() => handleLeaveApprovalAction('Approve')} />
+                            <RejectModalBtnBootstrap onClick={() => handleLeaveApprovalAction('Reject')} style={{ "--bs-btn-bg": "#FFBCBC", "--bs-btn-hover-bg": "#ffcccc", "--bs-btn-active-bg": "#ffcccc" }} />
+
+                            <CloseModalBtnBootstrap onClick={() => setIsLeaveDetailModalOpen(false)} style={{ width: '150px', height: '40px', backgroundColor: '#E8E8E8', borderColor: '#000' }} />
                         </div>
                     </div>
                 )}
