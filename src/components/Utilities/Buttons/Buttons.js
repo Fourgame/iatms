@@ -435,3 +435,30 @@ export const RejectModalBtnBootstrap = ({ onClick, style, className, ...props })
         </ButtonBootstrap>
     );
 };
+
+export const ExportToolBtnBootstrap = ({ onClick, style, className, ...props }) => {
+    return (
+        <ButtonBootstrap
+            variant="success"
+            onClick={onClick}
+            className={`d-inline-flex align-items-center gap-2 ${className}`}
+            style={{
+                "--bs-btn-bg": "#21A366",
+                "--bs-btn-border-color": "#000000ff",
+                "--bs-btn-hover-bg": "#218838",
+                "--bs-btn-hover-border-color": "#000000ff",
+                "--bs-btn-active-bg": "#218838",
+                "--bs-btn-active-border-color": "#000000ff",
+                color: "#ffffffff",
+                fontWeight: "500",
+                fontSize: "16px",
+                border: "1px solid #000",
+                ...style
+            }}
+            {...props}
+        >
+            <i className="bi bi-filetype-xls" style={{ fontSize: "18px" }}></i>
+            <span>Export</span>
+        </ButtonBootstrap>
+    );
+};

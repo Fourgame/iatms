@@ -474,7 +474,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
                                     <div style={{ flex: 1 }}>{data?.ciAddress || "-"}</div>
                                 </div>
                             )}
-                            <div style={{ display: 'flex', marginBottom: '0' ,paddingTop: '10px'}}>
+                            <div style={{ display: 'flex', marginBottom: '0', paddingTop: '10px' }}>
                                 <div style={{ width: '80px', fontWeight: 'bold' }}>เหตุผล</div>
                                 <div style={{ flex: 1 }}>{data?.ciReason || "-"}</div>
                             </div>
@@ -577,6 +577,8 @@ const AttendanceLeaveMange = () => {
     const [rejectReasonText, setRejectReasonText] = useState("");
     const [isDeleteAttModalOpen, setIsDeleteAttModalOpen] = useState(false);
     const [attToDelete, setAttToDelete] = useState(null);
+    const [isViewReasonModalOpen, setIsViewReasonModalOpen] = useState(false);
+    const [viewReasonData, setViewReasonData] = useState(null);
 
     // Leave Request State
     const [leaveStartDate, setLeaveStartDate] = useState(null);
@@ -892,7 +894,7 @@ const AttendanceLeaveMange = () => {
             };
             const response = await deleteLeave.delete_leave(payload);
             if (response.status === 200) {
-                noticeShowMessage("ลบข้อมูลสำเร็จ", false);
+                noticeShowMessage("ลบข้อมูลสำเร็จ", true);
                 setIsDeleteLeaveModalOpen(false);
                 setLeaveToDelete(null);
                 fetchLeaveData();
@@ -954,7 +956,7 @@ const AttendanceLeaveMange = () => {
         try {
             const response = await deleteAttChange.delete_att_change({ Date: attToDelete.attDate });
             if (response.data || response.status === 200) {
-                noticeShowMessage("ลบข้อมูลสำเร็จ", false);
+                noticeShowMessage("ลบข้อมูลสำเร็จ", true);
                 setIsDeleteAttModalOpen(false);
                 setAttToDelete(null);
                 handleAttSearch();
@@ -1010,11 +1012,30 @@ const AttendanceLeaveMange = () => {
             align: 'left',
             width: 150,
             sorter: (a, b) => String(a.requestReason ?? "").localeCompare(String(b.requestReason ?? "")),
-            render: (text) => (
-                <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
-                    {text && text.trim() ? text : "-"}
-                </div>
-            ),
+            render: (text, record) => {
+                if (record.action === 'delete') {
+                    return (
+                        <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
+                            <a
+                                href="#"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    setViewReasonData(record);
+                                    setIsViewReasonModalOpen(true);
+                                }}
+                                style={{ color: '#1890ff', textDecoration: 'underline' }}
+                            >
+                                {text && text.trim() ? text : "-"}
+                            </a>
+                        </div>
+                    );
+                }
+                return (
+                    <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
+                        {text && text.trim() ? text : "-"}
+                    </div>
+                );
+            },
         },
         {
             title: 'Check-In',
@@ -1797,6 +1818,34 @@ const AttendanceLeaveMange = () => {
                 <div style={{ fontSize: '18px', color: '#000', marginTop: '20px', marginBottom: '40px' }}>
                     <div style={{ fontWeight: 'bold', fontSize: '20px', marginBottom: '10px' }}>ยืนยันการลบ</div>
                     <div>คุณแน่ใจหรือไม่ว่าต้องการลบรายการลานี้?</div>
+                </div>
+            </Modal>
+
+            {/* View Reason Modal */}
+            <Modal
+                title={
+                    <div style={{ backgroundColor: '#2750B0', color: 'white', padding: '16px 24px', margin: '-20px -24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '18px', fontWeight: '600', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
+                        <span>เหตุผลคำขอ</span>
+                        <i className="bi bi-x-lg" onClick={() => setIsViewReasonModalOpen(false)} style={{ cursor: "pointer", fontSize: "20px" }}></i>
+                    </div>
+                }
+                open={isViewReasonModalOpen} onCancel={() => setIsViewReasonModalOpen(false)} closable={false} width={600} centered
+                styles={{ header: { padding: 0, borderBottom: 'none' }, body: { padding: '24px' }, content: { padding: 0, overflow: 'hidden', borderRadius: '8px' }, mask: { backgroundColor: 'rgba(0, 0, 0, 0.5)' } }}
+                footer={[
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', paddingBottom: '20px' }} key="footer">
+                        <CloseModalBtnBootstrap key="close" onClick={() => setIsViewReasonModalOpen(false)} />
+                    </div>
+                ]}
+            >
+                <div style={{ fontSize: '16px', color: '#000', marginTop: '20px', marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', marginBottom: '8px' }}>
+                        <div style={{ width: '130px', fontWeight: 'bold' }}>เหตุผลที่ร้องขอ :</div>
+                        <div style={{ flex: 1 }}>{viewReasonData?.requestReason || "-"}</div>
+                    </div>
+                    <div style={{ display: 'flex' }}>
+                        <div style={{ width: '130px', fontWeight: 'bold' }}>เหตุผลที่ปฏิเสธ :</div>
+                        <div style={{ flex: 1 }}>{viewReasonData?.rejectReason || "-"}</div>
+                    </div>
                 </div>
             </Modal>
         </div>
