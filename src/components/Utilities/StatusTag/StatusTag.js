@@ -31,10 +31,10 @@ export const InactiveTag = (props) => (
 );
 
 export const ApproveTag = (props) => (
-    <BaseTag color="#198754" text="Approve" style={{ minWidth: "125px" }} />
+    <BaseTag color="#198754" text={props.text || "Approve"} style={{ minWidth: "125px" }} {...props} />
 );
 
-export const RejectTag = ({ onClick, style, className, ...props }) => {
+export const RejectTag = ({ onClick, style, className, text, ...props }) => {
     if (onClick) {
         return (
             <Button
@@ -56,13 +56,13 @@ export const RejectTag = ({ onClick, style, className, ...props }) => {
                 }}
                 {...props}
             >
-                Reject
+                {text || "Reject"}
             </Button>
         );
     }
-    return <BaseTag color="#DC3545" text="Reject" style={{ minWidth: "125px", ...style }} {...props} />;
+    return <BaseTag color="#DC3545" text={text || "Reject"} style={{ minWidth: "125px", ...style }} {...props} />;
 };
 
 export const PendingApproveTag = (props) => (
-    <BaseTag color="#F0B400" text="Pending Approve" {...props} />
+    <BaseTag color="#F0B400" text={props.text || "Pending Approve"} {...props} />
 );
