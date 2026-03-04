@@ -17,6 +17,7 @@ export const SearchToolBtnBootstrap = ({ onClick, style, className, ...props }) 
                 "--bs-btn-hover-bg": "#63d7eeff",
                 "--bs-btn-active-bg": "#63d7eeff",
                 border: "1px solid #000",
+                boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
                 ...style
             }}
             {...props}
@@ -44,6 +45,7 @@ export const ClearToolBtnBootstrap = ({ onClick, style, className, ...props }) =
                 color: "#000",
                 fontWeight: "bold",
                 border: "1px solid #000",
+                boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
                 ...style
             }}
             {...props}
@@ -125,6 +127,7 @@ export const AddToolBtnBootstrap = ({ onClick, style, className, ...props }) => 
                 color: "#fff",
                 fontWeight: "bold",
                 border: "1px solid #000",
+                boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
                 ...style
             }}
             {...props}
@@ -152,7 +155,8 @@ export const EditToolBtnBootstrap = ({ onClick, style, className, ...props }) =>
                 "--bs-btn-active-bg": "#ffc53d",
                 "--bs-btn-active-border-color": "#ffc53d",
                 color: "#000",
-                border: "1px solid #000", // Explicit black border
+                border: "1px solid #000", // Explicit black border,
+                boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
                 ...style
             }}
             {...props}
@@ -181,6 +185,7 @@ export const DeleteToolBtn = ({ onClick, style, className, ...props }) => {
                 "--bs-btn-active-border-color": "#ffcccc",
                 color: "#000", // Black text/icon for contrast
                 border: "1px solid #000", // Explicit black border to match other buttons? User didn't specify border but "like other buttons" implies it.
+                boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
                 ...style
             }}
             {...props}
@@ -212,6 +217,7 @@ export const CloseModalBtnBootstrap = ({ onClick, style, className, ...props }) 
                 fontSize: "16px",
                 fontWeight: "bold",
                 border: "1px solid #000",
+                boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
                 ...style
             }}
             {...props}
@@ -243,6 +249,7 @@ export const SubmitModalBtnBootstrap = ({ onClick, style, className, ...props })
                 fontSize: "16px",
                 fontWeight: "bold",
                 border: "1px solid #000",
+                boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
                 ...style
             }}
             {...props}
@@ -257,7 +264,7 @@ export const SubmitModalBtnBootstrap = ({ onClick, style, className, ...props })
 
 export const CloseIconBtn = ({ style, ...props }) => {
     return (
-        <CloseOutlined style={{ color: 'white', fontSize: '18px', ...style }} {...props} />
+        <CloseOutlined style={{ color: 'white', fontSize: '18px', ...style, boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)", }} {...props} />
     );
 };
 
@@ -279,6 +286,7 @@ export const ResetLocationBtn = ({ onClick, style, className, ...props }) => {
                 padding: "5px 15px",
                 color: "#000",
                 border: "1px solid #000",
+                boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
                 ...style
             }}
             {...props}
@@ -308,6 +316,7 @@ export const CheckInBtn = ({ onClick, style, className, ...props }) => {
                 borderRadius: "8px",
                 minWidth: "160px",
                 border: "1px solid #000",
+                boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
                 ...style
             }}
             {...props}
@@ -337,6 +346,7 @@ export const CheckOutBtn = ({ onClick, style, className, ...props }) => {
                 borderRadius: "8px",
                 minWidth: "160px",
                 border: "1px solid #000",
+                boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
                 ...style
             }}
             {...props}
@@ -359,6 +369,7 @@ export const Approve_RejectBtn = ({ onClick, style, className, ...props }) => {
                 "--bs-btn-active-bg": "#DCE8FF",
                 "--bs-btn-border-color": "#000", // Black border
                 color: "#000",
+                boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
 
                 ...style
             }}
@@ -370,7 +381,7 @@ export const Approve_RejectBtn = ({ onClick, style, className, ...props }) => {
     );
 };
 
-export const ApproveModalBtnBootstrap = ({ onClick, style, className, ...props }) => {
+export const ApproveModalBtnBootstrap = ({ onClick, style, className, text, ...props }) => {
     return (
         <ButtonBootstrap
             variant="primary"
@@ -389,6 +400,7 @@ export const ApproveModalBtnBootstrap = ({ onClick, style, className, ...props }
                 fontSize: "16px",
                 fontWeight: "bold",
                 border: "1px solid #000",
+                boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
                 ...style
             }}
             {...props}
@@ -399,13 +411,13 @@ export const ApproveModalBtnBootstrap = ({ onClick, style, className, ...props }
                 <BsXCircleFill style={{ position: "absolute", right: -2, bottom: -2 }} size={14} />
             </span>
             <span>
-                Approve
+                {text || "Approve"}
             </span>
         </ButtonBootstrap>
     );
 };
 
-export const RejectModalBtnBootstrap = ({ onClick, style, className, ...props }) => {
+export const RejectModalBtnBootstrap = ({ onClick, style, className, text, ...props }) => {
     return (
         <ButtonBootstrap
             variant="primary"
@@ -424,13 +436,14 @@ export const RejectModalBtnBootstrap = ({ onClick, style, className, ...props })
                 fontSize: "16px",
                 fontWeight: "bold",
                 border: "1px solid #000",
+                boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
                 ...style
             }}
             {...props}
         >
             <i class="bi bi-x-circle"></i>
             <span>
-                Reject
+                {text || "Reject"}
             </span>
         </ButtonBootstrap>
     );
@@ -444,21 +457,19 @@ export const ExportToolBtnBootstrap = ({ onClick, style, className, ...props }) 
             className={`d-inline-flex align-items-center gap-2 ${className}`}
             style={{
                 "--bs-btn-bg": "#21A366",
-                "--bs-btn-border-color": "#000000ff",
                 "--bs-btn-hover-bg": "#218838",
-                "--bs-btn-hover-border-color": "#000000ff",
                 "--bs-btn-active-bg": "#218838",
-                "--bs-btn-active-border-color": "#000000ff",
                 color: "#ffffffff",
-                fontWeight: "500",
-                fontSize: "16px",
                 border: "1px solid #000",
+                boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
                 ...style
             }}
             {...props}
         >
-            <i className="bi bi-filetype-xls" style={{ fontSize: "18px" }}></i>
-            <span>Export</span>
+            <i className="bi bi-filetype-xls"></i>
+            <span style={{ color: "#000", fontWeight: "bold", color: "#ffffffff" }}>Export</span>
         </ButtonBootstrap>
     );
 };
+
+

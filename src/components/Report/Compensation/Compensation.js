@@ -8,6 +8,7 @@ import TableUI from '../../Utilities/Table/TableUI';
 import { getDropdown } from '../../../services/dropdown.service';
 import { noticeShowMessage } from '../../Utilities/Notification';
 import Loading from "../../Utilities/Loading";
+import { getCompensation } from '../../../services/Compensation.service';
 import moment from 'moment';
 
 const { Option } = Select;
@@ -44,31 +45,110 @@ const Compensation = () => {
         },
         {
             title: 'จำนวนชั่วโมง (ชั่วโมง)',
-            dataIndex: 'totalHours',
-            key: 'totalHours',
+            dataIndex: 'workHours',
+            key: 'workHours',
             align: 'center',
             sorter: (a, b) => {
-                const aVal = parseFloat((a.totalHours || "").toString().replace(/,/g, '')) || 0;
-                const bVal = parseFloat((b.totalHours || "").toString().replace(/,/g, '')) || 0;
+                const aVal = parseFloat((a.workHours || "").toString().replace(/,/g, '')) || 0;
+                const bVal = parseFloat((b.workHours || "").toString().replace(/,/g, '')) || 0;
                 return aVal - bVal;
             },
+            render: (text) => text !== null && text !== undefined ? Number(text).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'
         },
         {
             title: 'จำนวนเงิน (บาท)',
             dataIndex: 'amount',
             key: 'amount',
-            align: 'center',
+            align: 'right',
             sorter: (a, b) => {
                 const aVal = parseFloat((a.amount || "").toString().replace(/,/g, '')) || 0;
                 const bVal = parseFloat((b.amount || "").toString().replace(/,/g, '')) || 0;
                 return aVal - bVal;
             },
+            render: (text) => text !== null && text !== undefined ? Number(text).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'
         },
     ];
 
+    // States
+    const [dataSource, setDataSource] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    // Filters
+    const [searchText, setSearchText] = useState("");
+    const [team, setTeam] = useState("ทั้งหมด");
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
+
+    // Dropdowns
+    const [teamList, setTeamList] = useState([]);
+
+    // Summary calculation
+    const totalHours = dataSource.reduce((sum, item) => sum + (Number(item.workHours) || 0), 0);
+    const totalAmount = dataSource.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const payload = {
+                search_text: searchText || null,
+                team: team === "ทั้งหมด" ? null : team,
+                start_date: startDate ? startDate.format('YYYY-MM-DD') : null,
+                end_date: endDate ? endDate.format('YYYY-MM-DD') : null
+            };
+            const res = await getCompensation.get_compensation(payload);
+            if (res && res.data) {
+                setDataSource(res.data);
+            } else {
+                setDataSource([]);
+            }
+        } catch (error) {
+            console.error("Error fetching compensation data", error);
+            setDataSource([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchDropdowns = async () => {
+        try {
+            const teamRes = await getDropdown.get_dropdown({ type: 'Team' });
+            if (teamRes && teamRes.data) {
+                setTeamList(teamRes.data);
+            }
+        } catch (error) {
+            console.error("Error fetching teams", error);
+        }
+    }
+
+    useEffect(() => {
+        fetchDropdowns();
+        fetchData();
+    }, []);
+
+    const handleSearch = () => {
+        fetchData();
+    };
+
+    const handleClear = () => {
+        setSearchText("");
+        setTeam("ทั้งหมด");
+        setStartDate(null);
+        setEndDate(null);
+
+        // Fetch original
+        setLoading(true);
+        getCompensation.get_compensation({}).then(res => {
+            if (res && res.data) setDataSource(res.data);
+            else setDataSource([]);
+        }).catch(err => {
+            console.error(err);
+            setDataSource([]);
+        }).finally(() => setLoading(false));
+    };
 
     return (
         <div style={{ paddingLeft: '20px', paddingRight: '20px', paddingBottom: '40px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
+            {loading && <Loading />}
             {/* Attendance Approval Card */}
             <Card
                 className="shadow-sm border-0"
@@ -90,7 +170,7 @@ const Compensation = () => {
                     Search
                 </Card.Header>
                 <Card.Body >
-                    <div style={{ background: "white",  borderRadius: "6px" }}>
+                    <div style={{ background: "white", borderRadius: "6px" }}>
                         <div className="d-flex flex-wrap flex-lg-nowrap justify-content-between align-items-start gap-3">
                             {/* Left Side: Filter Fields */}
                             <div className="d-flex flex-wrap align-items-center gap-4">
@@ -99,8 +179,8 @@ const Compensation = () => {
                                     <span style={{ fontWeight: 700, fontSize: '16px' }}>ชื่อ-นามสกุลหรือ OA User :</span>
                                     <Input
                                         placeholder="กรอกชื่อ-นามสกุลหรือ OA User"
-                                        value={null}
-                                        onChange={null}
+                                        value={searchText}
+                                        onChange={(e) => setSearchText(e.target.value)}
                                         style={{ width: 250 }}
                                     />
                                 </div>
@@ -110,12 +190,14 @@ const Compensation = () => {
                                     <span style={{ fontWeight: 700, fontSize: '16px' }}>Team :</span>
                                     <Select
                                         placeholder="ทั้งหมด"
-                                        value={null}
-                                        onChange={null}
+                                        value={team}
+                                        onChange={(val) => setTeam(val)}
                                         style={{ width: 150 }}
-                                        allowClear
                                     >
-                                        <Option value={null}>ทั้งหมด</Option>
+                                        <Option value="ทั้งหมด">ทั้งหมด</Option>
+                                        {teamList.map((t, idx) => (
+                                            <Option key={idx} value={t.value}>{t.label}</Option>
+                                        ))}
                                     </Select>
                                 </div>
 
@@ -124,22 +206,39 @@ const Compensation = () => {
                                     <span style={{ fontWeight: 700, fontSize: '16px' }}>วันที่ :</span>
                                     <div style={{ position: 'relative', marginTop: '4px' }}>
                                         <span style={{ position: 'absolute', top: '-8px', left: '10px', background: 'white', padding: '0 5px', fontSize: '11px', color: '#888', zIndex: 1 }}>Start Date</span>
-                                        <DatePicker style={{ width: 130 }} format="DD/MM/YYYY" placeholder="DD/MM/YYYY" />
+                                        <DatePicker
+                                            value={startDate}
+                                            onChange={(date) => setStartDate(date)}
+                                            disabledDate={(current) => {
+                                                return endDate ? current && current > endDate.endOf('day') : false;
+                                            }}
+                                            style={{ width: 130 }}
+                                            format="DD/MM/YYYY"
+                                            placeholder="DD/MM/YYYY"
+                                        />
                                     </div>
                                     <span>-</span>
                                     <div style={{ position: 'relative', marginTop: '4px' }}>
                                         <span style={{ position: 'absolute', top: '-8px', left: '10px', background: 'white', padding: '0 5px', fontSize: '11px', color: '#888', zIndex: 1 }}>End Date</span>
-                                        <DatePicker style={{ width: 130 }} format="DD/MM/YYYY" placeholder="DD/MM/YYYY" />
+                                        <DatePicker
+                                            value={endDate}
+                                            onChange={(date) => setEndDate(date)}
+                                            disabledDate={(current) => {
+                                                return startDate ? current && current < startDate.startOf('day') : false;
+                                            }}
+                                            style={{ width: 130 }}
+                                            format="DD/MM/YYYY"
+                                            placeholder="DD/MM/YYYY"
+                                        />
                                     </div>
                                 </div>
                             </div>
 
                             {/* Right Side: Buttons and Mockup Text */}
                             <div className="d-flex flex-column align-items-lg-end gap-2 mt-2 mt-lg-0">
-                                {/* Buttons */}
                                 <div className="d-flex align-items-center gap-2">
-                                    <SearchToolBtnBootstrap onClick={null} />
-                                    <ClearToolBtnBootstrap onClick={null} />
+                                    <SearchToolBtnBootstrap onClick={handleSearch} />
+                                    <ClearToolBtnBootstrap onClick={handleClear} />
                                     <ExportToolBtnBootstrap onClick={null} />
                                 </div>
 
@@ -148,12 +247,13 @@ const Compensation = () => {
                                     background: "#DEE8FF",
                                     padding: "6px 15px",
                                     borderRadius: "4px",
-                                    border: "1px solid #c9d8fa",
+                                    border: "1px solid #000000ff",
                                     fontWeight: 600,
-                                    color: "#333",
-                                    fontSize: "14px"
+                                    color: "#000000ff",
+                                    fontSize: "16px",
+                                    boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
                                 }}>
-                                    ชั่วโมงรวม 174 ชั่วโมง จำนวนเงิน 18,500 บาท
+                                    ชั่วโมงรวม {totalHours.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ชั่วโมง จำนวนเงิน {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
                                 </div>
                             </div>
                         </div>
@@ -162,7 +262,8 @@ const Compensation = () => {
                     <div style={{ marginTop: "15px" }}>
                         <TableUI
                             columns={columns}
-                            dataSource={[]}
+                            dataSource={dataSource}
+                            loading={loading}
                             pagination={true}
                             bordered={true}
                             size="small"

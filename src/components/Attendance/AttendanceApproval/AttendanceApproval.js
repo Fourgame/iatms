@@ -488,12 +488,17 @@ const AttendanceApproval = () => {
             key: 'changeStatus',
             align: 'center',
             width: 100,
-            render: (text) => {
-                const status = text ? text.trim() : "";
-                if (status === "PA") return <PendingApproveTag />;
-                if (status === "AP") return <ApproveTag />;
-                if (status === "RJ") return <RejectTag />;
-                return text || "-";
+            render: (text, record) => {
+                const status = record.changeStatusCode ? String(record.changeStatusCode).trim() : (text ? String(text).trim() : "-");
+                const label = record.changeStatus || status;
+                switch (status) {
+                    case 'RJ':
+                    case 'Rj': return <RejectTag text={label} />;
+                    case 'AP':
+                    case 'Ap': return <ApproveTag text={label} />;
+                    case 'PA': return <PendingApproveTag text={label} />;
+                    default: return label;
+                }
             }
         },
     ];
@@ -590,11 +595,11 @@ const AttendanceApproval = () => {
             key: 'status',
             align: 'center',
             width: 120,
-            render: (text) => {
+            render: (text, record) => {
                 const statusLabel = text ? String(text).trim() : "-";
-                if (statusLabel === "Pending Approval" || statusLabel === "Pending") return <PendingApproveTag />;
-                if (statusLabel === "Approved") return <ApproveTag />;
-                if (statusLabel === "Rejected") return <RejectTag />;
+                if (statusLabel === "Pending Approval" || statusLabel === "Pending") return <PendingApproveTag text={statusLabel} />;
+                if (statusLabel === "Approved") return <ApproveTag text={statusLabel} />;
+                if (statusLabel === "Rejected") return <RejectTag text={statusLabel} />;
                 return statusLabel;
             }
         },

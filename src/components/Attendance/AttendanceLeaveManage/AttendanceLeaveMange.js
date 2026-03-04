@@ -1175,15 +1175,16 @@ const AttendanceLeaveMange = () => {
             key: 'changeStatus',
             align: 'center',
             width: 120,
-            sorter: (a, b) => String(a.changeStatus ?? "").localeCompare(String(b.changeStatus ?? "")),
+            sorter: (a, b) => String(a.changeStatusCode ?? a.changeStatus ?? "").localeCompare(String(b.changeStatusCode ?? b.changeStatus ?? "")),
 
             render: (text, record) => {
-                const status = text ? String(text).trim() : "-";
+                const status = record.changeStatusCode ? String(record.changeStatusCode).trim() : (text ? String(text).trim() : "-");
+                const label = record.changeStatus || status;
                 switch (status) {
-                    case 'Rj': return <RejectTag onClick={() => handleShowRejectReason(record.rejectReason)} />;
-                    case 'Ap': return <ApproveTag />;
-                    case 'PA': return <PendingApproveTag />;
-                    default: return status;
+                    case 'Rj': return <RejectTag onClick={() => handleShowRejectReason(record.rejectReason)} text={label} />;
+                    case 'Ap': return <ApproveTag text={label} />;
+                    case 'PA': return <PendingApproveTag text={label} />;
+                    default: return label;
                 }
             }
         }
@@ -1296,9 +1297,9 @@ const AttendanceLeaveMange = () => {
                 const statusCode = matchedStatus ? matchedStatus.value : statusLabel;
 
                 switch (statusCode) {
-                    case 'Rj': return <RejectTag />;
-                    case 'Ap': return <ApproveTag />;
-                    case 'PA': return <PendingApproveTag />;
+                    case 'Rj': return <RejectTag text={statusLabel} />;
+                    case 'Ap': return <ApproveTag text={statusLabel} />;
+                    case 'PA': return <PendingApproveTag text={statusLabel} />;
                     default: return statusLabel;
                 }
             }
