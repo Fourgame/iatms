@@ -5,6 +5,7 @@ import profileService from "../../services/profile.service";
 import Title from "../../components/Utilities/Title";
 import { noticeShowMessage } from "../../components/Utilities/Notification";
 import authService from "../../services/auth.service";
+import homeService from "../../services/home.service";
 const StatCard = ({ title, value, footer, bg }) => (
     <div
         className="border border-1 border-secondary p-2 d-flex flex-column h-100"
@@ -27,10 +28,15 @@ const StatCard = ({ title, value, footer, bg }) => (
 const Home = (props) => {
     let navigate = useNavigate();
     const [user, setUser] = useState(null);
+    const [dashboardData, setDashboardData] = useState(null);
+
     const onPageLoad = async () => {
         try {
-            const response = await profileService.getProfile();
-            setUser(response.data);
+            const profileRes = await profileService.getProfile();
+            setUser(profileRes.data);
+
+            const dashboardRes = await homeService.getHomeDashboard();
+            setDashboardData(dashboardRes.data);
         } catch (error) {
             handleRequestError(error);
         }
@@ -74,15 +80,80 @@ const Home = (props) => {
 
     }, []);
 
-    if (!user || !user.profile) {
+    if (!user || !user.profile || !dashboardData) {
         return null;
     }
 
+    const {
+        menu_intern, menu_teamled, menu_manager,
+        check_in, check_out, working_minutes, ci_address, co_address,
+        approve_leave, pending_leave, reject_leave,
+        check_in_summary, ci_late_count, ci_outside_count,
+        co_summary, co_early_count, co_outside_count,
+        pending_requests, displaydate
+    } = dashboardData.length ? dashboardData[0] : dashboardData;
+
+    const renderInternDashboard = () => {
+        const hours = Math.floor(parseInt(working_minutes || "0", 10) / 60);
+        const mins = parseInt(working_minutes || "0", 10) % 60;
+        const timeString = hours > 0 ? `${hours} ชั่วโมง ${mins} นาที` : `${mins} นาที`;
+
+        let statusText = "-";
+        if (check_out && check_out !== "-") statusText = "Check-Out";
+        else if (check_in && check_in !== "-") statusText = "Check-In";
+        else statusText = "ยังไม่เช็คอิน";
+
+        return (
+            <div
+                className="flex-grow-1"
+                style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gridTemplateRows: "repeat(3, 1fr)",
+                    gap: "0.5rem",
+                }}
+            >
+                <StatCard title="สถานะ" value={statusText} />
+                <StatCard title="เวลาที่เช็คอิน" value={check_in !== "-" && check_in ? `${check_in} น.` : "-"} />
+                <StatCard title="เวลาเช็คเอาท์" value={check_out !== "-" && check_out ? `${check_out} น.` : "-"} />
+
+                <StatCard title="จำนวนชั่วโมงสะสม" value={timeString} />
+                <StatCard title="สถานที่เช็คอิน" value={ci_address || "-"} />
+                <StatCard title="สถานที่เช็คเอาท์" value={co_address || "-"} />
+
+                <StatCard title="คำร้องอนุมัติ" value={approve_leave || "0"} footer="รายการ" bg="#c9ffd9" />
+                <StatCard title="คำร้องรออนุมัติ" value={pending_leave || "0"} footer="รายการ" bg="#fff0c9" />
+                <StatCard title="คำร้องไม่อนุมัติ" value={reject_leave || "0"} footer="รายการ" bg="#ffd0d0" />
+            </div>
+        );
+    };
+
+    const renderManagerDashboard = () => {
+        return (
+            <div
+                className="flex-grow-1"
+                style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gridTemplateRows: "repeat(3, 1fr)",
+                    gap: "0.5rem",
+                }}
+            >
+                <StatCard title="จำนวนคนที่เช็คอิน" value={check_in_summary || "0/0"} footer="คน" />
+                <StatCard title="จำนวนคนที่เช็คอินเกินเวลา" value={ci_late_count || "0/0"} footer="คน" />
+                <StatCard title="จำนวนคนที่เช็คอินนอกสถานที่" value={ci_outside_count || "0/0"} footer="คน" />
+
+                <StatCard title="จำนวนคนที่เช็คเอาท์" value={co_summary || "0/0"} footer="คน" />
+                <StatCard title="จำนวนคนที่เช็คเอาท์ก่อนเวลา" value={co_early_count || "0/0"} footer="คน" />
+                <StatCard title="จำนวนคนที่เช็คเอาท์นอกสถานที่" value={co_outside_count || "0/0"} footer="คน" />
+
+                <StatCard title="คำร้องรออนุมัติ" value={pending_requests || "0"} footer="รายการ" bg="#fff0c9" />
+            </div>
+        );
+    };
+
     return (
-
-
         <div className="d-flex gap-3 p-3 my-3" style={{ height: "70vh" }}>
-
             {/* LEFT BOX */}
             <div
                 className="border border-2 border-secondary h-100 p-3"
@@ -117,36 +188,14 @@ const Home = (props) => {
                 style={{ backgroundColor: "#F5F5F5", flex: 1 }}
             >
                 <div className="text-center fw-bold mb-2">
-                    ข้อมูล ณ วันที่ 07/01/2026
+                    ข้อมูล ณ วันที่ {displaydate || "-"}
                 </div>
 
-                {/* ✅ กริด 3x3 กินพื้นที่ที่เหลือทั้งหมด */}
-                <div
-                    className="flex-grow-1"
-                    style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(3, 1fr)",
-                        gridTemplateRows: "repeat(3, 1fr)",
-                        gap: "0.5rem", // ระยะห่างการ์ดเหมือนรูป (ปรับได้)
-                    }}
-                >
-                    <StatCard title="สถานะ" value="Check-In" />
-                    <StatCard title="เวลาที่เช็คอิน" value="08.00 น." />
-                    <StatCard title="เวลาเช็คเอาท์" value="-" />
-
-                    <StatCard title="จำนวนชั่วโมงสะสม" value="7 ชั่วโมง 30 นาที" />
-                    <StatCard title="สถานที่เช็คอิน" value={"ธนาคารกรุงเทพ\nสำนักงานพระราม 3"} />
-                    <StatCard title="สถานที่เช็คเอาท์" value="-" />
-
-                    <StatCard title="คำร้องอนุมัติ" value="1" footer="รายการ" bg="#c9ffd9" />
-                    <StatCard title="คำร้องรออนุมัติ" value="1" footer="รายการ" bg="#fff0c9" />
-                    <StatCard title="คำร้องไม่อนุมัติ" value="0" footer="รายการ" bg="#ffd0d0" />
-                </div>
+                {menu_manager || menu_teamled ? renderManagerDashboard() : (menu_intern ? renderInternDashboard() : null)}
             </div>
         </div>
     );
 };
-
 
 export default Home;
 
