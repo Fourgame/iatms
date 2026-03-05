@@ -29,6 +29,7 @@ const AttendanceHistory = () => {
             dataIndex: 'oauser',
             key: 'oauser',
             align: 'center',
+        
             sorter: (a, b) => (a.oauser || "").localeCompare(b.oauser || ""),
 
         },
@@ -37,6 +38,7 @@ const AttendanceHistory = () => {
             dataIndex: 'fullName',
             key: 'fullName',
             align: 'left',
+            width: 150,
             sorter: (a, b) => (a.fullName || "").localeCompare(b.fullName || ""),
 
         },
@@ -338,12 +340,12 @@ const AttendanceHistory = () => {
                                         <span style={{ fontWeight: 700, fontSize: '16px' }}>สถานะเวลา:</span>
                                         <div style={{ position: 'relative', marginTop: '4px' }}>
                                             <span style={{ position: 'absolute', top: '-8px', left: '10px', background: 'white', padding: '0 5px', fontSize: '11px', color: '#888', zIndex: 1 }}>Check-In</span>
-                                            <Select 
-                                            value={ciTimeStatus} 
-                                            onChange={(val) => setCiTimeStatus(val)} 
-                                            placeholder="ทั้งหมด" 
-                                            style={{ width: 110 }} 
-                                            
+                                            <Select
+                                                value={ciTimeStatus}
+                                                onChange={(val) => setCiTimeStatus(val)}
+                                                placeholder="ทั้งหมด"
+                                                style={{ width: 110 }}
+
                                             >
                                                 <Option value="ทั้งหมด">ทั้งหมด</Option>
                                                 {ciTimeStatusList.map((item, idx) => (
@@ -392,7 +394,7 @@ const AttendanceHistory = () => {
                                             value={team}
                                             onChange={(val) => setTeam(val)}
                                             style={{ width: 150 }}
-                                            
+
                                         >
                                             <Option value={null}>ทั้งหมด</Option>
                                             {teamList.map((t, idx) => (

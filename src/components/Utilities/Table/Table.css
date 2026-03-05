@@ -22,12 +22,25 @@ thead[class="ant-table-thead"] th {
   z-index: 0;
   font-weight: bold;
 }
-
+/* สีกรอบตาราง */
 .ant-table {
-  background-color: #ffffff17 !important;
+  background-color: #00000017 !important;
   z-index: 0;
-  /* font-family: BBLSansOffice-Regular, Kanit !important; */
+  border: 1px solid #d8d8d8;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
 }
+
+/* สีเส้นตาราง */
+/* .ant-table-tbody>tr>td,
+.ant-table-thead>tr>th {
+  border-bottom: 1px solid #d8d8d8 !important;
+
+  border-right: 1px solid #d8d8d8 !important;
+
+} */
+
 
 .table-row-light {
   background-color: #ffffffeb;

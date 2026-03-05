@@ -81,6 +81,7 @@ export const SaveModalBtnBootstrap = ({ onClick, style, className, loading, ...p
                 fontSize: "16px",
                 fontWeight: "bold",
                 border: "1px solid #000",
+                boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
                 ...style
             }}
             {...props}
