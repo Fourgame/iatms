@@ -8,7 +8,14 @@ class GetCompensation{
     }
 }
 
+class GetMonthYearCompensation{
+    get_month_year_compensation(payload) {
+        return api.get("getMonthYearCompensation", { params: payload });
+    }
+}
+
 
 export const getCompensation = new GetCompensation();
+export const getMonthYearCompensation = new GetMonthYearCompensation();
 
 

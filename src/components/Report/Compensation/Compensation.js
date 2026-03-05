@@ -8,7 +8,7 @@ import TableUI from '../../Utilities/Table/TableUI';
 import { getDropdown } from '../../../services/dropdown.service';
 import { noticeShowMessage } from '../../Utilities/Notification';
 import Loading from "../../Utilities/Loading";
-import { getCompensation } from '../../../services/Compensation.service';
+import { getCompensation, getMonthYearCompensation } from '../../../services/Compensation.service';
 import moment from 'moment';
 
 const { Option } = Select;
@@ -76,8 +76,9 @@ const Compensation = () => {
     // Filters
     const [searchText, setSearchText] = useState("");
     const [team, setTeam] = useState("ทั้งหมด");
-    const [startDate, setStartDate] = useState(null);
-    const [endDate, setEndDate] = useState(null);
+    const [startMonthYear, setStartMonthYear] = useState(null);
+    const [endMonthYear, setEndMonthYear] = useState(null);
+    const [minMonthYear, setMinMonthYear] = useState(null);
 
     // Dropdowns
     const [teamList, setTeamList] = useState([]);
@@ -92,8 +93,8 @@ const Compensation = () => {
             const payload = {
                 search_text: searchText || null,
                 team: team === "ทั้งหมด" ? null : team,
-                start_date: startDate ? startDate.format('YYYY-MM-DD') : null,
-                end_date: endDate ? endDate.format('YYYY-MM-DD') : null
+                start_month_year: startMonthYear ? startMonthYear.format('YYYY-MM') : null,
+                end_month_year: endMonthYear ? endMonthYear.format('YYYY-MM') : null
             };
             const res = await getCompensation.get_compensation(payload);
             if (res && res.data) {
@@ -120,8 +121,31 @@ const Compensation = () => {
         }
     }
 
+    const fetchMinMonthYear = async () => {
+        try {
+            const res = await getMonthYearCompensation.get_month_year_compensation();
+            let minVal = null;
+            if (res && res.data) {
+                if (Array.isArray(res.data) && res.data.length > 0) {
+                    minVal = res.data[0].monthYear;
+                } else if (!Array.isArray(res.data) && res.data.monthYear) {
+                    minVal = res.data.monthYear;
+                }
+            }
+            if (minVal) {
+                setMinMonthYear(moment(minVal, 'MM/YYYY'));
+            } else {
+                setMinMonthYear(null);
+            }
+        } catch (error) {
+            console.error("Error fetching min month year", error);
+            setMinMonthYear(null);
+        }
+    };
+
     useEffect(() => {
         fetchDropdowns();
+        fetchMinMonthYear();
         fetchData();
     }, []);
 
@@ -132,8 +156,8 @@ const Compensation = () => {
     const handleClear = () => {
         setSearchText("");
         setTeam("ทั้งหมด");
-        setStartDate(null);
-        setEndDate(null);
+        setStartMonthYear(null);
+        setEndMonthYear(null);
 
         // Fetch original
         setLoading(true);
@@ -191,7 +215,11 @@ const Compensation = () => {
                                     <Select
                                         placeholder="ทั้งหมด"
                                         value={team}
-                                        onChange={(val) => setTeam(val)}
+                                        onChange={(val) => {
+                                            setTeam(val);
+                                            setStartMonthYear(null);
+                                            setEndMonthYear(null);
+                                        }}
                                         style={{ width: 150 }}
                                     >
                                         <Option value="ทั้งหมด">ทั้งหมด</Option>
@@ -201,35 +229,49 @@ const Compensation = () => {
                                     </Select>
                                 </div>
 
-                                {/* วันที่ */}
+                                {/* เดือน/ปี */}
                                 <div className="d-flex align-items-center gap-2">
-                                    <span style={{ fontWeight: 700, fontSize: '16px' }}>วันที่ :</span>
-                                    <div style={{ position: 'relative', marginTop: '4px' }}>
-                                        <span style={{ position: 'absolute', top: '-8px', left: '10px', background: 'white', padding: '0 5px', fontSize: '11px', color: '#888', zIndex: 1 }}>Start Date</span>
-                                        <DatePicker
-                                            value={startDate}
-                                            onChange={(date) => setStartDate(date)}
-                                            disabledDate={(current) => {
-                                                return endDate ? current && current > endDate.endOf('day') : false;
-                                            }}
-                                            style={{ width: 130 }}
-                                            format="DD/MM/YYYY"
-                                            placeholder="DD/MM/YYYY"
-                                        />
-                                    </div>
-                                    <span>-</span>
-                                    <div style={{ position: 'relative', marginTop: '4px' }}>
-                                        <span style={{ position: 'absolute', top: '-8px', left: '10px', background: 'white', padding: '0 5px', fontSize: '11px', color: '#888', zIndex: 1 }}>End Date</span>
-                                        <DatePicker
-                                            value={endDate}
-                                            onChange={(date) => setEndDate(date)}
-                                            disabledDate={(current) => {
-                                                return startDate ? current && current < startDate.startOf('day') : false;
-                                            }}
-                                            style={{ width: 130 }}
-                                            format="DD/MM/YYYY"
-                                            placeholder="DD/MM/YYYY"
-                                        />
+                                    <span style={{ fontWeight: 700, fontSize: '16px' }}>เดือน/ปี :</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                        <div style={{ position: 'relative', marginTop: '4px' }}>
+                                            <span style={{ position: 'absolute', top: '-8px', left: '10px', background: 'white', padding: '0 5px', fontSize: '11px', color: '#888', zIndex: 1 }}>Start Month/Year</span>
+                                            <DatePicker
+                                                allowClear={true}
+                                                picker="month"
+                                                value={startMonthYear}
+                                                onChange={(date) => setStartMonthYear(date)}
+                                                disabledDate={(current) => {
+                                                    if (!current) return false;
+                                                    const isBeforeMin = minMonthYear ? current.isBefore(minMonthYear, 'month') : false;
+                                                    const isAfterNow = current.isAfter(moment(), 'month');
+                                                    const isAfterEnd = endMonthYear ? current.isAfter(endMonthYear, 'month') : false;
+                                                    return isBeforeMin || isAfterNow || isAfterEnd;
+                                                }}
+                                                style={{ width: 130 }}
+                                                format="MM/YYYY"
+                                                placeholder="MM/YYYY"
+                                            />
+                                        </div>
+                                        <span>-</span>
+                                        <div style={{ position: 'relative', marginTop: '4px' }}>
+                                            <span style={{ position: 'absolute', top: '-8px', left: '10px', background: 'white', padding: '0 5px', fontSize: '11px', color: '#888', zIndex: 1 }}>End Month/Year</span>
+                                            <DatePicker
+                                                allowClear={true}
+                                                picker="month"
+                                                value={endMonthYear}
+                                                onChange={(date) => setEndMonthYear(date)}
+                                                disabledDate={(current) => {
+                                                    if (!current) return false;
+                                                    const isBeforeMin = minMonthYear ? current.isBefore(minMonthYear, 'month') : false;
+                                                    const isAfterNow = current.isAfter(moment(), 'month');
+                                                    const isBeforeStart = startMonthYear ? current.isBefore(startMonthYear, 'month') : false;
+                                                    return isBeforeMin || isAfterNow || isBeforeStart;
+                                                }}
+                                                style={{ width: 130 }}
+                                                format="MM/YYYY"
+                                                placeholder="MM/YYYY"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>

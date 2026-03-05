@@ -14,6 +14,23 @@ import Loading from "../../Utilities/Loading";
 import moment from 'moment';
 import { getButton } from '../../../services/CICO.service';
 
+// Haversine Formula for distance calculation
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371e3; // metres
+    const φ1 = lat1 * Math.PI / 180; // φ, λ in radians
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+        Math.cos(φ1) * Math.cos(φ2) *
+        Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    const d = R * c; // in metres
+    return d;
+};
+
 const { TextArea } = Input;
 
 const { Option } = Select;
@@ -166,6 +183,42 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
         const mapContainerStyle = { width: '100%', height: '250px', borderRadius: '8px' };
         const center = originalLocation || { lat: 13.7563, lng: 100.5018 }; // Default Bangkok
 
+        // Dynamic styling for original location
+        let originalMarkerColor = "#FF0000"; // Default Red
+        let originalCircleColor = "#FF0000"; // Default Red
+        if (geofence && originalLocation) {
+            const dist = calculateDistance(originalLocation.lat, originalLocation.lng, geofence.lat, geofence.lng);
+            if (dist <= geofence.radius) {
+                originalMarkerColor = "#1eff00ff"; // Green
+                originalCircleColor = "#28a745"; // Green
+            }
+        }
+
+        const originalMarkerIconUrl = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22">
+                <path fill="${originalMarkerColor}" stroke="#000000ff" stroke-width="2" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-12-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+            </svg>
+        `)}`;
+
+        // Dynamic styling for new location
+        let newMarkerColor = "#2750B0"; // Default Blue
+        let newCircleColor = "#FF0000"; // Default Red
+        if (geofence && newLocation) {
+            const dist = calculateDistance(newLocation.lat, newLocation.lng, geofence.lat, geofence.lng);
+            if (dist <= geofence.radius) {
+                newMarkerColor = "#1eff00ff"; // Green
+                newCircleColor = "#28a745"; // Green
+            } else {
+                newMarkerColor = "#ff0000ff"; // Red
+            }
+        }
+
+        const newMarkerIconUrl = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22">
+                <path fill="${newMarkerColor}" stroke="#000000ff" stroke-width="2" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-12-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+            </svg>
+        `)}`;
+
         return (
             <Row className="mt-3">
                 <Col md={6}>
@@ -191,16 +244,23 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
                             zoom={15}
                             options={{ disableDefaultUI: true, draggable: false, zoomControl: true }}
                         >
-                            <MarkerF position={originalLocation} />
+                            <MarkerF
+                                position={originalLocation}
+                                icon={{
+                                    url: originalMarkerIconUrl,
+                                    scaledSize: new window.google.maps.Size(24, 24),
+                                    anchor: new window.google.maps.Point(12, 12),
+                                }}
+                            />
                             {geofence && (
                                 <CircleF
                                     center={{ lat: geofence.lat, lng: geofence.lng }}
                                     radius={geofence.radius}
                                     options={{
-                                        strokeColor: "#FF0000",
+                                        strokeColor: originalCircleColor,
                                         strokeOpacity: 0.8,
                                         strokeWeight: 2,
-                                        fillColor: "#FF0000",
+                                        fillColor: originalCircleColor,
                                         fillOpacity: 0.35,
                                     }}
                                 />
@@ -263,16 +323,25 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
                             onClick={(e) => handleMapClick(e, type)}
                             options={{ disableDefaultUI: true, zoomControl: true }}
                         >
-                            {newLocation && <MarkerF position={newLocation} />}
+                            {newLocation && (
+                                <MarkerF
+                                    position={newLocation}
+                                    icon={{
+                                        url: newMarkerIconUrl,
+                                        scaledSize: new window.google.maps.Size(24, 24),
+                                        anchor: new window.google.maps.Point(12, 12),
+                                    }}
+                                />
+                            )}
                             {geofence && (
                                 <CircleF
                                     center={{ lat: geofence.lat, lng: geofence.lng }}
                                     radius={geofence.radius}
                                     options={{
-                                        strokeColor: "#FF0000",
+                                        strokeColor: newCircleColor,
                                         strokeOpacity: 0.8,
                                         strokeWeight: 2,
-                                        fillColor: "#FF0000",
+                                        fillColor: newCircleColor,
                                         fillOpacity: 0.35,
                                     }}
                                     onClick={(e) => handleMapClick(e, type)}
@@ -523,13 +592,22 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
                     <Card.Header style={{ backgroundColor: '#f0f2f5', fontWeight: 'bold', borderBottom: '1px solid #d9d9d9' }}>
                         <span style={{ color: 'red', marginRight: '5px' }}>*</span>เหตุผลที่ร้องขอ
                     </Card.Header>
-                    <Card.Body className="p-3">
-                        <Form.Item
-                            name="requestReason"
-                            style={{ marginBottom: 0 }}
-                            rules={[{ required: true, message: 'กรุณาระบุเหตุผลที่ร้องขอ' }]}
-                        >
-                            <Input.TextArea rows={4} placeholder="ระบุเหตุผลที่ขอแก้ไข..." style={{ resize: 'none' }} />
+                    <Card.Body className="p-3" style={{ paddingBottom: '0 !important' }}>
+                        <Form.Item shouldUpdate noStyle>
+                            {() => {
+                                const err = form.getFieldError("requestReason")?.[0];
+                                return (
+                                    <Form.Item
+                                        name="requestReason"
+                                        style={{ marginBottom: 0 }}
+                                        rules={[{ required: true, message: 'กรุณาระบุเหตุผลที่ร้องขอ' }]}
+                                        validateStatus={err ? "error" : undefined}
+                                        help={fixedHelp(err)}
+                                    >
+                                        <Input.TextArea rows={4} placeholder="ระบุเหตุผลที่ขอแก้ไข..." style={{ resize: 'none' }} />
+                                    </Form.Item>
+                                );
+                            }}
                         </Form.Item>
                     </Card.Body>
                 </Card>
