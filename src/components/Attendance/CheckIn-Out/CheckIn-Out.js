@@ -418,6 +418,11 @@ const CheckInOut = () => {
             : 0;
         const isOutsideLocation = (radius && dist > radius);
 
+        const year = currentDateTime.getFullYear();
+        const month = String(currentDateTime.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDateTime.getDate()).padStart(2, '0');
+        const currentDateStr = `${year}-${month}-${day}`;
+
         let messages = [];
 
         if (type === 'CheckIn') {
@@ -430,11 +435,14 @@ const CheckInOut = () => {
                 messages.push("ตำแหน่งสถานที่ไม่ถูกต้อง");
             }
         } else if (type === 'CheckOut') {
-            // "ห้ามเร็วกว่า" -> if current time is LESS than threshold, it's early
-            const isEarly = currentTimeStr < coThreshold;
-
-            if (isEarly) {
-                messages.push(`ก่อนเวลา ${coThreshold} น.`);
+            if (buttonData.attDate && currentDateStr > buttonData.attDate) {
+                messages.push("ข้ามวัน");
+            } else {
+                // "ห้ามเร็วกว่า" -> if current time is LESS than threshold, it's early
+                const isEarly = currentTimeStr < coThreshold;
+                if (isEarly) {
+                    messages.push(`ก่อนเวลา ${coThreshold} น.`);
+                }
             }
             if (isOutsideLocation) {
                 messages.push("ตำแหน่งสถานที่ไม่ถูกต้อง");

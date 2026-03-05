@@ -201,21 +201,23 @@ const AttendanceApproval = () => {
             const response = await getLeaveApproval.get_leave_approval(cleanPayload);
             if (response.data) {
                 const formattedData = response.data.map((item, index) => {
-                    let durationDisplay = '-';
-                    if (item.total_minute) {
-                        let minutes = item.total_minute;
-                        let days = Math.floor(minutes / 510);
-                        minutes %= 510;
-                        let hours = Math.floor(minutes / 60);
-                        let mins = minutes % 60;
-
-                        let parts = [];
-                        if (days > 0) parts.push(`${days} วัน`);
-                        if (hours > 0) parts.push(`${hours} ชั่วโมง`);
-                        if (mins > 0) parts.push(`${mins} นาที`);
-
-                        durationDisplay = parts.length > 0 ? parts.join(', ') : '0 นาที';
+                    let parts = [];
+                    const days = item.total_day ? parseInt(item.total_day, 10) : 0;
+                    if (days > 0) {
+                        parts.push(`${days} วัน`);
                     }
+
+                    if (item.working_hour && item.working_hour !== "00:00:00") {
+                        const timeParts = item.working_hour.split(':');
+                        if (timeParts.length >= 2) {
+                            const h = parseInt(timeParts[0], 10);
+                            const m = parseInt(timeParts[1], 10);
+                            if (h > 0) parts.push(`${h} ชั่วโมง`);
+                            if (m > 0) parts.push(`${m} นาที`);
+                        }
+                    }
+
+                    let durationDisplay = parts.length > 0 ? parts.join(' ') : '-';
 
                     return {
                         ...item,

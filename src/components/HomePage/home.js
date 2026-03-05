@@ -6,10 +6,11 @@ import Title from "../../components/Utilities/Title";
 import { noticeShowMessage } from "../../components/Utilities/Notification";
 import authService from "../../services/auth.service";
 import homeService from "../../services/home.service";
-const StatCard = ({ title, value, footer, bg }) => (
+const StatCard = ({ title, value, footer, bg, onClick }) => (
     <div
         className="border border-1 border-secondary p-2 d-flex flex-column h-100"
-        style={{ backgroundColor: bg || "#ffffff" }}
+        style={{ backgroundColor: bg || "#ffffff", cursor: onClick ? "pointer" : "default" }}
+        onClick={onClick}
     >
         <div className="small text-muted">{title}</div>
         <div
@@ -86,7 +87,7 @@ const Home = (props) => {
 
     const {
         menu_intern, menu_teamled, menu_manager,
-        check_in, check_out, working_minutes, ci_address, co_address,
+        check_in, check_out, working_hour, ci_address, co_address,
         approve_leave, pending_leave, reject_leave,
         check_in_summary, ci_late_count, ci_outside_count,
         co_summary, co_early_count, co_outside_count,
@@ -94,9 +95,17 @@ const Home = (props) => {
     } = dashboardData.length ? dashboardData[0] : dashboardData;
 
     const renderInternDashboard = () => {
-        const hours = Math.floor(parseInt(working_minutes || "0", 10) / 60);
-        const mins = parseInt(working_minutes || "0", 10) % 60;
-        const timeString = hours > 0 ? `${hours} ชั่วโมง ${mins} นาที` : `${mins} นาที`;
+        let timeString = "-";
+        if (working_hour && working_hour !== "00:00:00") {
+            const timeParts = working_hour.split(':');
+            if (timeParts.length >= 2) {
+                const h = parseInt(timeParts[0], 10);
+                const m = parseInt(timeParts[1], 10);
+                timeString = m > 0 ? (h > 0 ? `${h} ชั่วโมง ${m} นาที` : `${m} นาที`) : `${h} ชั่วโมง`;
+            }
+        } else if (working_hour === "00:00:00") {
+            timeString = "0 นาที";
+        }
 
         let statusText = "-";
         if (check_out && check_out !== "-") statusText = "Check-Out";
@@ -113,17 +122,17 @@ const Home = (props) => {
                     gap: "0.5rem",
                 }}
             >
-                <StatCard title="สถานะ" value={statusText} />
-                <StatCard title="เวลาที่เช็คอิน" value={check_in !== "-" && check_in ? `${check_in} น.` : "-"} />
-                <StatCard title="เวลาเช็คเอาท์" value={check_out !== "-" && check_out ? `${check_out} น.` : "-"} />
+                <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="สถานะ" value={statusText} />
+                <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="เวลาที่เช็คอิน" value={check_in !== "-" && check_in ? `${check_in} น.` : "-"} />
+                <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="เวลาเช็คเอาท์" value={check_out !== "-" && check_out ? `${check_out} น.` : "-"} />
 
-                <StatCard title="จำนวนชั่วโมงสะสม" value={timeString} />
-                <StatCard title="สถานที่เช็คอิน" value={ci_address || "-"} />
-                <StatCard title="สถานที่เช็คเอาท์" value={co_address || "-"} />
+                <StatCard onClick={() => navigate("/report/WorkHours")} title="จำนวนชั่วโมงสะสม" value={timeString} />
+                <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="สถานที่เช็คอิน" value={ci_address || "-"} />
+                <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="สถานที่เช็คเอาท์" value={co_address || "-"} />
 
-                <StatCard title="คำร้องอนุมัติ" value={approve_leave || "0"} footer="รายการ" bg="#c9ffd9" />
-                <StatCard title="คำร้องรออนุมัติ" value={pending_leave || "0"} footer="รายการ" bg="#fff0c9" />
-                <StatCard title="คำร้องไม่อนุมัติ" value={reject_leave || "0"} footer="รายการ" bg="#ffd0d0" />
+                <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องอนุมัติ" value={approve_leave || "0"} footer="รายการ" bg="#c9ffd9" />
+                <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องรออนุมัติ" value={pending_leave || "0"} footer="รายการ" bg="#fff0c9" />
+                <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องไม่อนุมัติ" value={reject_leave || "0"} footer="รายการ" bg="#ffd0d0" />
             </div>
         );
     };
@@ -139,15 +148,15 @@ const Home = (props) => {
                     gap: "0.5rem",
                 }}
             >
-                <StatCard title="จำนวนคนที่เช็คอิน" value={check_in_summary || "0/0"} footer="คน" />
-                <StatCard title="จำนวนคนที่เช็คอินเกินเวลา" value={ci_late_count || "0/0"} footer="คน" />
-                <StatCard title="จำนวนคนที่เช็คอินนอกสถานที่" value={ci_outside_count || "0/0"} footer="คน" />
+                <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คอิน" value={check_in_summary || "0/0"} footer="คน" />
+                <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คอินเกินเวลา" value={ci_late_count || "0/0"} footer="คน" />
+                <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คอินนอกสถานที่" value={ci_outside_count || "0/0"} footer="คน" />
 
-                <StatCard title="จำนวนคนที่เช็คเอาท์" value={co_summary || "0/0"} footer="คน" />
-                <StatCard title="จำนวนคนที่เช็คเอาท์ก่อนเวลา" value={co_early_count || "0/0"} footer="คน" />
-                <StatCard title="จำนวนคนที่เช็คเอาท์นอกสถานที่" value={co_outside_count || "0/0"} footer="คน" />
+                <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คเอาท์" value={co_summary || "0/0"} footer="คน" />
+                <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คเอาท์ก่อนเวลา" value={co_early_count || "0/0"} footer="คน" />
+                <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คเอาท์นอกสถานที่" value={co_outside_count || "0/0"} footer="คน" />
 
-                <StatCard title="คำร้องรออนุมัติ" value={pending_requests || "0"} footer="รายการ" bg="#fff0c9" />
+                <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Approval")} title="คำร้องรออนุมัติ" value={pending_requests || "0"} footer="รายการ" bg="#fff0c9" />
             </div>
         );
     };
@@ -183,16 +192,20 @@ const Home = (props) => {
             </div>
 
             {/* RIGHT */}
-            <div
-                className="border border-2 border-secondary h-100 p-2 d-flex flex-column"
-                style={{ backgroundColor: "#F5F5F5", flex: 1 }}
-            >
-                <div className="text-center fw-bold mb-2">
-                    ข้อมูล ณ วันที่ {displaydate || "-"}
-                </div>
+            {menu_manager || menu_teamled || menu_intern ? (
+                <div
+                    className="border border-2 border-secondary h-100 p-2 d-flex flex-column"
+                    style={{ backgroundColor: "#F5F5F5", flex: 1 }}
+                >
+                    <div className="text-center fw-bold mb-2">
+                        ข้อมูล ณ วันที่ {displaydate || "-"}
+                    </div>
 
-                {menu_manager || menu_teamled ? renderManagerDashboard() : (menu_intern ? renderInternDashboard() : null)}
-            </div>
+                    {menu_manager || menu_teamled ? renderManagerDashboard() : renderInternDashboard()}
+                </div>
+            ) : (
+                <div style={{ flex: 1 }}></div>
+            )}
         </div>
     );
 };
