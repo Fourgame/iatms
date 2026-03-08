@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+import TokenService from '../../../services/token.service';
 import { DatePicker, Select, Input } from 'antd';
 import { SearchToolBtnBootstrap, ClearToolBtnBootstrap, ExportToolBtnBootstrap } from '../../Utilities/Buttons/Buttons';
 import TableUI from '../../Utilities/Table/TableUI';
@@ -11,6 +13,34 @@ import { workHoursService } from '../../../services/workhours.service';
 const { Option } = Select;
 
 const WorkHours = () => {
+    const navigate = useNavigate();
+
+    const handleRequestError = (error) => {
+        if (error.response) {
+            const status = error.response.status;
+            if (status === 401) {
+                TokenService.deleteUser();
+                navigate("/signin", { state: { message: "session expire" } });
+                return true;
+            }
+            if (error.response.data && error.response.data.message) {
+                noticeShowMessage(error.response.data.message, true);
+                return false;
+            }
+            if (status === 403) return navigate("/signin", { state: { message: "access-denied" } });
+            if (status === 404) return navigate("/signin", { state: { message: "not-found" } });
+
+        } else if (error.request) {
+            console.log("No response received:", error.request);
+            return navigate("/signin", { state: { message: "network-error" } });
+
+        } else {
+            console.log("Error setting up request:", error.message);
+            return navigate("/signin", { state: { message: "error" } });
+        }
+        return false;
+    };
+
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
     const [team, setTeam] = useState(null);
@@ -79,6 +109,7 @@ const WorkHours = () => {
                 if (teamRes && teamRes.data) setTeamList(teamRes.data);
             } catch (error) {
                 console.error("Error fetching dropdowns:", error);
+                handleRequestError(error);
             }
         };
         fetchDropdowns();
@@ -135,9 +166,7 @@ const WorkHours = () => {
             filterData(rawData, override?.clear ? "" : searchText);
         } catch (error) {
             console.error("Error fetching work hours:", error);
-            if (error.response?.data?.message) {
-                noticeShowMessage("Error", error.response.data.message, "error");
-            }
+            handleRequestError(error);
             setDataSource([]);
             setFilteredData([]);
             setTotalHoursString("รวมทั้งหมด 0 ชั่วโมง");

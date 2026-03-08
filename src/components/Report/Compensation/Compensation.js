@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, Button as ButtonBootstrap } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import { DatePicker, Select, Form, Input, Modal, Row, Col, Button } from 'antd';
 import { SearchToolBtnBootstrap, ClearToolBtnBootstrap, AddToolBtnBootstrap, EditToolBtnBootstrap, DeleteToolBtn, Approve_RejectBtn, CloseModalBtnBootstrap, CloseIconBtn, ApproveModalBtnBootstrap, RejectModalBtnBootstrap, ExportToolBtnBootstrap } from '../../Utilities/Buttons/Buttons';
 import { RejectTag, ApproveTag, PendingApproveTag } from "../../Utilities/StatusTag/StatusTag";
@@ -14,6 +15,34 @@ import moment from 'moment';
 const { Option } = Select;
 
 const Compensation = () => {
+    const navigate = useNavigate();
+
+    const handleRequestError = (error) => {
+        if (error.response) {
+            const status = error.response.status;
+            if (status === 401) {
+                TokenService.deleteUser();
+                navigate("/signin", { state: { message: "session expire" } });
+                return true;
+            }
+            if (error.response.data && error.response.data.message) {
+                noticeShowMessage(error.response.data.message, true);
+                return false;
+            }
+            if (status === 403) return navigate("/signin", { state: { message: "access-denied" } });
+            if (status === 404) return navigate("/signin", { state: { message: "not-found" } });
+
+        } else if (error.request) {
+            console.log("No response received:", error.request);
+            return navigate("/signin", { state: { message: "network-error" } });
+
+        } else {
+            console.log("Error setting up request:", error.message);
+            return navigate("/signin", { state: { message: "error" } });
+        }
+        return false;
+    };
+
     const columns = [
         {
             title: 'เดือน-ปี',
@@ -104,6 +133,7 @@ const Compensation = () => {
             }
         } catch (error) {
             console.error("Error fetching compensation data", error);
+            handleRequestError(error);
             setDataSource([]);
         } finally {
             setLoading(false);
@@ -118,6 +148,7 @@ const Compensation = () => {
             }
         } catch (error) {
             console.error("Error fetching teams", error);
+            handleRequestError(error);
         }
     }
 
@@ -139,6 +170,7 @@ const Compensation = () => {
             }
         } catch (error) {
             console.error("Error fetching min month year", error);
+            handleRequestError(error);
             setMinMonthYear(null);
         }
     };
@@ -166,6 +198,7 @@ const Compensation = () => {
             else setDataSource([]);
         }).catch(err => {
             console.error(err);
+            handleRequestError(err);
             setDataSource([]);
         }).finally(() => setLoading(false));
     };

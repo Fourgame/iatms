@@ -225,12 +225,16 @@ const Holidays = () => {
                 noticeShowMessage(error.response.data.message, true);
                 return false;
             }
-            const messages = { 403: "access-denied", 404: "not-found" };
-            noticeShowMessage(messages[status] || "error", true);
+            if (status === 403) return navigate("/signin", { state: { message: "access-denied" } });
+            if (status === 404) return navigate("/signin", { state: { message: "not-found" } });
+
         } else if (error.request) {
-            noticeShowMessage("network-error", true);
+            console.log("No response received:", error.request);
+            return navigate("/signin", { state: { message: "network-error" } });
+
         } else {
-            noticeShowMessage("error", true);
+            console.log("Error setting up request:", error.message);
+            return navigate("/signin", { state: { message: "error" } });
         }
         return false;
     };
