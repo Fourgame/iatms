@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, Button as ButtonBootstrap } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import { DatePicker, Select, Form, Input, Modal, Row, Col, Button, Spin } from 'antd';
 import { SearchToolBtnBootstrap, ClearToolBtnBootstrap, AddToolBtnBootstrap, EditToolBtnBootstrap, DeleteToolBtn, Approve_RejectBtn, CloseModalBtnBootstrap, CloseIconBtn, ApproveModalBtnBootstrap, RejectModalBtnBootstrap, ExportToolBtnBootstrap } from '../../Utilities/Buttons/Buttons';
 import { RejectTag, ApproveTag, PendingApproveTag } from "../../Utilities/StatusTag/StatusTag";
@@ -14,6 +15,34 @@ import { getAttHistory } from '../../../services/AttendanceHistory.service';
 const { Option } = Select;
 
 const AttendanceHistory = () => {
+    const navigate = useNavigate();
+
+    const handleRequestError = (error) => {
+        if (error.response) {
+            const status = error.response.status;
+            if (status === 401) {
+                TokenService.deleteUser();
+                navigate("/signin", { state: { message: "session expire" } });
+                return true;
+            }
+            if (error.response.data && error.response.data.message) {
+                noticeShowMessage(error.response.data.message, true);
+                return false;
+            }
+            if (status === 403) return navigate("/signin", { state: { message: "access-denied" } });
+            if (status === 404) return navigate("/signin", { state: { message: "not-found" } });
+
+        } else if (error.request) {
+            console.log("No response received:", error.request);
+            return navigate("/signin", { state: { message: "network-error" } });
+
+        } else {
+            console.log("Error setting up request:", error.message);
+            return navigate("/signin", { state: { message: "error" } });
+        }
+        return false;
+    };
+
     const columns = [
         {
             title: 'วันที่',
@@ -29,7 +58,7 @@ const AttendanceHistory = () => {
             dataIndex: 'oauser',
             key: 'oauser',
             align: 'center',
-        
+
             sorter: (a, b) => (a.oauser || "").localeCompare(b.oauser || ""),
 
         },
@@ -233,6 +262,7 @@ const AttendanceHistory = () => {
             }
         } catch (error) {
             console.error("Error fetching attendance history:", error);
+            handleRequestError(error);
         } finally {
             setLoading(false);
         }
@@ -268,6 +298,7 @@ const AttendanceHistory = () => {
                 if (teamRes && teamRes.data) setTeamList(teamRes.data);
             } catch (error) {
                 console.error("Error fetching dropdowns:", error);
+                handleRequestError(error);
             }
         };
         fetchDropdowns();
