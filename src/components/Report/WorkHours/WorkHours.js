@@ -43,7 +43,7 @@ const WorkHours = () => {
             title: 'ชื่อ-นามสกุล',
             dataIndex: 'full_name',
             key: 'full_name',
-            align: 'center',
+            align: 'left',
             sorter: (a, b) => (a.full_name || "").localeCompare(b.full_name || ""),
         },
         {

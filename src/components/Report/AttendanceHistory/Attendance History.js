@@ -29,7 +29,7 @@ const AttendanceHistory = () => {
             dataIndex: 'oauser',
             key: 'oauser',
             align: 'center',
-        
+
             sorter: (a, b) => (a.oauser || "").localeCompare(b.oauser || ""),
 
         },
@@ -248,8 +248,32 @@ const AttendanceHistory = () => {
         setCiLocationStatus("ทั้งหมด");
         setCoLocationStatus("ทั้งหมด");
 
-        // refetch with cleared params
-        setTimeout(() => handleSearch(), 0);
+        setLoading(true);
+        const payload = {
+            start_date: null,
+            end_date: null,
+            team: null,
+            search_text: null,
+            ci_time_status: null,
+            co_time_status: null,
+            ci_location_status: null,
+            co_location_status: null,
+        };
+
+        getAttHistory.get_attHistory(payload)
+            .then(response => {
+                if (response && response.data) {
+                    setDataSource(response.data);
+                } else {
+                    setDataSource([]);
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching attendance history:", error);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     };
 
     useEffect(() => {

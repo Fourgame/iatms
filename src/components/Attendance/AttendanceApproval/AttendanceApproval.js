@@ -20,12 +20,12 @@ const AttendanceApproval = () => {
 
     // Attendance Approval Search State
     const [attKeyword, setAttKeyword] = useState('');
-    const [attTeam, setAttTeam] = useState(undefined);
+    const [attTeam, setAttTeam] = useState("ทั้งหมด");
     const [attApprovalData, setAttApprovalData] = useState([]);
 
     // Leave Approval Search State
     const [leaveKeyword, setLeaveKeyword] = useState('');
-    const [leaveTeam, setLeaveTeam] = useState(undefined);
+    const [leaveTeam, setLeaveTeam] = useState("ทั้งหมด");
     const [leaveApprovalData, setLeaveApprovalData] = useState([]);
 
     // Leave Detail Modal State
@@ -41,14 +41,15 @@ const AttendanceApproval = () => {
     const [modalData, setModalData] = useState(null);
     const [selectedRecord, setSelectedRecord] = useState(null);
     const [rejectReason, setRejectReason] = useState("");
+    const [attRejectReasonError, setAttRejectReasonError] = useState("");
     const [modalLoading, setModalLoading] = useState(false);
 
-    const fetchAttApprovalData = async (keyword = '', team = undefined) => {
+    const fetchAttApprovalData = async (keyword = '', team = "ทั้งหมด") => {
         setLoading(true);
         try {
             const payload = {
                 Name: keyword || undefined,
-                Team: team || undefined
+                Team: team === "ทั้งหมด" ? undefined : (team || undefined)
             };
             const response = await getAttApproval.get_att_approval(payload);
             if (response && response.data) {
@@ -89,9 +90,9 @@ const AttendanceApproval = () => {
 
     const handleAttClear = () => {
         setAttKeyword('');
-        setAttTeam(undefined);
+        setAttTeam("ทั้งหมด");
         console.log("Clear Attendance Approval");
-        fetchAttApprovalData('', undefined);
+        fetchAttApprovalData('', "ทั้งหมด");
     };
 
     // Modal Handlers
@@ -129,6 +130,8 @@ const AttendanceApproval = () => {
         setIsModalOpen(false);
         setModalData(null);
         setSelectedRecord(null);
+        setRejectReason("");
+        setAttRejectReasonError("");
     };
 
     const formatDateTime = (date, time) => {
@@ -142,9 +145,11 @@ const AttendanceApproval = () => {
 
     const handleSubmit = async (isApprove) => {
         if (!isApprove && !rejectReason.trim()) {
-            noticeShowMessage("กรุณาระบุเหตุผลที่ Reject", true);
+            setAttRejectReasonError("กรุณาระบุเหตุผลที่ปฏิเสธ");
             return;
         }
+
+        setAttRejectReasonError("");
 
         const payload = {
             oa_user: selectedRecord?.oaUser || modalData?.oaUser || null,
@@ -191,7 +196,7 @@ const AttendanceApproval = () => {
         try {
             const payload = {
                 Search: clear ? null : (leaveKeyword || null),
-                Team: clear ? null : (leaveTeam || null)
+                Team: clear ? null : (leaveTeam === "ทั้งหมด" ? null : (leaveTeam || null))
             };
 
             const cleanPayload = Object.fromEntries(
@@ -259,7 +264,7 @@ const AttendanceApproval = () => {
 
     const handleLeaveClear = () => {
         setLeaveKeyword('');
-        setLeaveTeam(undefined);
+        setLeaveTeam("ทั้งหมด");
         fetchLeaveApproval(true);
     };
 
@@ -647,6 +652,12 @@ const AttendanceApproval = () => {
                                 placeholder="กรอกชื่อ-นามสกุลหรือ OA User"
                                 value={attKeyword}
                                 onChange={(e) => setAttKeyword(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleAttSearch();
+                                    }
+                                }}
                                 style={{ width: 250 }}
                             />
                         </div>
@@ -655,13 +666,24 @@ const AttendanceApproval = () => {
                             <Form component={false}>
                                 <Form.Item label={<span style={{ fontWeight: 700, fontSize: '16px' }}>Team</span>} style={{ marginBottom: 0 }}>
                                     <Select
-                                        placeholder="ทั้งหมด"
+                                        placeholder="-เลือก-"
                                         value={attTeam}
-                                        onChange={(value) => setAttTeam(value)}
+                                        onChange={(value) => {
+                                            setAttTeam(value);
+                                            if (document.activeElement) {
+                                                document.activeElement.blur();
+                                            }
+                                        }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                handleAttSearch();
+                                            }
+                                        }}
                                         style={{ width: 180 }}
-                                        allowClear
+                                        allowClear={false}
                                     >
-                                        <Option value={null}>ทั้งหมด</Option>
+                                        <Option value="ทั้งหมด">ทั้งหมด</Option>
                                         {teamList.map((item) => (
                                             <Option key={item.value} value={item.value}>{item.label}</Option>
                                         ))}
@@ -825,10 +847,14 @@ const AttendanceApproval = () => {
                             <Input.TextArea
                                 placeholder="กรอกเหตุผลที่ Reject"
                                 value={rejectReason}
-                                onChange={(e) => setRejectReason(e.target.value)}
+                                onChange={(e) => {
+                                    setRejectReason(e.target.value);
+                                    if (e.target.value.trim() !== '') setAttRejectReasonError('');
+                                }}
                                 rows={2}
-                                style={{ resize: 'none' }}
+                                style={{ border: attRejectReasonError ? '1px solid red' : '1px solid #d9d9d9', resize: 'none' }}
                             />
+                            {attRejectReasonError && <div style={{ color: 'red', marginTop: '5px', fontSize: '13px' }}>{attRejectReasonError}</div>}
                         </fieldset>
 
                         {/* Footer Buttons */}
@@ -880,6 +906,12 @@ const AttendanceApproval = () => {
                                 placeholder="กรอกชื่อ-นามสกุลหรือ OA User"
                                 value={leaveKeyword}
                                 onChange={(e) => setLeaveKeyword(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleLeaveSearch();
+                                    }
+                                }}
                                 style={{ width: 250 }}
                             />
                         </div>
@@ -888,13 +920,24 @@ const AttendanceApproval = () => {
                             <Form component={false}>
                                 <Form.Item label={<span style={{ fontWeight: 700, fontSize: '16px' }}>Team</span>} style={{ marginBottom: 0 }}>
                                     <Select
-                                        placeholder="ทั้งหมด"
+                                        placeholder="-เลือก-"
                                         value={leaveTeam}
-                                        onChange={(value) => setLeaveTeam(value)}
+                                        onChange={(value) => {
+                                            setLeaveTeam(value);
+                                            if (document.activeElement) {
+                                                document.activeElement.blur();
+                                            }
+                                        }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                handleLeaveSearch();
+                                            }
+                                        }}
                                         style={{ width: 180 }}
-                                        allowClear
+                                        allowClear={false}
                                     >
-                                        <Option value={null}>ทั้งหมด</Option>
+                                        <Option value="ทั้งหมด">ทั้งหมด</Option>
                                         {teamList.map((item) => (
                                             <Option key={item.value} value={item.value}>{item.label}</Option>
                                         ))}

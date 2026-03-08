@@ -416,7 +416,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
                                             validateStatus={err ? "error" : undefined}
                                             help={fixedHelp(err)}
                                         >
-                                            <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #000', borderRadius: '4px', padding: '0 5px', height: '35px', width: '100%' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', border: err ? '1px solid #ff4d4f' : '1px solid #000', borderRadius: '4px', padding: '0 5px', height: '35px', width: '100%' }}>
                                                 <TimePicker
                                                     value={newTime}
                                                     onChange={(time) => {
@@ -430,7 +430,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
                                                     style={{ flex: 1 }}
                                                     suffixIcon={<i className="far fa-clock" style={{ color: '#000' }}></i>}
                                                 />
-                                                <div style={{ borderLeft: '1px solid #000', paddingLeft: '5px', height: '100%', display: 'flex', alignItems: 'center' }}>น.</div>
+                                                <div style={{ borderLeft: err ? '1px solid #ff4d4f' : '1px solid #000', paddingLeft: '5px', height: '100%', display: 'flex', alignItems: 'center' }}>น.</div>
                                             </div>
                                         </Form.Item>
                                     );
@@ -473,6 +473,12 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
             <Form
                 form={form}
                 layout="vertical"
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        form.submit();
+                    }
+                }}
                 onFinish={async (values) => {
                     // To ensure proper DateTime mapping for C# backend, formatting time with date if possible,
                     // otherwise falling back to what was logged.
@@ -530,7 +536,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
                 <div style={{ display: 'flex', gap: '20px' }}>
                     {/* Check-In Card */}
                     <Card className="mb-3" style={{ border: '1px solid #d9d9d9', borderRadius: '8px', overflow: 'hidden', width: '50%', height: '50%' }}>
-                        <Card.Header style={{ backgroundColor: '#f0f2f5', fontWeight: 'bold', borderBottom: '1px solid #d9d9d9' }}>
+                        <Card.Header style={{ backgroundColor: '#A0BDFF', fontWeight: 'bold', borderBottom: '1px solid #d9d9d9' }}>
                             เวลาเข้า
                         </Card.Header>
                         <Card.Body className="p-3">
@@ -552,7 +558,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
 
                     {/* Check-Out Card */}
                     <Card className="mb-3" style={{ border: '1px solid #d9d9d9', borderRadius: '8px', overflow: 'hidden', width: '50%', height: '50%' }}>
-                        <Card.Header style={{ backgroundColor: '#f0f2f5', fontWeight: 'bold', borderBottom: '1px solid #d9d9d9' }}>
+                        <Card.Header style={{ backgroundColor: '#A0BDFF', fontWeight: 'bold', borderBottom: '1px solid #d9d9d9' }}>
                             เวลาออก
                         </Card.Header>
                         <Card.Body className="p-3">
@@ -574,22 +580,27 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
                 </div>
 
                 {/* Reason Display */}
-                <div style={{ marginBottom: '15px', padding: '0 5px' }}>
-                    <div style={{ display: 'flex', marginBottom: '8px' }}>
-                        <div style={{ width: '120px', fontWeight: 'bold' }}>เหตุผลที่ร้องขอ :</div>
-                        <div style={{ flex: 1 }}>{data?.requestReason || "-"}</div>
-                    </div>
+                {(data?.requestReason || data?.rejectReason) && (
+                    <div style={{ marginBottom: '15px', padding: '0 5px' }}>
+                        {data?.requestReason && (
+                            <div style={{ display: 'flex', marginBottom: '8px' }}>
+                                <div style={{ width: '120px', fontWeight: 'bold' }}>เหตุผลที่ร้องขอ :</div>
+                                <div style={{ flex: 1 }}>{data.requestReason}</div>
+                            </div>
+                        )}
 
-                    <div style={{ display: 'flex' }}>
-                        <div style={{ width: '120px', fontWeight: 'bold' }}>เหตุผลที่ปฏิเสธ :</div>
-                        <div style={{ flex: 1 }}>{data?.rejectReason || "-"}</div>
+                        {data?.rejectReason && (
+                            <div style={{ display: 'flex' }}>
+                                <div style={{ width: '120px', fontWeight: 'bold' }}>เหตุผลที่ปฏิเสธ :</div>
+                                <div style={{ flex: 1 }}>{data.rejectReason}</div>
+                            </div>
+                        )}
                     </div>
-
-                </div>
+                )}
 
                 {/* Request Reason Card */}
                 <Card className="mb-3" style={{ border: '1px solid #d9d9d9', borderRadius: '8px', overflow: 'hidden' }}>
-                    <Card.Header style={{ backgroundColor: '#f0f2f5', fontWeight: 'bold', borderBottom: '1px solid #d9d9d9' }}>
+                    <Card.Header style={{ backgroundColor: '#A0BDFF', fontWeight: 'bold', borderBottom: '1px solid #d9d9d9' }}>
                         <span style={{ color: 'red', marginRight: '5px' }}>*</span>เหตุผลที่ร้องขอ
                     </Card.Header>
                     <Card.Body className="p-3" style={{ paddingBottom: '0 !important' }}>
@@ -1093,7 +1104,8 @@ const AttendanceLeaveMange = () => {
             width: 150,
             sorter: (a, b) => String(a.requestReason ?? "").localeCompare(String(b.requestReason ?? "")),
             render: (text, record) => {
-                if (record.action === 'delete') {
+                const status = String(record.changeStatusCode ?? record.changeStatus ?? "").trim();
+                if (record.action === 'delete' || status === 'Rj') {
                     return (
                         <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
                             <a
@@ -1167,7 +1179,7 @@ const AttendanceLeaveMange = () => {
                     width: 120,
                     sorter: (a, b) => String(a.ciTimeNew ?? "").localeCompare(String(b.ciTimeNew ?? "")),
                     render: (text) => (
-                        <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
+                        <div style={{ textAlign: text && text.trim() ? "center" : "center" }}>
                             {text && text.trim() ? text : "-"}
                         </div>
                     )
@@ -1206,7 +1218,11 @@ const AttendanceLeaveMange = () => {
                     align: 'left',
                     width: 120,
                     sorter: (a, b) => String(a.coLocation ?? "").localeCompare(String(b.coLocation ?? "")),
-                    render: (text) => text ?? "-"
+                    render: (text) => (
+                        <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
+                            {text && text.trim() ? text : "-"}
+                        </div>
+                    ),
                 },
                 {
                     title: 'เหตุผล',
@@ -1229,7 +1245,7 @@ const AttendanceLeaveMange = () => {
                     width: 120,
                     sorter: (a, b) => String(a.coTimeNew ?? "").localeCompare(String(b.coTimeNew ?? "")),
                     render: (text) => (
-                        <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
+                        <div style={{ textAlign: text && text.trim() ? "center" : "center" }}>
                             {text && text.trim() ? text : "-"}
                         </div>
                     )
@@ -1261,7 +1277,7 @@ const AttendanceLeaveMange = () => {
                 const status = record.changeStatusCode ? String(record.changeStatusCode).trim() : (text ? String(text).trim() : "-");
                 const label = record.changeStatus || status;
                 switch (status) {
-                    case 'Rj': return <RejectTag onClick={() => handleShowRejectReason(record.rejectReason)} text={label} />;
+                    case 'Rj': return <RejectTag text={label} />;
                     case 'Ap': return <ApproveTag text={label} />;
                     case 'PA': return <PendingApproveTag text={label} />;
                     default: return label;

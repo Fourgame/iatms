@@ -149,6 +149,9 @@ const HolidaysModal = ({ show, onClose, onSave, title, data, existingData = [] }
                             style={{ width: '100%' }}
                             placeholder="DD/MM/YYYY"
                             inputReadOnly={true}
+                            disabledDate={(current) => {
+                                return current && (current.day() === 0 || current.day() === 6);
+                            }}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                     handleSaveClick();

@@ -77,8 +77,25 @@ const Header = () => {
     return (
         <nav
             className="navbar navbar-expand-xl navbar-dark px-4 py-3"
-            style={{ backgroundColor: "#1C3C85" }}
+            style={{ backgroundColor: "#1C3C85", position: "relative", zIndex: 1050 }}
         >
+            <style>
+                {`
+                .nav-item.dropdown {
+                    transition: all 0.3s ease;
+                }
+                .nav-item.dropdown:hover {
+                    transform: translateY(-2px) scale(1.05);
+                }
+                .nav-link.dropdown-toggle {
+                    transition: color 0.3s ease;
+                }
+                .nav-item.dropdown:hover .nav-link.dropdown-toggle {
+                    color: #ffffffff !important; /* Gold/yellow on hover */
+                    text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+                }
+                `}
+            </style>
             <div className="container-fluid d-flex justify-content-between align-items-center">
                 {/* Left Side */}
                 <div className="d-flex align-items-center gap-5">
@@ -90,7 +107,8 @@ const Header = () => {
                             "--bs-btn-bg": "#04318D",
                             "--bs-btn-hover-bg": "#2e59d9",
                             "--bs-btn-active-bg": "#2e59d9",
-                            height: "48px"
+                            height: "48px",
+                            boxShadow: "0 4px 6px rgba(0,0,0,0.3)"
                         }}
                     >
                         <span className="fw-bold me-2">IATMS</span>
@@ -183,7 +201,11 @@ const Header = () => {
                             "--bs-btn-bg": "#2750B0",
                             "--bs-btn-hover-bg": "#2e59d9",
                             "--bs-btn-active-bg": "#2e59d9",
+                            boxShadow: "0 4px 6px rgba(0,0,0,0.3)",
+                            transition: "all 0.3s ease"
                         }}
+                        onMouseOver={(e) => e.currentTarget.style.boxShadow = "0 6px 12px rgba(0,0,0,0.4)"}
+                        onMouseOut={(e) => e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.3)"}
                     >
                         <i className="bi bi-person-fill fs-5"></i>
                         <span className="fw-bold">{fullName}</span>

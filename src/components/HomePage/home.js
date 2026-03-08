@@ -6,23 +6,33 @@ import Title from "../../components/Utilities/Title";
 import { noticeShowMessage } from "../../components/Utilities/Notification";
 import authService from "../../services/auth.service";
 import homeService from "../../services/home.service";
-const StatCard = ({ title, value, footer, bg, onClick }) => (
-    <div
-        className="border border-1 border-secondary p-2 d-flex flex-column h-100"
-        style={{ backgroundColor: bg || "#ffffff", cursor: onClick ? "pointer" : "default" }}
-        onClick={onClick}
-    >
-        <div className="small text-muted">{title}</div>
-        <div
-            className="flex-grow-1 d-flex justify-content-center align-items-center fw-bold text-center"
-            style={{ fontSize: "18px", whiteSpace: "pre-line" }}
-        >
-            {value}
-        </div>
+const StatCard = ({ title, value, footer, bg, hoverBg, onClick }) => {
+    const [isHovered, setIsHovered] = useState(false);
 
-        {footer && <div className="small text-center">{footer}</div>}
-    </div>
-);
+    return (
+        <div
+            className="border border-1 border-secondary p-2 d-flex flex-column h-100 rounded"
+            style={{
+                backgroundColor: isHovered && onClick ? (hoverBg || "#e9ecef") : (bg || "#ffffff"),
+                cursor: onClick ? "pointer" : "default",
+                boxShadow: isHovered && onClick ? "0 .5rem 1rem rgba(0,0,0,.15)" : "0 .125rem .25rem rgba(0,0,0,.075)",
+                transition: "all 0.2s ease-in-out"
+            }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            onClick={onClick}
+        >
+            <div className="small text-muted">{title}</div>
+            <div
+                className="flex-grow-1 d-flex justify-content-center align-items-center fw-bold text-center"
+                style={{ fontSize: "18px", whiteSpace: "pre-line" }}
+            >
+                {value}
+            </div>
+            {footer && <div className="small text-center">{footer}</div>}
+        </div>
+    );
+};
 
 
 
@@ -130,9 +140,9 @@ const Home = (props) => {
                 <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="สถานที่เช็คอิน" value={ci_address || "-"} />
                 <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="สถานที่เช็คเอาท์" value={co_address || "-"} />
 
-                <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องอนุมัติ" value={approve_leave || "0"} footer="รายการ" bg="#c9ffd9" />
-                <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องรออนุมัติ" value={pending_leave || "0"} footer="รายการ" bg="#fff0c9" />
-                <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องไม่อนุมัติ" value={reject_leave || "0"} footer="รายการ" bg="#ffd0d0" />
+                <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องอนุมัติ" value={approve_leave || "0"} footer="รายการ" bg="#c9ffd9" hoverBg="#A8EBB8" />
+                <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องรออนุมัติ" value={pending_leave || "0"} footer="รายการ" bg="#fff0c9" hoverBg="#FFE099" />
+                <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องไม่อนุมัติ" value={reject_leave || "0"} footer="รายการ" bg="#ffd0d0" hoverBg="#FFB2B2" />
             </div>
         );
     };
@@ -156,7 +166,7 @@ const Home = (props) => {
                 <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คเอาท์ก่อนเวลา" value={co_early_count || "0/0"} footer="คน" />
                 <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คเอาท์นอกสถานที่" value={co_outside_count || "0/0"} footer="คน" />
 
-                <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Approval")} title="คำร้องรออนุมัติ" value={pending_requests || "0"} footer="รายการ" bg="#fff0c9" />
+                <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Approval")} title="คำร้องรออนุมัติ" value={pending_requests || "0"} footer="รายการ" bg="#fff0c9" hoverBg="#FFE099" />
             </div>
         );
     };

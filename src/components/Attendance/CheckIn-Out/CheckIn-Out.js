@@ -513,7 +513,14 @@ const CheckInOut = () => {
             key: 'attDate',
             align: 'center',
             width: 150,
-            render: (text) => text || "-"
+            render: (text) => {
+                if (!text) return "-";
+                const parts = text.includes('-') ? text.split('-') : text.split('/');
+                if (parts.length === 3) {
+                    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                }
+                return text;
+            }
         },
         {
             title: 'Check-In',
