@@ -36,7 +36,7 @@ const { TextArea } = Input;
 
 const { Option } = Select;
 
-const EditAttModal = ({ show, onClose, data, onSuccess, geofence }) => {
+const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = false }) => {
     const [form] = Form.useForm();
     const [ciNewLocation, setCiNewLocation] = useState(null);
     const [coNewLocation, setCoNewLocation] = useState(null);
@@ -67,44 +67,6 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence }) => {
         </div>
     );
 
-    useEffect(() => {
-        if (show && data) {
-            form.resetFields(); // <-- Added to clear previous validation errors
-            form.setFieldsValue({
-                attDate: data.attDate,
-                ciTime: data.ciTime,
-                ciCorrectTime: data.ciCorrectTime,
-                ciAddress: data.ciAddress,
-                ciLatlong: data.ciLatlong,
-                ciCorrectZone: data.ciCorrectZone,
-                ciReason: data.ciReason,
-                coTime: data.coTime,
-                coCorrectTime: data.coCorrectTime,
-                coAddress: data.coAddress,
-                coLatlong: data.coLatlong,
-                coCorrectZone: data.coCorrectZone,
-                coReason: data.coReason,
-
-                // optional: reset new fields too
-                ciNewLocation: null,
-                coNewLocation: null,
-                ciNewTime: null,
-                coNewTime: null,
-            });
-
-            setCiNewLocation(null);
-            setCoNewLocation(null);
-            setCiNewAddress("");
-            setCoNewAddress("");
-            setCiNewTime(null);
-            setCoNewTime(null);
-            setCiNewAddress("");
-            setCoNewAddress("");
-            setCiNewTime(null);
-            setCoNewTime(null);
-        }
-    }, [show, data, form]);
-
     const parseLatLong = (latlongStr) => {
         if (!latlongStr || typeof latlongStr !== 'string') return null;
         const parts = latlongStr.split(',').map(s => parseFloat(s.trim()));
@@ -113,6 +75,43 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence }) => {
         }
         return null;
     };
+
+    useEffect(() => {
+        if (show && data) {
+            form.resetFields(); // <-- Added to clear previous validation errors
+            form.setFieldsValue({
+                attDate: data.attDate,
+                ciTime: data.ciTimeOld,
+                ciCorrectTime: data.ciCorrectTime,
+                ciAddress: data.ciAddressOld,
+                ciLatlong: data.ciLatlongOld,
+                ciCorrectZone: data.ciCorrectZone,
+                ciReason: data.ciReason,
+                coTime: data.coTimeOld,
+                coCorrectTime: data.coCorrectTime,
+                coAddress: data.coAddressOld,
+                coLatlong: data.coLatlongOld,
+                coCorrectZone: data.coCorrectZone,
+                coReason: data.coReason,
+
+                // optional: reset new fields too
+                ciNewLocation: data.ciLatlongNew ? data.ciLatlongNew : null,
+                coNewLocation: data.coLatlongNew ? data.coLatlongNew : null,
+                ciNewTime: data.ciTimeNew ? moment(data.ciTimeNew, "HH:mm") : null,
+                coNewTime: data.coTimeNew ? moment(data.coTimeNew, "HH:mm") : null,
+                requestReason: data.requestReason || "",
+            });
+
+            setCiNewLocation(data.ciLatlongNew ? parseLatLong(data.ciLatlongNew) : null);
+            setCoNewLocation(data.coLatlongNew ? parseLatLong(data.coLatlongNew) : null);
+            setCiNewAddress(data.ciAddressNew || "");
+            setCoNewAddress(data.coAddressNew || "");
+            setCiNewTime(data.ciTimeNew ? moment(data.ciTimeNew, "HH:mm") : null);
+            setCoNewTime(data.coTimeNew ? moment(data.coTimeNew, "HH:mm") : null);
+        }
+    }, [show, data, form]);
+
+
 
     const handleReverseGeocode = (lat, lng, type) => {
         const geocoder = new window.google.maps.Geocoder();
@@ -151,8 +150,6 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence }) => {
 
     // ✅ Reserve help space on both columns to keep same height
     const renderMapSection = (type, latLongStr, currentZone, newLocation, setNewLocation, originalAddress, newAddress) => {
-        if (currentZone !== 'นอกสถานที่') return null;
-
         const fieldName = type === 'ci' ? 'ciNewLocation' : 'coNewLocation';
         const msg = `กรุณาระบุตำแหน่ง${type === 'ci' ? 'เข้า' : 'ออก'}ที่ขอแก้ไข`;
 
@@ -251,85 +248,102 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence }) => {
                 </Col>
 
                 <Col md={6}>
-                    <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>เลือกตำแหน่งใหม่</div>
+                    {(isReadOnly && !newLocation) ? null : (
+                        <>
+                            <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{isReadOnly ? "ตำแหน่งที่ขอแก้ไข" : "เลือกตำแหน่งใหม่"}</div>
 
-                    {/* ✅ always render Form.Item with fixed help space */}
-                    <Form.Item shouldUpdate noStyle>
-                        {() => {
-                            const err = form.getFieldError(fieldName)?.[0];
-
-                            return (
-                                <Form.Item
-                                    name={fieldName}
-                                    style={{ marginBottom: 0, width: '100%' }}
-                                    rules={[{ required: currentZone === 'นอกสถานที่', message: msg }]}
-                                    validateStatus={err ? "error" : undefined}
-                                    help={fixedHelp(err)}
-                                >
+                            {/* ✅ always render Form.Item with fixed help space */}
+                            {isReadOnly ? (
+                                <>
                                     <div style={{
-                                        marginBottom: '3px',
-                                        padding: '8px',
-                                        // border: '1px solid #000',
-                                        // borderRadius: '4px',
+                                        marginBottom: '10px',
+                                        color: '#28a745',
                                         display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        height: '42px',
-                                        color: newLocation ? "#000" : '#888888ff'
+                                        alignItems: 'center'
                                     }}>
-                                        {newLocation ? (
-                                            <div style={{ display: 'flex', alignItems: 'center', wordBreak: 'break-word' }}>
-                                                <i className="fas fa-map-marker-alt" ></i>
-                                                <span title={newAddress}>{newAddress}</span>
-                                            </div>
-                                        ) : (
-                                            ""
-                                        )}
-                                        <i className="fas fa-chevron-down"></i>
+                                        <span>{newAddress || "-"}</span>
                                     </div>
-                                </Form.Item>
-                            );
-                        }}
-                    </Form.Item>
+                                    {fixedHelp()}
+                                </>
+                            ) : (
+                                <Form.Item shouldUpdate noStyle>
+                                    {() => {
+                                        const err = form.getFieldError(fieldName)?.[0];
 
-                    {isLoaded ? (
-                        <GoogleMap
-                            mapContainerStyle={mapContainerStyle}
-                            center={newLocation || center}
-                            zoom={15}
-                            onClick={(e) => handleMapClick(e, type)}
-                            options={{ disableDefaultUI: true, zoomControl: true }}
-                        >
-                            {newLocation && (
-                                <MarkerF
-                                    position={newLocation}
-                                    icon={{
-                                        url: newMarkerIconUrl,
-                                        scaledSize: new window.google.maps.Size(24, 24),
-                                        anchor: new window.google.maps.Point(12, 12),
+                                        return (
+                                            <Form.Item
+                                                name={fieldName}
+                                                style={{ marginBottom: 0, width: '100%' }}
+                                                rules={[{ required: currentZone === 'นอกสถานที่', message: msg }]}
+                                                validateStatus={err ? "error" : undefined}
+                                                help={fixedHelp(err)}
+                                            >
+                                                <div style={{
+                                                    marginBottom: '3px',
+                                                    padding: '8px',
+                                                    // border: '1px solid #000',
+                                                    // borderRadius: '4px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between',
+                                                    height: '42px',
+                                                    color: newLocation ? "#000" : '#888888ff'
+                                                }}>
+                                                    {newLocation ? (
+                                                        <div style={{ display: 'flex', alignItems: 'center', wordBreak: 'break-word' }}>
+                                                            <i className="fas fa-map-marker-alt" ></i>
+                                                            <span title={newAddress}>{newAddress}</span>
+                                                        </div>
+                                                    ) : (
+                                                        ""
+                                                    )}
+                                                    <i className="fas fa-chevron-down"></i>
+                                                </div>
+                                            </Form.Item>
+                                        );
                                     }}
-                                />
+                                </Form.Item>
                             )}
-                            {geofence && (
-                                <CircleF
-                                    center={{ lat: geofence.lat, lng: geofence.lng }}
-                                    radius={geofence.radius}
-                                    options={{
-                                        strokeColor: newCircleColor,
-                                        strokeOpacity: 0.8,
-                                        strokeWeight: 2,
-                                        fillColor: newCircleColor,
-                                        fillOpacity: 0.35,
-                                    }}
-                                    onClick={(e) => handleMapClick(e, type)}
-                                />
+
+                            {isLoaded ? (
+                                <GoogleMap
+                                    mapContainerStyle={mapContainerStyle}
+                                    center={newLocation || center}
+                                    zoom={15}
+                                    onClick={isReadOnly ? undefined : (e) => handleMapClick(e, type)}
+                                    options={{ disableDefaultUI: true, zoomControl: true }}
+                                >
+                                    {newLocation && (
+                                        <MarkerF
+                                            position={newLocation}
+                                            icon={{
+                                                url: newMarkerIconUrl,
+                                                scaledSize: new window.google.maps.Size(24, 24),
+                                                anchor: new window.google.maps.Point(12, 12),
+                                            }}
+                                        />
+                                    )}
+                                    {geofence && (
+                                        <CircleF
+                                            center={{ lat: geofence.lat, lng: geofence.lng }}
+                                            radius={geofence.radius}
+                                            options={{
+                                                strokeColor: newCircleColor,
+                                                strokeOpacity: 0.8,
+                                                strokeWeight: 2,
+                                                fillColor: newCircleColor,
+                                                fillOpacity: 0.35,
+                                            }}
+                                            onClick={(e) => handleMapClick(e, type)}
+                                        />
+                                    )}
+                                </GoogleMap>
+                            ) : (
+                                <div style={{ ...mapContainerStyle, backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    Map Loading...
+                                </div>
                             )}
-                        </GoogleMap>
-                    ) : (
-                        <div style={{ ...mapContainerStyle, backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            Map Loading...
-                        </div>
-                    )}
+                        </>)}
                 </Col>
             </Row>
         );
@@ -344,79 +358,207 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence }) => {
             if (correctTimeStatus && (correctTimeStatus.includes('ก่อนเวลา') || correctTimeStatus.includes('ข้ามวัน'))) isInvalid = true;
         }
 
-        if (!isInvalid) {
-            return (
-                <div style={{ display: 'flex', marginBottom: '10px' }}>
-                    <div style={{ width: '80px', fontWeight: 'bold' }}>เวลา</div>
-                    <div style={{ flex: 1 }}>{timeStr || "-"} น.</div>
-                </div>
-            );
-        }
-
         const fieldName = type === "ci" ? "ciNewTime" : "coNewTime";
         const msg = `กรุณาระบุเวลา${type === 'ci' ? 'เข้า' : 'ออก'}ที่ขอแก้ไข`;
+
+        const readonlyBoxStyle = (hasError = false) => ({
+            display: 'flex',
+            alignItems: 'center',
+            border: hasError ? '1px solid #ff4d4f' : '1px solid #000',
+            borderRadius: '4px',
+            padding: '0 5px',
+            height: '35px',
+            width: '100%',
+            backgroundColor: '#fff',
+            color: hasError ? 'red' : '#000'
+        });
+
+        const readonlyUnitStyle = (hasError = false) => ({
+            borderLeft: hasError ? '1px solid #ff4d4f' : '1px solid #000',
+            paddingLeft: '5px',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            marginLeft: 'auto'
+        });
 
         return (
             <Row className="mb-2 align-items-start">
                 <Col md={6}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <div style={{ width: '80px', fontWeight: 'bold' }}>เวลา</div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                        <div
+                            style={{
+                                width: '80px',
+                                fontWeight: 'bold',
+                                height: '35px',
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}
+                        >
+                            เวลา
+                        </div>
 
-                        {/* Invalid Time Display */}
-                        <div style={{
-                            flex: 1,
-                            color: 'red',
-                            display: 'flex',
-                            alignItems: 'center'
-                        }}>
-                            <span>{timeStr || "-"} น.</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <div
+                                style={{
+                                    height: '35px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    color: isReadOnly && newTime ? 'red' : (isInvalid ? 'red' : '#000')
+                                }}
+                            >
+                                <span>{timeStr || "-"} น.</span>
+                            </div>
+
+                            {fixedHelp()}
                         </div>
                     </div>
-
-                    {/* ✅ keep equal height with right help */}
-                    {fixedHelp()}
                 </Col>
 
                 <Col md={6}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-                        <div style={{ fontWeight: 'bold', height: '35px', display: 'flex', alignItems: 'center', marginRight: '15px', whiteSpace: 'nowrap' }}>เลือกเวลาใหม่</div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                            <Form.Item shouldUpdate noStyle>
-                                {() => {
-                                    const err = form.getFieldError(fieldName)?.[0];
+                    {isReadOnly ? (
+                        newTime ? (
+                            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                                <div
+                                    style={{
+                                        fontWeight: 'bold',
+                                        height: '35px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        marginRight: '15px',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    เวลาที่ขอแก้ไข
+                                </div>
 
-                                    return (
-                                        <Form.Item
-                                            name={fieldName}
-                                            style={{ marginBottom: 0, width: '100%' }}
-                                            rules={[{ required: isInvalid, message: msg }]}
-                                            validateStatus={err ? "error" : undefined}
-                                            help={fixedHelp(err)}
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            border: '1px solid #ffffffff',
+                                            borderRadius: '4px',
+                                            padding: '0 5px',
+                                            height: '35px',
+                                            width: '100%',
+                                            backgroundColor: '#fff',
+                                            color: '#28a745'
+                                        }}
+                                    >
+                                        <div style={{ flex: 1, padding: '0 6px' }}>
+                                            <span>{typeof newTime.format === 'function' ? newTime.format('HH:mm') : newTime} น.</span>
+                                        </div>
+                                        {/* <div
+                                            style={{
+                                                borderLeft: '1px solid #ffffffff',
+                                                paddingLeft: '5px',
+                                                height: '100%',
+                                                display: 'flex',
+                                                alignItems: 'center'
+                                            }}
                                         >
-                                            <div style={{ display: 'flex', alignItems: 'center', border: err ? '1px solid #ff4d4f' : '1px solid #000', borderRadius: '4px', padding: '0 5px', height: '35px', width: '100%' }}>
-                                                <TimePicker
-                                                    value={newTime}
-                                                    onChange={(time) => {
-                                                        setNewTime(time);
-                                                        form.setFieldValue(fieldName, time);
-                                                        form.setFields([{ name: fieldName, errors: [] }]);
-                                                    }}
-                                                    format="HH:mm"
-                                                    placeholder="00:00"
-                                                    bordered={false}
-                                                    style={{ flex: 1 }}
-                                                    suffixIcon={<i className="far fa-clock" style={{ color: '#000' }}></i>}
-                                                />
-                                                <div style={{ borderLeft: err ? '1px solid #ff4d4f' : '1px solid #000', paddingLeft: '5px', height: '100%', display: 'flex', alignItems: 'center' }}>น.</div>
-                                            </div>
-                                        </Form.Item>
-                                    );
+                                            น.
+                                        </div> */}
+                                    </div>
+                                    {fixedHelp()}
+                                </div>
+                            </div>
+                        ) : null
+                    ) : isInvalid ? (
+                        <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                            <div
+                                style={{
+                                    fontWeight: 'bold',
+                                    height: '35px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    marginRight: '15px',
+                                    whiteSpace: 'nowrap'
                                 }}
-                            </Form.Item>
+                            >
+                                เลือกเวลาใหม่
+                            </div>
+
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <Form.Item shouldUpdate noStyle>
+                                    {() => {
+                                        const err = form.getFieldError(fieldName)?.[0];
+
+                                        return (
+                                            <Form.Item
+                                                name={fieldName}
+                                                style={{ marginBottom: 0, width: '100%' }}
+                                                rules={[{ required: isInvalid, message: msg }]}
+                                                validateStatus={err ? "error" : undefined}
+                                                help={fixedHelp(err)}
+                                            >
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        border: err ? '1px solid #ff4d4f' : '1px solid #000',
+                                                        borderRadius: '4px',
+                                                        padding: '0 5px',
+                                                        height: '35px',
+                                                        width: '100%'
+                                                    }}
+                                                >
+                                                    <TimePicker
+                                                        value={newTime}
+                                                        onChange={(time) => {
+                                                            setNewTime(time);
+                                                            form.setFieldValue(fieldName, time);
+                                                            form.setFields([{ name: fieldName, errors: [] }]);
+                                                        }}
+                                                        format="HH:mm"
+                                                        placeholder="00:00"
+                                                        bordered={false}
+                                                        style={{ flex: 1 }}
+                                                        suffixIcon={<i className="far fa-clock" style={{ color: '#000' }}></i>}
+                                                    />
+                                                    <div
+                                                        style={{
+                                                            borderLeft: err ? '1px solid #ff4d4f' : '1px solid #000',
+                                                            paddingLeft: '5px',
+                                                            height: '100%',
+                                                            display: 'flex',
+                                                            alignItems: 'center'
+                                                        }}
+                                                    >
+                                                        น.
+                                                    </div>
+                                                </div>
+                                            </Form.Item>
+                                        );
+                                    }}
+                                </Form.Item>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                            <div
+                                style={{
+                                    fontWeight: 'bold',
+                                    height: '35px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    marginRight: '15px',
+                                    whiteSpace: 'nowrap',
+                                    visibility: 'hidden'
+                                }}
+                            >
+                                เลือกเวลาใหม่
+                            </div>
+
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ height: '35px', width: '100%' }} />
+                                {fixedHelp()}
+                            </div>
+                        </div>
+                    )}
                 </Col>
-            </Row>
+            </Row >
         );
     };
 
@@ -472,18 +614,18 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence }) => {
 
                     const payload = {
                         at_date: data?.attDate || null,
-                        ci_time_old: formatTime(data?.ciTime),
+                        ci_time_old: formatTime(data?.ciTimeOld),
                         ci_time_new: formatTime(ciNewTime),
-                        ci_location_old: data?.ciLatlong || null,
+                        ci_location_old: data?.ciLatlongOld || null,
                         ci_location_new: ciNewLocation ? `${ciNewLocation.lat}, ${ciNewLocation.lng}` : null,
-                        ci_address_old: data?.ciAddress || null,
+                        ci_address_old: data?.ciAddressOld || null,
                         ci_address_new: ciNewAddress || null,
                         ci_request_reason: data?.ciReason || null,
-                        co_time_old: formatTime(data?.coTime),
+                        co_time_old: formatTime(data?.coTimeOld),
                         co_time_new: formatTime(coNewTime),
-                        co_location_old: data?.coLatlong || null,
+                        co_location_old: data?.coLatlongOld || null,
                         co_location_new: coNewLocation ? `${coNewLocation.lat}, ${coNewLocation.lng}` : null,
-                        co_address_old: data?.coAddress || null,
+                        co_address_old: data?.coAddressOld || null,
                         co_address_new: coNewAddress || null,
                         co_request_reason: data?.coReason || null,
                         request_reason: values.requestReason || null
@@ -517,13 +659,13 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence }) => {
                             เวลาเข้า
                         </Card.Header>
                         <Card.Body className="p-3">
-                            {renderTimeSection('ci', data?.ciTime, data?.ciCorrectTime, ciNewTime, setCiNewTime)}
-                            {data?.ciCorrectZone === 'นอกสถานที่' ? (
-                                renderMapSection('ci', data?.ciLatlong, data?.ciCorrectZone, ciNewLocation, setCiNewLocation, data?.ciAddress, ciNewAddress)
+                            {renderTimeSection('ci', data?.ciTimeOld, data?.ciCorrectTime, ciNewTime, setCiNewTime)}
+                            {(data?.ciCorrectZone === 'นอกสถานที่' || (isReadOnly && (data?.ciLatlongNew || data?.ciAddressNew))) ? (
+                                renderMapSection('ci', data?.ciLatlongOld, data?.ciCorrectZone, ciNewLocation, setCiNewLocation, data?.ciAddressOld, ciNewAddress)
                             ) : (
                                 <div style={{ display: 'flex', marginBottom: '10px' }}>
                                     <div style={{ width: '80px', fontWeight: 'bold' }}>ตำแหน่ง</div>
-                                    <div style={{ flex: 1 }}>{data?.ciAddress || "-"}</div>
+                                    <div style={{ flex: 1 }}>{data?.ciAddressOld || "-"}</div>
                                 </div>
                             )}
                             <div style={{ display: 'flex', marginBottom: '0', paddingTop: '10px' }}>
@@ -539,13 +681,13 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence }) => {
                             เวลาออก
                         </Card.Header>
                         <Card.Body className="p-3">
-                            {renderTimeSection('co', data?.coTime, data?.coCorrectTime, coNewTime, setCoNewTime)}
-                            {data?.coCorrectZone === 'นอกสถานที่' ? (
-                                renderMapSection('co', data?.coLatlong, data?.coCorrectZone, coNewLocation, setCoNewLocation, data?.coAddress, coNewAddress)
+                            {renderTimeSection('co', data?.coTimeOld, data?.coCorrectTime, coNewTime, setCoNewTime)}
+                            {(data?.coCorrectZone === 'นอกสถานที่' || (isReadOnly && (data?.coLatlongNew || data?.coAddressNew))) ? (
+                                renderMapSection('co', data?.coLatlongOld, data?.coCorrectZone, coNewLocation, setCoNewLocation, data?.coAddressOld, coNewAddress)
                             ) : (
                                 <div style={{ display: 'flex', marginBottom: '10px' }}>
                                     <div style={{ width: '80px', fontWeight: 'bold' }}>ตำแหน่ง</div>
-                                    <div style={{ flex: 1 }}>{data?.coAddress || "-"}</div>
+                                    <div style={{ flex: 1 }}>{data?.coAddressOld || "-"}</div>
                                 </div>
                             )}
                             <div style={{ display: 'flex', marginBottom: '0', paddingTop: '10px' }}>
@@ -576,37 +718,43 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence }) => {
                 )}
 
                 {/* Request Reason Card */}
-                <Card className="mb-3" style={{ border: '1px solid #d9d9d9', borderRadius: '8px', overflow: 'hidden' }}>
-                    <Card.Header style={{ backgroundColor: '#A0BDFF', fontWeight: 'bold', borderBottom: '1px solid #d9d9d9' }}>
-                        <span style={{ color: 'red', marginRight: '5px' }}>*</span>เหตุผลที่ร้องขอ
-                    </Card.Header>
-                    <Card.Body className="p-3" style={{ paddingBottom: '0 !important' }}>
-                        <Form.Item shouldUpdate noStyle>
-                            {() => {
-                                const err = form.getFieldError("requestReason")?.[0];
-                                return (
-                                    <Form.Item
-                                        name="requestReason"
-                                        style={{ marginBottom: 0 }}
-                                        rules={[{ required: true, message: 'กรุณาระบุเหตุผลที่ร้องขอ' }]}
-                                        validateStatus={err ? "error" : undefined}
-                                        help={fixedHelp(err)}
-                                    >
-                                        <Input.TextArea rows={4} placeholder="ระบุเหตุผลที่ขอแก้ไข..." style={{ resize: 'none' }} />
-                                    </Form.Item>
-                                );
-                            }}
-                        </Form.Item>
-                    </Card.Body>
-                </Card>
+                {!isReadOnly && (
+                    <Card className="mb-3" style={{ border: '1px solid #d9d9d9', borderRadius: '8px', overflow: 'hidden' }}>
+                        <Card.Header style={{ backgroundColor: '#A0BDFF', fontWeight: 'bold', borderBottom: '1px solid #d9d9d9' }}>
+                            <span style={{ color: 'red', marginRight: '5px' }}>*</span>เหตุผลที่ร้องขอ
+                        </Card.Header>
+                        <Card.Body className="p-3" style={{ paddingBottom: '0 !important' }}>
+                            <Form.Item shouldUpdate noStyle>
+                                {() => {
+                                    const err = form.getFieldError("requestReason")?.[0];
+                                    return (
+                                        <Form.Item
+                                            name="requestReason"
+                                            style={{ marginBottom: 0 }}
+                                            rules={[{ required: true, message: 'กรุณาระบุเหตุผลที่ร้องขอ' }]}
+                                            validateStatus={err ? "error" : undefined}
+                                            help={fixedHelp(err)}
+                                        >
+                                            <Input.TextArea rows={4} placeholder="ระบุเหตุผลที่ขอแก้ไข..." style={{ resize: 'none' }} />
+                                        </Form.Item>
+                                    );
+                                }}
+                            </Form.Item>
+                        </Card.Body>
+                    </Card>
+                )}
 
                 <div className="modal-footer justify-content-center border-top-0 pb-0 pt-3" style={{ gap: '20px' }}>
-                    <SubmitModalBtnBootstrap
-                        onClick={() => form.submit()}
-                    >
-                    </SubmitModalBtnBootstrap>
+                    {!isReadOnly && (
+                        <>
+                            <SubmitModalBtnBootstrap
+                                onClick={() => form.submit()}
+                            >
+                            </SubmitModalBtnBootstrap>
 
-                    <div style={{ width: '30px' }}></div>
+                            <div style={{ width: '30px' }}></div>
+                        </>
+                    )}
 
                     <CloseModalBtnBootstrap
                         onClick={onClose}
@@ -639,6 +787,7 @@ const AttendanceLeaveMange = () => {
     const [originalData, setOriginalData] = useState([]);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editModalData, setEditModalData] = useState(null);
+    const [isEditModalReadOnly, setIsEditModalReadOnly] = useState(false);
     const [isRejectReasonModalOpen, setIsRejectReasonModalOpen] = useState(false);
     const [rejectReasonText, setRejectReasonText] = useState("");
     const [isDeleteAttModalOpen, setIsDeleteAttModalOpen] = useState(false);
@@ -1046,6 +1195,7 @@ const AttendanceLeaveMange = () => {
                 if (modalData) {
                     console.log("Setting Modal Data:", modalData);
                     setEditModalData(modalData);
+                    setIsEditModalReadOnly(false);
                     setIsEditModalOpen(true);
                 } else {
                     noticeShowMessage("ไม่พบข้อมูลรายละเอียด", true);
@@ -1055,6 +1205,39 @@ const AttendanceLeaveMange = () => {
             }
         } catch (error) {
             console.error("Error fetching modal data:", error);
+            noticeShowMessage("เกิดข้อผิดพลาดในการดึงข้อมูล", true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleViewApprovedAtt = async (record) => {
+        setLoading(true);
+        console.log("Viewing Record:", record);
+        try {
+            const response = await getModalAttChange.get_modal_att_change({ Date: record.attDate });
+            console.log("API Response:", response);
+
+            if (response.data) {
+                let modalData = response.data;
+                if (Array.isArray(modalData)) {
+                    modalData = modalData.length > 0 ? modalData[0] : null;
+                }
+                if (modalData) {
+                    modalData.rejectReason = modalData.rejectReason || record.rejectReason;
+                    modalData.requestReason = modalData.requestReason || record.requestReason;
+                    console.log("Setting View Data:", modalData);
+                    setEditModalData(modalData);
+                    setIsEditModalReadOnly(true);
+                    setIsEditModalOpen(true);
+                } else {
+                    noticeShowMessage("ไม่พบข้อมูลรายละเอียด", true);
+                }
+            } else {
+                noticeShowMessage("ไม่พบข้อมูลรายละเอียด", true);
+            }
+        } catch (error) {
+            console.error("Error fetching view data:", error);
             noticeShowMessage("เกิดข้อผิดพลาดในการดึงข้อมูล", true);
         } finally {
             setLoading(false);
@@ -1112,13 +1295,31 @@ const AttendanceLeaveMange = () => {
                 const dateB = b.attDate || '';
                 return dateA.localeCompare(dateB);
             },
-            render: (text) => {
+            render: (text, record) => {
                 if (!text) return "-";
                 const parts = text.includes('-') ? text.split('-') : text.split('/');
+                let formattedDate = text;
                 if (parts.length === 3) {
-                    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                    formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
                 }
-                return text;
+
+                const statusStr = String(record.changeStatusCode ?? record.changeStatus ?? "").trim();
+                if (statusStr === 'Ap' || statusStr === 'Approved' || statusStr === 'Approve') {
+                    return (
+                        <a
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleViewApprovedAtt(record);
+                            }}
+                            style={{ color: '#1890ff', textDecoration: 'underline' }}
+                        >
+                            {formattedDate}
+                        </a>
+                    );
+                }
+
+                return formattedDate;
             }
         },
         {
@@ -1545,6 +1746,7 @@ const AttendanceLeaveMange = () => {
                 data={editModalData}
                 onSuccess={handleAttSearch}
                 geofence={geofence}
+                isReadOnly={isEditModalReadOnly}
             />
 
             {/* Leave Request Card */}

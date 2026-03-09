@@ -56,6 +56,7 @@ const HolidaysModal = ({ show, onClose, onSave, title, data, existingData = [] }
                 holidayDate: values.holidayDate ? values.holidayDate.format("YYYY-MM-DD") : null,
                 holidayName: values.holidayName,
                 isActive: values.isActive,
+                isEdit: !!data,
             };
 
             try {
@@ -124,15 +125,6 @@ const HolidaysModal = ({ show, onClose, onSave, title, data, existingData = [] }
                             validator(_, value) {
                                 if (value && !value.isValid()) {
                                     return Promise.reject(new Error("รูปแบบวันที่ไม่ถูกต้อง"));
-                                }
-                                if (!data && value) {
-                                    const formattedDate = value.format("YYYY-MM-DD");
-                                    const isDuplicate = existingData.some(
-                                        (item) => item.holidayDate && item.holidayDate === formattedDate
-                                    );
-                                    if (isDuplicate) {
-                                        return Promise.reject(new Error(`วันที่ "${value.format("DD/MM/YYYY")}" มีในระบบแล้ว`));
-                                    }
                                 }
                                 return Promise.resolve();
                             },
