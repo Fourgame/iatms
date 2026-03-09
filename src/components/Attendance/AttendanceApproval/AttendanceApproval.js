@@ -533,6 +533,7 @@ const AttendanceApproval = () => {
             dataIndex: 'oa_user',
             key: 'oa_user',
             align: 'left',
+            sorter: (a, b) => String(a.oa_user ?? "").localeCompare(String(b.oa_user ?? "")),
             width: 50,
         },
         {
@@ -540,6 +541,7 @@ const AttendanceApproval = () => {
             dataIndex: 'fullname',
             key: 'fullname',
             align: 'left',
+            sorter: (a, b) => String(a.fullname ?? "").localeCompare(String(b.fullname ?? "")),
             width: 160,
         },
         {
@@ -547,6 +549,7 @@ const AttendanceApproval = () => {
             dataIndex: 'team',
             key: 'team',
             align: 'center',
+            sorter: (a, b) => String(a.team ?? "").localeCompare(String(b.team ?? "")),
             width: 120,
         },
         {
@@ -554,6 +557,7 @@ const AttendanceApproval = () => {
             dataIndex: 'leaveType',
             key: 'leaveType',
             align: 'center',
+            sorter: (a, b) => String(a.leaveType ?? "").localeCompare(String(b.leaveType ?? "")),
             width: 140,
         },
         {
@@ -561,6 +565,12 @@ const AttendanceApproval = () => {
             dataIndex: 'startDate',
             key: 'startDate',
             align: 'center',
+            sorter: (a, b) => {
+                const dateA = moment(a.startDate, 'DD/MM/YYYY');
+                const dateB = moment(b.startDate, 'DD/MM/YYYY');
+                if (dateA.isValid() && dateB.isValid()) return dateA.valueOf() - dateB.valueOf();
+                return String(a.startDate ?? "").localeCompare(String(b.startDate ?? ""));
+            },
             width: 90,
         },
         {
@@ -568,6 +578,12 @@ const AttendanceApproval = () => {
             dataIndex: 'endDate',
             key: 'endDate',
             align: 'center',
+            sorter: (a, b) => {
+                const dateA = moment(a.endDate, 'DD/MM/YYYY');
+                const dateB = moment(b.endDate, 'DD/MM/YYYY');
+                if (dateA.isValid() && dateB.isValid()) return dateA.valueOf() - dateB.valueOf();
+                return String(a.endDate ?? "").localeCompare(String(b.endDate ?? ""));
+            },
             width: 90,
         },
         {
@@ -575,6 +591,7 @@ const AttendanceApproval = () => {
             dataIndex: 'duration',
             key: 'duration',
             align: 'center',
+            sorter: (a, b) => String(a.duration ?? "").localeCompare(String(b.duration ?? "")),
             width: 100,
         },
         {
@@ -582,6 +599,7 @@ const AttendanceApproval = () => {
             dataIndex: 'period',
             key: 'period',
             align: 'center',
+            sorter: (a, b) => String(a.period ?? "").localeCompare(String(b.period ?? "")),
             width: 120,
         },
         {
@@ -589,6 +607,7 @@ const AttendanceApproval = () => {
             dataIndex: 'reason',
             key: 'reason',
             align: 'left',
+            sorter: (a, b) => String(a.reason ?? "").localeCompare(String(b.reason ?? "")),
             width: 150,
             render: (text) => (
                 <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
@@ -601,6 +620,7 @@ const AttendanceApproval = () => {
             dataIndex: 'status',
             key: 'status',
             align: 'center',
+            sorter: (a, b) => String(a.status ?? "").localeCompare(String(b.status ?? "")),
             width: 120,
             render: (text, record) => {
                 const statusLabel = text ? String(text).trim() : "-";
@@ -746,7 +766,15 @@ const AttendanceApproval = () => {
                         <Loading />
                     </div>
                 ) : (
-                    <div style={{ marginTop: '10px' }}>
+                    <div
+                        style={{ marginTop: '10px' }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleReject();
+                            }
+                        }}
+                    >
                         <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '15px' }}>
                             วันที่ &nbsp; {modalData?.attDate ? moment(modalData.attDate).format("DD/MM/YYYY") : "-"}
                         </div>
@@ -997,65 +1025,75 @@ const AttendanceApproval = () => {
                 {selectedLeave && (
                     <div style={{ marginTop: '10px', fontSize: '15px' }}>
                         {/* ข้อมูลลา Fieldset */}
-                        <fieldset style={{ border: '2px solid #333', borderRadius: '8px', padding: '10px 20px 20px', marginBottom: '15px' }}>
-                            <legend style={{ width: 'auto', padding: '0 10px', fontSize: '14px', fontWeight: 'bold', marginBottom: '0', float: 'none', lineHeight: '1' }}>
-                                ข้อมูลลา
-                            </legend>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                <div style={{ display: 'flex' }}><span style={{ width: '130px', fontWeight: 'bold' }}>ประเภทการลา</span><span>{selectedLeave.type_leave_display || '-'}</span></div>
-                                <div style={{ display: 'flex' }}><span style={{ width: '130px', fontWeight: 'bold' }}>วันที่เริ่มต้น</span>
-                                    <span>{selectedLeave.start_date ? moment(selectedLeave.start_date).format('DD/MM/YYYY') : '-'}</span>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center' }}>
-                                    <span style={{ width: '130px', fontWeight: 'bold' }}>วันที่สิ้นสุด</span>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                        <span>{selectedLeave.end_date ? moment(selectedLeave.end_date).format('DD/MM/YYYY') : '-'}</span>
+                        <div
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleLeaveApprovalAction('Reject');
+                                }
+                            }}
+                        >
+                            {/* ข้อมูลลา Fieldset */}
+                            <fieldset style={{ border: '2px solid #333', borderRadius: '8px', padding: '10px 20px 20px', marginBottom: '15px' }}>
+                                <legend style={{ width: 'auto', padding: '0 10px', fontSize: '14px', fontWeight: 'bold', marginBottom: '0', float: 'none', lineHeight: '1' }}>
+                                    ข้อมูลลา
+                                </legend>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                    <div style={{ display: 'flex' }}><span style={{ width: '130px', fontWeight: 'bold' }}>ประเภทการลา</span><span>{selectedLeave.type_leave_display || '-'}</span></div>
+                                    <div style={{ display: 'flex' }}><span style={{ width: '130px', fontWeight: 'bold' }}>วันที่เริ่มต้น</span>
+                                        <span>{selectedLeave.start_date ? moment(selectedLeave.start_date).format('DD/MM/YYYY') : '-'}</span>
                                     </div>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <span style={{ width: '130px', fontWeight: 'bold' }}>วันที่สิ้นสุด</span>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                            <span>{selectedLeave.end_date ? moment(selectedLeave.end_date).format('DD/MM/YYYY') : '-'}</span>
+                                        </div>
+                                    </div>
+                                    {selectedLeave.start_time && (
+                                        <div style={{ display: 'flex' }}><span style={{ width: '130px', fontWeight: 'bold' }}>ช่วงเวลาเริ่มต้น</span><span>{moment(selectedLeave.start_time).format('HH:mm')} น.</span></div>
+                                    )}
+                                    {selectedLeave.end_time && (
+                                        <div style={{ display: 'flex' }}><span style={{ width: '130px', fontWeight: 'bold' }}>ช่วงเวลาสิ้นสุด</span><span>{moment(selectedLeave.end_time).format('HH:mm')} น.</span></div>
+                                    )}
+                                    <div style={{ display: 'flex' }}><span style={{ width: '130px', fontWeight: 'bold' }}>ระยะเวลา</span><span>{selectedLeave.duration || '-'}</span></div>
                                 </div>
-                                {selectedLeave.start_time && (
-                                    <div style={{ display: 'flex' }}><span style={{ width: '130px', fontWeight: 'bold' }}>ช่วงเวลาเริ่มต้น</span><span>{moment(selectedLeave.start_time).format('HH:mm')} น.</span></div>
-                                )}
-                                {selectedLeave.end_time && (
-                                    <div style={{ display: 'flex' }}><span style={{ width: '130px', fontWeight: 'bold' }}>ช่วงเวลาสิ้นสุด</span><span>{moment(selectedLeave.end_time).format('HH:mm')} น.</span></div>
-                                )}
-                                <div style={{ display: 'flex' }}><span style={{ width: '130px', fontWeight: 'bold' }}>ระยะเวลา</span><span>{selectedLeave.duration || '-'}</span></div>
+                            </fieldset>
+
+                            {/* เหตุผลที่ร้องขอ Fieldset */}
+                            <fieldset style={{ border: '2px solid #333', borderRadius: '8px', padding: '10px 20px 20px', marginBottom: '15px' }}>
+                                <legend style={{ width: 'auto', padding: '0 10px', fontSize: '14px', fontWeight: 'bold', marginBottom: '0', float: 'none', lineHeight: '1' }}>
+                                    เหตุผลที่ร้องขอ
+                                </legend>
+                                <div style={{ paddingLeft: '20px' }}>
+                                    {selectedLeave.reason || '-'}
+                                </div>
+                            </fieldset>
+
+                            {/* เหตุผลที่ Reject Fieldset */}
+                            <fieldset style={{ border: '2px solid #333', borderRadius: '8px', padding: '10px 20px 20px', marginBottom: '20px' }}>
+                                <legend style={{ width: 'auto', padding: '0 10px', fontSize: '14px', fontWeight: 'bold', marginBottom: '0', float: 'none', lineHeight: '1' }}>
+                                    เหตุผลที่ Reject
+                                </legend>
+                                <Input.TextArea
+                                    placeholder="กรอกเหตุผลที่ Reject"
+                                    value={rejectReasonInput}
+                                    onChange={(e) => {
+                                        setRejectReasonInput(e.target.value);
+                                        if (e.target.value.trim() !== '') setRejectReasonError('');
+                                    }}
+                                    rows={2}
+                                    style={{ border: rejectReasonError ? '1px solid red' : '1px solid #d9d9d9', resize: 'none' }}
+                                />
+                                {rejectReasonError && <div style={{ color: 'red', marginTop: '5px', fontSize: '13px' }}>{rejectReasonError}</div>}
+                            </fieldset>
+
+                            {/* Footer Buttons */}
+                            <div className="modal-footer justify-content-center border-top-0 pb-0 pt-3" style={{ gap: '20px' }}>
+                                <ApproveModalBtnBootstrap onClick={() => handleLeaveApprovalAction('Approve')} />
+                                <RejectModalBtnBootstrap onClick={() => handleLeaveApprovalAction('Reject')} style={{ "--bs-btn-bg": "#FFBCBC", "--bs-btn-hover-bg": "#ffcccc", "--bs-btn-active-bg": "#ffcccc" }} />
+
+                                <CloseModalBtnBootstrap onClick={() => setIsLeaveDetailModalOpen(false)} style={{ width: '150px', height: '40px', backgroundColor: '#E8E8E8', borderColor: '#000' }} />
                             </div>
-                        </fieldset>
-
-                        {/* เหตุผลที่ร้องขอ Fieldset */}
-                        <fieldset style={{ border: '2px solid #333', borderRadius: '8px', padding: '10px 20px 20px', marginBottom: '15px' }}>
-                            <legend style={{ width: 'auto', padding: '0 10px', fontSize: '14px', fontWeight: 'bold', marginBottom: '0', float: 'none', lineHeight: '1' }}>
-                                เหตุผลที่ร้องขอ
-                            </legend>
-                            <div style={{ paddingLeft: '20px' }}>
-                                {selectedLeave.reason || '-'}
-                            </div>
-                        </fieldset>
-
-                        {/* เหตุผลที่ Reject Fieldset */}
-                        <fieldset style={{ border: rejectReasonError ? '2px solid red' : '2px solid #333', borderRadius: '8px', padding: '10px 20px 20px', marginBottom: '20px' }}>
-                            <legend style={{ width: 'auto', padding: '0 10px', fontSize: '14px', fontWeight: 'bold', marginBottom: '0', float: 'none', lineHeight: '1', color: rejectReasonError ? 'red' : 'black' }}>
-                                เหตุผลที่ Reject
-                            </legend>
-                            <Input.TextArea
-                                placeholder="กรอกเหตุผลที่ Reject"
-                                value={rejectReasonInput}
-                                onChange={(e) => {
-                                    setRejectReasonInput(e.target.value);
-                                    if (e.target.value.trim() !== '') setRejectReasonError('');
-                                }}
-                                rows={2}
-                                style={{ border: rejectReasonError ? '1px solid red' : '1px solid #d9d9d9', resize: 'none' }}
-                            />
-                            {rejectReasonError && <div style={{ color: 'red', marginTop: '5px', fontSize: '13px' }}>{rejectReasonError}</div>}
-                        </fieldset>
-
-                        {/* Footer Buttons */}
-                        <div className="modal-footer justify-content-center border-top-0 pb-0 pt-3" style={{ gap: '20px' }}>
-                            <ApproveModalBtnBootstrap onClick={() => handleLeaveApprovalAction('Approve')} />
-                            <RejectModalBtnBootstrap onClick={() => handleLeaveApprovalAction('Reject')} style={{ "--bs-btn-bg": "#FFBCBC", "--bs-btn-hover-bg": "#ffcccc", "--bs-btn-active-bg": "#ffcccc" }} />
-
-                            <CloseModalBtnBootstrap onClick={() => setIsLeaveDetailModalOpen(false)} style={{ width: '150px', height: '40px', backgroundColor: '#E8E8E8', borderColor: '#000' }} />
                         </div>
                     </div>
                 )}

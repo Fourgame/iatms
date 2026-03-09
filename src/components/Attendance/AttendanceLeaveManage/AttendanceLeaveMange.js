@@ -13,6 +13,7 @@ import { noticeShowMessage } from '../../Utilities/Notification';
 import Loading from "../../Utilities/Loading";
 import moment from 'moment';
 import { getButton } from '../../../services/CICO.service';
+import { getHolidays } from '../../../services/้้holidays.service';
 
 // Haversine Formula for distance calculation
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -35,7 +36,7 @@ const { TextArea } = Input;
 
 const { Option } = Select;
 
-const EditAttModal = ({ show, onClose, data, onSuccess }) => {
+const EditAttModal = ({ show, onClose, data, onSuccess, geofence }) => {
     const [form] = Form.useForm();
     const [ciNewLocation, setCiNewLocation] = useState(null);
     const [coNewLocation, setCoNewLocation] = useState(null);
@@ -43,7 +44,6 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
     const [coNewAddress, setCoNewAddress] = useState("");
     const [ciNewTime, setCiNewTime] = useState(null);
     const [coNewTime, setCoNewTime] = useState(null);
-    const [geofence, setGeofence] = useState(null);
 
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
@@ -104,29 +104,6 @@ const EditAttModal = ({ show, onClose, data, onSuccess }) => {
             setCoNewTime(null);
         }
     }, [show, data, form]);
-
-    useEffect(() => {
-        const fetchButtonStatus = async () => {
-            try {
-                const response = await getButton.get_button();
-                if (response.data && response.data.wpCondition) {
-                    const parts = response.data.wpCondition.split(',').map(part => parseFloat(part.trim()));
-                    if (parts.length === 3 && !parts.some(isNaN)) {
-                        setGeofence({
-                            lat: parts[0],
-                            lng: parts[1],
-                            radius: parts[2]
-                        });
-                    }
-                }
-            } catch (error) {
-                console.error("Error fetching button status:", error);
-            }
-        };
-        if (show) {
-            fetchButtonStatus();
-        }
-    }, [show]);
 
     const parseLatLong = (latlongStr) => {
         if (!latlongStr || typeof latlongStr !== 'string') return null;
@@ -697,6 +674,9 @@ const AttendanceLeaveMange = () => {
     const [leaveStatusList, setLeaveStatusList] = useState([]);
     const [leaveHistory, setLeaveHistory] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [holidays, setHolidays] = useState([]);
+    const [workTimeLimits, setWorkTimeLimits] = useState({ startH: 8, startM: 30, endH: 17, endM: 0 });
+    const [geofence, setGeofence] = useState(null);
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -726,8 +706,53 @@ const AttendanceLeaveMange = () => {
                     setOriginalData(attChangeResponse.data);
                 }
 
+                // Fetch Holidays for current and next year to cover future leave requests
+                const currentYear = moment().year();
+                try {
+                    const [holidaysRes1, holidaysRes2] = await Promise.all([
+                        getHolidays.get_holidays({ isActive: true, yearSearch: currentYear }),
+                        getHolidays.get_holidays({ isActive: true, yearSearch: currentYear + 1 })
+                    ]);
+
+                    let combinedHolidays = [];
+                    if (holidaysRes1.data) combinedHolidays = [...combinedHolidays, ...holidaysRes1.data];
+                    if (holidaysRes2.data) combinedHolidays = [...combinedHolidays, ...holidaysRes2.data];
+                    setHolidays(combinedHolidays);
+                } catch (error) {
+                    console.error("Error fetching holidays:", error);
+                }
+
                 // Fetch Leave Data
                 await fetchLeaveData();
+
+                // Fetch Button Status (Time Limits & Geofence)
+                try {
+                    const btnRes = await getButton.get_button();
+                    if (btnRes.data) {
+                        const { ciThreshold, coThreshold, wpCondition } = btnRes.data;
+                        let startH = 8, startM = 30, endH = 17, endM = 0;
+                        if (ciThreshold) {
+                            const [h, m] = ciThreshold.split(':');
+                            startH = parseInt(h, 10);
+                            startM = parseInt(m, 10);
+                        }
+                        if (coThreshold) {
+                            const [h, m] = coThreshold.split(':');
+                            endH = parseInt(h, 10);
+                            endM = parseInt(m, 10);
+                        }
+                        setWorkTimeLimits({ startH, startM, endH, endM });
+
+                        if (wpCondition) {
+                            const parts = wpCondition.split(',').map(part => parseFloat(part.trim()));
+                            if (parts.length === 3 && !parts.some(isNaN)) {
+                                setGeofence({ lat: parts[0], lng: parts[1], radius: parts[2] });
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error fetching button status:", error);
+                }
 
             } catch (error) {
                 console.error("Error fetching initial data:", error);
@@ -1519,6 +1544,7 @@ const AttendanceLeaveMange = () => {
                 onClose={() => setIsEditModalOpen(false)}
                 data={editModalData}
                 onSuccess={handleAttSearch}
+                geofence={geofence}
             />
 
             {/* Leave Request Card */}
@@ -1648,7 +1674,15 @@ const AttendanceLeaveMange = () => {
                     </div>
                 ]}
             >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '25px', fontSize: '16px' }}>
+                <div
+                    style={{ display: 'flex', flexDirection: 'column', gap: '25px', fontSize: '16px' }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSaveLeave();
+                        }
+                    }}
+                >
                     <div style={{ display: 'flex', alignItems: 'flex-start' }}>
                         <span style={{ width: '130px', fontWeight: 'bold', marginTop: modalMode === 'add' ? '10px' : '0' }}>{modalMode === 'add' && <span style={{ color: 'red', marginRight: '5px' }}>*</span>}ประเภทการลา</span>
                         {modalMode === 'add' ? (
@@ -1675,7 +1709,12 @@ const AttendanceLeaveMange = () => {
                                             value={leaveForm.startDate}
                                             suffixIcon={<i className="bi bi-calendar"></i>}
                                             onChange={(date) => {
-                                                setLeaveForm({ ...leaveForm, startDate: date });
+                                                const isDifferentDay = date && leaveForm.endDate && !date.isSame(leaveForm.endDate, 'day');
+                                                setLeaveForm({
+                                                    ...leaveForm,
+                                                    startDate: date,
+                                                    ...(isDifferentDay && { isFullDay: true, startTime: null, endTime: null })
+                                                });
                                                 let errs = { ...leaveFormErrors, startDate: "", endDate: "" };
                                                 if (checkDuplicateDate(date, leaveForm.endDate, leaveForm.id)) {
                                                     errs.startDate = "วันลานี้มีการลางานแล้ว (ซ้ำ)";
@@ -1689,7 +1728,12 @@ const AttendanceLeaveMange = () => {
                                                 const maxDate = moment().add(365, 'days').endOf('day');
                                                 const isOutOfRange = current.isBefore(minDate) || current.isAfter(maxDate);
                                                 const isAfterEndDate = leaveForm.endDate ? current.isAfter(leaveForm.endDate, 'day') : false;
-                                                return isOutOfRange || isAfterEndDate;
+
+                                                const isWeekend = current.day() === 0 || current.day() === 6;
+                                                const formattedCurrent = current.format('YYYY-MM-DD');
+                                                const isHoliday = holidays.some(h => h.holidayDate && moment(h.holidayDate).format('YYYY-MM-DD') === formattedCurrent);
+
+                                                return isOutOfRange || isAfterEndDate || isWeekend || isHoliday;
                                             }}
                                             style={{ width: 180, height: '40px', borderRadius: '6px', border: leaveFormErrors.startDate ? '1px solid #ff4d4f' : '1px solid #888' }}
                                         />
@@ -1706,7 +1750,12 @@ const AttendanceLeaveMange = () => {
                                             value={leaveForm.endDate}
                                             suffixIcon={<i className="bi bi-calendar"></i>}
                                             onChange={(date) => {
-                                                setLeaveForm({ ...leaveForm, endDate: date });
+                                                const isDifferentDay = leaveForm.startDate && date && !leaveForm.startDate.isSame(date, 'day');
+                                                setLeaveForm({
+                                                    ...leaveForm,
+                                                    endDate: date,
+                                                    ...(isDifferentDay && { isFullDay: true, startTime: null, endTime: null })
+                                                });
                                                 let errs = { ...leaveFormErrors, startDate: "", endDate: "" };
                                                 if (checkDuplicateDate(leaveForm.startDate, date, leaveForm.id)) {
                                                     errs.startDate = "วันลานี้มีการลางานแล้ว (ซ้ำ)";
@@ -1720,7 +1769,12 @@ const AttendanceLeaveMange = () => {
                                                 const maxDate = moment().add(365, 'days').endOf('day');
                                                 const isOutOfRange = current.isBefore(minDate) || current.isAfter(maxDate);
                                                 const isBeforeStartDate = leaveForm.startDate ? current.isBefore(leaveForm.startDate, 'day') : false;
-                                                return isOutOfRange || isBeforeStartDate;
+
+                                                const isWeekend = current.day() === 0 || current.day() === 6;
+                                                const formattedCurrent = current.format('YYYY-MM-DD');
+                                                const isHoliday = holidays.some(h => h.holidayDate && moment(h.holidayDate).format('YYYY-MM-DD') === formattedCurrent);
+
+                                                return isOutOfRange || isBeforeStartDate || isWeekend || isHoliday;
                                             }}
                                             style={{ width: 180, height: '40px', borderRadius: '6px', border: leaveFormErrors.endDate ? '1px solid #ff4d4f' : '1px solid #888' }}
                                         />
@@ -1740,9 +1794,16 @@ const AttendanceLeaveMange = () => {
                         <span style={{ width: '130px', fontWeight: 'bold', marginTop: '10px' }}><span style={{ color: 'red', marginRight: '5px' }}>*</span>ช่วงเวลา</span>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                <Checkbox checked={leaveForm.isFullDay} onChange={() => { setLeaveForm({ ...leaveForm, isFullDay: true }); setLeaveFormErrors({ ...leaveFormErrors, time: "" }); }}>ทั้งวัน</Checkbox>
+                                <Checkbox
+                                    checked={leaveForm.isFullDay}
+                                    onChange={() => { setLeaveForm({ ...leaveForm, isFullDay: true }); setLeaveFormErrors({ ...leaveFormErrors, time: "" }); }}
+                                >ทั้งวัน</Checkbox>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <Checkbox checked={!leaveForm.isFullDay} onChange={() => setLeaveForm({ ...leaveForm, isFullDay: false })} />
+                                    <Checkbox
+                                        disabled={leaveForm.startDate && leaveForm.endDate && !leaveForm.startDate.isSame(leaveForm.endDate, 'day')}
+                                        checked={!leaveForm.isFullDay}
+                                        onChange={() => setLeaveForm({ ...leaveForm, isFullDay: false })}
+                                    />
                                     <div style={{ position: 'relative', opacity: leaveForm.isFullDay ? 0.6 : 1 }}>
                                         <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.time ? '#ff4d4f' : '#666', zIndex: 1 }}>Start</span>
                                         <div style={{ display: 'flex', alignItems: 'center', border: leaveFormErrors.time ? '1px solid #ff4d4f' : '1px solid #888', borderRadius: '6px', paddingRight: '10px', height: '40px' }}>
@@ -1752,18 +1813,29 @@ const AttendanceLeaveMange = () => {
                                                 placeholder="08:30"
                                                 value={leaveForm.startTime}
                                                 status={leaveFormErrors.time ? "error" : ""}
-                                                hideDisabledOptions={modalMode === "edit"}
+                                                hideDisabledOptions={true}
                                                 disabledTime={() => {
                                                     const { endTime } = leaveForm;
-                                                    if (endTime) {
-                                                        const endHour = endTime.hour();
-                                                        const endMin = endTime.minute();
-                                                        return {
-                                                            disabledHours: () => Array.from({ length: 24 }, (_, i) => i).filter(h => h > endHour),
-                                                            disabledMinutes: (sH) => sH === endHour ? Array.from({ length: 60 }, (_, i) => i).filter(m => m >= endMin) : []
-                                                        };
-                                                    }
-                                                    return {};
+                                                    const { startH: workStartH, startM: workStartM, endH: workEndH, endM: workEndM } = workTimeLimits;
+                                                    return {
+                                                        disabledHours: () => {
+                                                            const hours = [];
+                                                            for (let i = 0; i < 24; i++) {
+                                                                if (i < workStartH || i > workEndH) hours.push(i);
+                                                                else if (endTime && i > endTime.hour()) hours.push(i);
+                                                            }
+                                                            return hours;
+                                                        },
+                                                        disabledMinutes: (sH) => {
+                                                            const mins = [];
+                                                            for (let m = 0; m < 60; m++) {
+                                                                if (sH === workStartH && m < workStartM) mins.push(m);
+                                                                else if (sH === workEndH && m > workEndM) mins.push(m);
+                                                                else if (endTime && sH === endTime.hour() && m >= endTime.minute()) mins.push(m);
+                                                            }
+                                                            return mins;
+                                                        }
+                                                    };
                                                 }}
                                                 onChange={(time) => {
                                                     const isSameDay = leaveForm.startDate?.isSame(leaveForm.endDate, 'day');
@@ -1787,18 +1859,29 @@ const AttendanceLeaveMange = () => {
                                                 placeholder="17:00"
                                                 value={leaveForm.endTime}
                                                 status={leaveFormErrors.time ? "error" : ""}
-                                                hideDisabledOptions={modalMode === "edit"}
+                                                hideDisabledOptions={true}
                                                 disabledTime={() => {
                                                     const { startTime } = leaveForm;
-                                                    if (startTime) {
-                                                        const startHour = startTime.hour();
-                                                        const startMin = startTime.minute();
-                                                        return {
-                                                            disabledHours: () => Array.from({ length: 24 }, (_, i) => i).filter(h => h < startHour),
-                                                            disabledMinutes: (sH) => sH === startHour ? Array.from({ length: startMin + 1 }, (_, i) => i) : []
-                                                        };
-                                                    }
-                                                    return {};
+                                                    const { startH: workStartH, startM: workStartM, endH: workEndH, endM: workEndM } = workTimeLimits;
+                                                    return {
+                                                        disabledHours: () => {
+                                                            const hours = [];
+                                                            for (let i = 0; i < 24; i++) {
+                                                                if (i < workStartH || i > workEndH) hours.push(i);
+                                                                else if (startTime && i < startTime.hour()) hours.push(i);
+                                                            }
+                                                            return hours;
+                                                        },
+                                                        disabledMinutes: (eH) => {
+                                                            const mins = [];
+                                                            for (let m = 0; m < 60; m++) {
+                                                                if (eH === workStartH && m < workStartM) mins.push(m);
+                                                                else if (eH === workEndH && m > workEndM) mins.push(m);
+                                                                else if (startTime && eH === startTime.hour() && m <= startTime.minute()) mins.push(m);
+                                                            }
+                                                            return mins;
+                                                        }
+                                                    };
                                                 }}
                                                 onChange={(time) => {
                                                     setLeaveForm({ ...leaveForm, endTime: time });

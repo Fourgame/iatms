@@ -104,6 +104,12 @@ const Home = (props) => {
         pending_requests, displaydate
     } = dashboardData.length ? dashboardData[0] : dashboardData;
 
+    const currentUser = token.getUser();
+    const canCico = currentUser?.role?.func_cico;
+    const canRpWorkHours = currentUser?.role?.func_rp_work_hours;
+    const canRpAttendance = currentUser?.role?.func_rp_attendance;
+    const canApprove = currentUser?.role?.func_approve;
+
     const renderInternDashboard = () => {
         let timeString = "-";
         if (working_hour && working_hour !== "00:00:00") {
@@ -128,21 +134,21 @@ const Home = (props) => {
                 style={{
                     display: "grid",
                     gridTemplateColumns: "repeat(3, 1fr)",
-                    gridTemplateRows: "repeat(3, 1fr)",
+                    gridAutoRows: "1fr",
                     gap: "0.5rem",
                 }}
             >
-                <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="สถานะ" value={statusText} />
-                <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="เวลาที่เช็คอิน" value={check_in !== "-" && check_in ? `${check_in} น.` : "-"} />
-                <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="เวลาเช็คเอาท์" value={check_out !== "-" && check_out ? `${check_out} น.` : "-"} />
+                {canCico && <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="สถานะ" value={statusText} />}
+                {canCico && <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="เวลาที่เช็คอิน" value={check_in !== "-" && check_in ? `${check_in} น.` : "-"} />}
+                {canCico && <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="เวลาเช็คเอาท์" value={check_out !== "-" && check_out ? `${check_out} น.` : "-"} />}
 
-                <StatCard onClick={() => navigate("/report/WorkHours")} title="จำนวนชั่วโมงสะสม" value={timeString} />
-                <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="สถานที่เช็คอิน" value={ci_address || "-"} />
-                <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="สถานที่เช็คเอาท์" value={co_address || "-"} />
+                <StatCard onClick={canRpWorkHours ? () => navigate("/report/WorkHours") : null} title="จำนวนชั่วโมงสะสม" value={timeString} />
+                {canCico && <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="สถานที่เช็คอิน" value={ci_address || "-"} />}
+                {canCico && <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="สถานที่เช็คเอาท์" value={co_address || "-"} />}
 
-                <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องอนุมัติ" value={approve_leave || "0"} footer="รายการ" bg="#c9ffd9" hoverBg="#A8EBB8" />
-                <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องรออนุมัติ" value={pending_leave || "0"} footer="รายการ" bg="#fff0c9" hoverBg="#FFE099" />
-                <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องไม่อนุมัติ" value={reject_leave || "0"} footer="รายการ" bg="#ffd0d0" hoverBg="#FFB2B2" />
+                {canCico && <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องอนุมัติ" value={approve_leave || "0"} footer="รายการ" bg="#c9ffd9" hoverBg="#A8EBB8" />}
+                {canCico && <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องรออนุมัติ" value={pending_leave || "0"} footer="รายการ" bg="#fff0c9" hoverBg="#FFE099" />}
+                {canCico && <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องไม่อนุมัติ" value={reject_leave || "0"} footer="รายการ" bg="#ffd0d0" hoverBg="#FFB2B2" />}
             </div>
         );
     };
@@ -154,19 +160,19 @@ const Home = (props) => {
                 style={{
                     display: "grid",
                     gridTemplateColumns: "repeat(3, 1fr)",
-                    gridTemplateRows: "repeat(3, 1fr)",
+                    gridAutoRows: "1fr",
                     gap: "0.5rem",
                 }}
             >
-                <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คอิน" value={check_in_summary || "0/0"} footer="คน" />
-                <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คอินเกินเวลา" value={ci_late_count || "0/0"} footer="คน" />
-                <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คอินนอกสถานที่" value={ci_outside_count || "0/0"} footer="คน" />
+                {canRpAttendance && check_in_summary !== "-" && <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คอิน" value={check_in_summary || "0/0"} footer="คน" />}
+                {canRpAttendance && ci_late_count !== "-" && <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คอินเกินเวลา" value={ci_late_count || "0/0"} footer="คน" />}
+                {canRpAttendance && ci_outside_count !== "-" && <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คอินนอกสถานที่" value={ci_outside_count || "0/0"} footer="คน" />}
 
-                <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คเอาท์" value={co_summary || "0/0"} footer="คน" />
-                <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คเอาท์ก่อนเวลา" value={co_early_count || "0/0"} footer="คน" />
-                <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คเอาท์นอกสถานที่" value={co_outside_count || "0/0"} footer="คน" />
+                {canRpAttendance && co_summary !== "-" && <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คเอาท์" value={co_summary || "0/0"} footer="คน" />}
+                {canRpAttendance && co_early_count !== "-" && <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คเอาท์ก่อนเวลา" value={co_early_count || "0/0"} footer="คน" />}
+                {canRpAttendance && co_outside_count !== "-" && <StatCard onClick={() => navigate("/report/AttendanceHistory")} title="จำนวนคนที่เช็คเอาท์นอกสถานที่" value={co_outside_count || "0/0"} footer="คน" />}
 
-                <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Approval")} title="คำร้องรออนุมัติ" value={pending_requests || "0"} footer="รายการ" bg="#fff0c9" hoverBg="#FFE099" />
+                {canApprove && pending_requests !== -1 && <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Approval")} title="คำร้องรออนุมัติ" value={pending_requests || "0"} footer="รายการ" bg="#fff0c9" hoverBg="#FFE099" />}
             </div>
         );
     };

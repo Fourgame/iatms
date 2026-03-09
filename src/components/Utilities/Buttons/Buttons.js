@@ -129,6 +129,8 @@ export const AddToolBtnBootstrap = ({ onClick, style, className, ...props }) => 
                 fontWeight: "bold",
                 border: "1px solid #000",
                 boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
+                width: "85px",
+                justifyContent: "center",
                 ...style
             }}
             {...props}
@@ -158,6 +160,8 @@ export const EditToolBtnBootstrap = ({ onClick, style, className, ...props }) =>
                 color: "#000",
                 border: "1px solid #000", // Explicit black border,
                 boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
+                width: "85px",
+                justifyContent: "center",
                 ...style
             }}
             {...props}

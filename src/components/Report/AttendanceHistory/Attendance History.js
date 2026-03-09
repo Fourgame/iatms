@@ -11,6 +11,7 @@ import { noticeShowMessage } from '../../Utilities/Notification';
 import Loading from "../../Utilities/Loading";
 import moment from 'moment';
 import { getAttHistory } from '../../../services/AttendanceHistory.service';
+import * as XLSX from 'xlsx-js-style';
 
 const { Option } = Select;
 
@@ -306,6 +307,122 @@ const AttendanceHistory = () => {
             });
     };
 
+    const handleExport = () => {
+        if (!dataSource || dataSource.length === 0) {
+            noticeShowMessage("ไม่มีข้อมูลสำหรับส่งออก", true);
+            return;
+        }
+
+        const wsData = [
+            ["วันที่", "OA user", "ชื่อ-นามสกุล", "Team", "Check-in", "", "", "", "", "Check-out", "", "", "", ""],
+            ["", "", "", "", "เวลา (น.)", "สถานะเวลา", "ตำแหน่ง", "สถานะตำแหน่ง", "เหตุผล", "เวลา (น.)", "สถานะเวลา", "ตำแหน่ง", "สถานะตำแหน่ง", "เหตุผล"]
+        ];
+
+        dataSource.forEach(item => {
+            wsData.push([
+                item.attDate ? moment(item.attDate).format("DD/MM/YYYY") : "-",
+                item.oauser || "-",
+                item.fullName || "-",
+                item.team || "-",
+                item.ciTime || "-",
+                item.ciCorrectTime || "-",
+                item.ciAddress || "-",
+                item.ciCorrectZone || "-",
+                item.ciReason || "-",
+                item.coTime || "-",
+                item.coCorrectTime || "-",
+                item.coAddress || "-",
+                item.coCorrectZone || "-",
+                item.coReason || "-"
+            ]);
+        });
+
+        const worksheet = XLSX.utils.aoa_to_sheet(wsData);
+
+        // Nested headers merges
+        worksheet["!merges"] = [
+            { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } },
+            { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } },
+            { s: { r: 0, c: 2 }, e: { r: 1, c: 2 } },
+            { s: { r: 0, c: 3 }, e: { r: 1, c: 3 } },
+            { s: { r: 0, c: 4 }, e: { r: 0, c: 8 } },
+            { s: { r: 0, c: 9 }, e: { r: 0, c: 13 } }
+        ];
+
+        // Add Autofilter & Protection
+        worksheet['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 1, c: 0 }, e: { r: wsData.length - 1, c: 13 } }) };
+        worksheet['!protect'] = {
+            password: "admin",
+            selectLockedCells: true,
+            selectUnlockedCells: true
+        };
+
+        // Column widths
+        worksheet['!cols'] = [
+            { wch: 15 }, // วันที่
+            { wch: 20 }, // OA user
+            { wch: 30 }, // ชื่อ-นามสกุล
+            { wch: 15 }, // Team
+            { wch: 15 }, // CI เวลา
+            { wch: 20 }, // CI สถานะ
+            { wch: 40 }, // CI ตำแหน่ง
+            { wch: 20 }, // CI สถานะตำแหน่ง
+            { wch: 30 }, // CI เหตุผล
+            { wch: 15 }, // CO เวลา
+            { wch: 20 }, // CO สถานะ
+            { wch: 40 }, // CO ตำแหน่ง
+            { wch: 20 }, // CO สถานะตำแหน่ง
+            { wch: 30 }, // CO เหตุผล
+        ];
+
+        // Apply styles
+        const range = XLSX.utils.decode_range(worksheet['!ref']);
+        for (let R = range.s.r; R <= range.e.r; ++R) {
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+                const cell_address = { c: C, r: R };
+                const cell_ref = XLSX.utils.encode_cell(cell_address);
+                if (!worksheet[cell_ref]) continue;
+
+                if (!worksheet[cell_ref].s) worksheet[cell_ref].s = {};
+
+                // Default borders
+                worksheet[cell_ref].s.border = {
+                    top: { style: "thin", color: { auto: 1 } },
+                    bottom: { style: "thin", color: { auto: 1 } },
+                    left: { style: "thin", color: { auto: 1 } },
+                    right: { style: "thin", color: { auto: 1 } }
+                };
+
+                // Vertical Center & wrap text by default
+                worksheet[cell_ref].s.alignment = { vertical: "center", wrapText: true };
+
+                if (R === 0 || R === 1) {
+                    // Header Row
+                    worksheet[cell_ref].s.fill = { fgColor: { rgb: "A0BDFF" } };
+                    worksheet[cell_ref].s.font = { bold: true };
+                    worksheet[cell_ref].s.alignment.horizontal = "center";
+                } else {
+                    // Data Rows
+                    if (C === 1 || C === 2) {
+                        // OA User, ชื่อ-นามสกุล
+                        worksheet[cell_ref].s.alignment.horizontal = "left";
+                    } else if (C === 6 || C === 8 || C === 11 || C === 13) {
+                        // Address, Reason
+                        worksheet[cell_ref].s.alignment.horizontal = "left";
+                    } else {
+                        // Others
+                        worksheet[cell_ref].s.alignment.horizontal = "center";
+                    }
+                }
+            }
+        }
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance History");
+
+        XLSX.writeFile(workbook, `Attendance_History_${moment().format("YYYYMMDD_HHmmss")}.xlsx`);
+    };
+
     useEffect(() => {
         const fetchDropdowns = async () => {
             try {
@@ -477,7 +594,7 @@ const AttendanceHistory = () => {
                             <div className="col-lg-3 col-md-12 d-flex justify-content-lg-end align-items-start gap-2 mt-3 mt-lg-0">
                                 <SearchToolBtnBootstrap onClick={handleSearch} />
                                 <ClearToolBtnBootstrap onClick={handleClear} />
-                                <ExportToolBtnBootstrap onClick={null} />
+                                <ExportToolBtnBootstrap onClick={handleExport} />
                             </div>
                         </div>
                     </div>

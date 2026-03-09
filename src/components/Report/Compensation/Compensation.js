@@ -11,6 +11,7 @@ import { noticeShowMessage } from '../../Utilities/Notification';
 import Loading from "../../Utilities/Loading";
 import { getCompensation, getMonthYearCompensation } from '../../../services/Compensation.service';
 import moment from 'moment';
+import * as XLSX from 'xlsx-js-style';
 
 const { Option } = Select;
 
@@ -203,6 +204,112 @@ const Compensation = () => {
         }).finally(() => setLoading(false));
     };
 
+    const handleExport = () => {
+        if (!dataSource || dataSource.length === 0) {
+            noticeShowMessage("ไม่มีข้อมูลสำหรับส่งออก", true);
+            return;
+        }
+
+        const exportData = dataSource.map(item => ({
+            "เดือน-ปี": item.monthYear || "-",
+            "OA User": item.oaUser || "-",
+            "ชื่อ-นามสกุล": item.fullName || "-",
+            "Team": item.team || "-",
+            "จำนวนชั่วโมง (ชั่วโมง)": item.workHours !== null && item.workHours !== undefined ? Number(item.workHours).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-",
+            "จำนวนเงิน (บาท)": item.amount !== null && item.amount !== undefined ? Number(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-"
+        }));
+
+        // Add Summary row
+        exportData.push({
+            "เดือน-ปี": "สรุป",
+            "OA User": "",
+            "ชื่อ-นามสกุล": "",
+            "Team": "",
+            "จำนวนชั่วโมง (ชั่วโมง)": totalHours !== null && totalHours !== undefined ? Number(totalHours).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00",
+            "จำนวนเงิน (บาท)": totalAmount !== null && totalAmount !== undefined ? Number(totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+        // Add Autofilter & Protection
+        worksheet['!autofilter'] = { ref: worksheet['!ref'] };
+        worksheet['!protect'] = {
+            password: "admin",
+            selectLockedCells: true,
+            selectUnlockedCells: true
+        };
+
+        // Merge Summary Row (Columns 0 to 3)
+        const range = XLSX.utils.decode_range(worksheet['!ref']);
+        worksheet["!merges"] = [
+            { s: { r: range.e.r, c: 0 }, e: { r: range.e.r, c: 3 } }
+        ];
+
+        // Column widths
+        worksheet['!cols'] = [
+            { wch: 15 }, // เดือน-ปี
+            { wch: 20 }, // OA User
+            { wch: 30 }, // ชื่อ-นามสกุล
+            { wch: 15 }, // Team
+            { wch: 25 }, // จำนวนชั่วโมง (ชั่วโมง)
+            { wch: 20 }, // จำนวนเงิน (บาท)
+        ];
+
+        // Apply styles
+        for (let R = range.s.r; R <= range.e.r; ++R) {
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+                const cell_address = { c: C, r: R };
+                const cell_ref = XLSX.utils.encode_cell(cell_address);
+                if (!worksheet[cell_ref]) continue;
+
+                if (!worksheet[cell_ref].s) worksheet[cell_ref].s = {};
+
+                // Default borders
+                worksheet[cell_ref].s.border = {
+                    top: { style: "thin", color: { auto: 1 } },
+                    bottom: { style: "thin", color: { auto: 1 } },
+                    left: { style: "thin", color: { auto: 1 } },
+                    right: { style: "thin", color: { auto: 1 } }
+                };
+
+                // Vertical Center by default
+                worksheet[cell_ref].s.alignment = { vertical: "center" };
+
+                if (R === 0) {
+                    // Header Row
+                    worksheet[cell_ref].s.fill = { fgColor: { rgb: "A0BDFF" } };
+                    worksheet[cell_ref].s.font = { bold: true };
+                    worksheet[cell_ref].s.alignment.horizontal = "center";
+                } else if (R === range.e.r) {
+                    // Summary Row
+                    worksheet[cell_ref].s.fill = { fgColor: { rgb: "DEE8FF" } };
+                    worksheet[cell_ref].s.font = { bold: true };
+                    if (C === 0) {
+                        worksheet[cell_ref].s.alignment.horizontal = "right";
+                    } else if (C === 4 || C === 5) {
+                        worksheet[cell_ref].s.alignment.horizontal = "right";
+                    }
+                } else {
+                    // Data Rows
+                    if (C === 2 || C === 1) {
+                        // ชื่อ-นามสกุล and OA User let's left align
+                        worksheet[cell_ref].s.alignment.horizontal = "left";
+                    } else if (C === 4 || C === 5) {
+                        // Amounts right align
+                        worksheet[cell_ref].s.alignment.horizontal = "right";
+                    } else {
+                        // Others center align
+                        worksheet[cell_ref].s.alignment.horizontal = "center";
+                    }
+                }
+            }
+        }
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Compensation");
+
+        XLSX.writeFile(workbook, `Compensation_${moment().format("YYYYMMDD_HHmmss")}.xlsx`);
+    };
+
     return (
         <div style={{ paddingLeft: '20px', paddingRight: '20px', paddingBottom: '40px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
             {loading && <Loading />}
@@ -314,7 +421,7 @@ const Compensation = () => {
                                 <div className="d-flex align-items-center gap-2">
                                     <SearchToolBtnBootstrap onClick={handleSearch} />
                                     <ClearToolBtnBootstrap onClick={handleClear} />
-                                    <ExportToolBtnBootstrap onClick={null} />
+                                    <ExportToolBtnBootstrap onClick={handleExport} />
                                 </div>
 
                                 {/* Mockup Text */}
