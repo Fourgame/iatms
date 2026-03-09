@@ -73,7 +73,7 @@ const Compensation = () => {
             sorter: (a, b) => (a.team || "").localeCompare(b.team || ""),
         },
         {
-            title: 'จำนวนชั่วโมง (ชั่วโมง)',
+            title: 'จำนวนชั่วโมง',
             dataIndex: 'workHours',
             key: 'workHours',
             align: 'center',
@@ -82,7 +82,16 @@ const Compensation = () => {
                 const bVal = parseFloat((b.workHours || "").toString().replace(/,/g, '')) || 0;
                 return aVal - bVal;
             },
-            render: (text) => text !== null && text !== undefined ? Number(text).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'
+            render: (text) => {
+                if (text !== null && text !== undefined) {
+                    const minutes = parseFloat(text.toString().replace(/,/g, '')) || 0;
+                    const duration = moment.duration(minutes, 'minutes');
+                    const hrs = Math.floor(duration.asHours());
+                    const mins = duration.minutes();
+                    return `${hrs} ชั่วโมง ${mins} นาที`;
+                }
+                return '-';
+            }
         },
         {
             title: 'จำนวนเงิน (บาท)',
@@ -328,7 +337,7 @@ const Compensation = () => {
                                     fontSize: "16px",
                                     boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
                                 }}>
-                                    ชั่วโมงรวม {totalHours.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ชั่วโมง จำนวนเงิน {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
+                                    ชั่วโมงรวม {Math.floor(moment.duration(totalHours, 'minutes').asHours())} ชั่วโมง {moment.duration(totalHours, 'minutes').minutes()} นาที จำนวนเงิน {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
                                 </div>
                             </div>
                         </div>
