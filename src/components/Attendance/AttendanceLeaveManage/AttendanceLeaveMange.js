@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, Row, Col } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import { GoogleMap, MarkerF, CircleF, useJsApiLoader } from "@react-google-maps/api";
 import { DatePicker, Select, Form, Input, TimePicker, Modal, Button, Checkbox } from 'antd';
 import { SearchToolBtnBootstrap, ClearToolBtnBootstrap, AddToolBtnBootstrap, EditToolBtnBootstrap, DeleteToolBtn, CloseModalBtnBootstrap, CloseIconBtn, SubmitModalBtnBootstrap } from '../../Utilities/Buttons/Buttons';
@@ -38,6 +39,41 @@ const { TextArea } = Input;
 const { Option } = Select;
 
 const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = false }) => {
+    const navigate = useNavigate();
+
+    const handleRequestError = (error) => {
+        if (error.response) {
+            const status = error.response.status;
+            if (status === 401) {
+                TokenService.deleteUser();
+                navigate("/signin", { state: { message: "session expire" } });
+                return true;
+            }
+            if (error.response.data && error.response.data.message) {
+                noticeShowMessage(error.response.data.message, true);
+                return false;
+            }
+            if (status === 403) {
+                TokenService.deleteUser();
+                navigate("/signin", { state: { message: "access-denied" } });
+                return true;
+            }
+            if (status === 404) {
+                navigate("/signin", { state: { message: "not-found" } });
+                return true;
+            }
+
+        } else if (error.request) {
+            console.log("No response received:", error.request);
+            return navigate("/signin", { state: { message: "network-error" } });
+
+        } else {
+            console.log("Error setting up request:", error.message);
+            return navigate("/signin", { state: { message: "error" } });
+        }
+        return false;
+    };
+
     const [form] = Form.useForm();
     const modalFormWrapperRef = useRef(null);
     const [ciNewLocation, setCiNewLocation] = useState(null);
@@ -658,7 +694,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
                             }
                         } catch (error) {
                             console.error("Error submitting attendance change:", error);
-                            noticeShowMessage("เกิดข้อผิดพลาดในการบันทึกข้อมูล", true);
+                            handleRequestError(error);
                         }
                     }}
                 >
@@ -782,6 +818,41 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
 };
 
 const AttendanceLeaveMange = () => {
+    const navigate = useNavigate();
+
+    const handleRequestError = (error) => {
+        if (error.response) {
+            const status = error.response.status;
+            if (status === 401) {
+                TokenService.deleteUser();
+                navigate("/signin", { state: { message: "session expire" } });
+                return true;
+            }
+            if (error.response.data && error.response.data.message) {
+                noticeShowMessage(error.response.data.message, true);
+                return false;
+            }
+            if (status === 403) {
+                TokenService.deleteUser();
+                navigate("/signin", { state: { message: "access-denied" } });
+                return true;
+            }
+            if (status === 404) {
+                navigate("/signin", { state: { message: "not-found" } });
+                return true;
+            }
+
+        } else if (error.request) {
+            console.log("No response received:", error.request);
+            return navigate("/signin", { state: { message: "network-error" } });
+
+        } else {
+            console.log("Error setting up request:", error.message);
+            return navigate("/signin", { state: { message: "error" } });
+        }
+        return false;
+    };
+
     // Attendance Change State
     const [attStartDate, setAttStartDate] = useState(null);
     const [attEndDate, setAttEndDate] = useState(null);
@@ -884,6 +955,7 @@ const AttendanceLeaveMange = () => {
                     setHolidays(combinedHolidays);
                 } catch (error) {
                     console.error("Error fetching holidays:", error);
+                    handleRequestError(error);
                 }
 
                 // Fetch Leave Data
@@ -916,10 +988,12 @@ const AttendanceLeaveMange = () => {
                     }
                 } catch (error) {
                     console.error("Error fetching button status:", error);
+                    handleRequestError(error);
                 }
 
             } catch (error) {
                 console.error("Error fetching initial data:", error);
+                handleRequestError(error);
             } finally {
                 setLoading(false);
             }
@@ -983,6 +1057,7 @@ const AttendanceLeaveMange = () => {
             }
         } catch (error) {
             console.error("Error fetching leave data:", error);
+            handleRequestError(error);
             setLeaveHistory([]);
         }
     };
@@ -1008,6 +1083,7 @@ const AttendanceLeaveMange = () => {
             }
         } catch (error) {
             console.error("Error searching attendance:", error);
+            handleRequestError(error);
         } finally {
             setLoading(false);
         }
@@ -1044,6 +1120,7 @@ const AttendanceLeaveMange = () => {
             await fetchLeaveData(leaveParams);
         } catch (error) {
             console.error("Error searching leave:", error);
+            handleRequestError(error);
         } finally {
             setLoading(false);
         }
@@ -1153,7 +1230,7 @@ const AttendanceLeaveMange = () => {
             }
         } catch (error) {
             console.error("Error saving leave:", error);
-            noticeShowMessage("เกิดข้อผิดพลาดในการบันทึกข้อมูล", true);
+            handleRequestError(error);
         } finally {
             setLoading(false);
         }
@@ -1183,7 +1260,7 @@ const AttendanceLeaveMange = () => {
             }
         } catch (error) {
             console.error("Error deleting leave:", error);
-            noticeShowMessage("เกิดข้อผิดพลาดในการลบข้อมูล", true);
+            handleRequestError(error);
         } finally {
             setLoading(false);
         }
@@ -1220,7 +1297,7 @@ const AttendanceLeaveMange = () => {
             }
         } catch (error) {
             console.error("Error fetching modal data:", error);
-            noticeShowMessage("เกิดข้อผิดพลาดในการดึงข้อมูล", true);
+            handleRequestError(error);
         } finally {
             setLoading(false);
         }
@@ -1253,7 +1330,7 @@ const AttendanceLeaveMange = () => {
             }
         } catch (error) {
             console.error("Error fetching view data:", error);
-            noticeShowMessage("เกิดข้อผิดพลาดในการดึงข้อมูล", true);
+            handleRequestError(error);
         } finally {
             setLoading(false);
         }
@@ -1279,7 +1356,7 @@ const AttendanceLeaveMange = () => {
             }
         } catch (error) {
             console.error("Error deleting attendance change:", error);
-            noticeShowMessage("เกิดข้อผิดพลาดในการลบข้อมูล", true);
+            handleRequestError(error);
         } finally {
             setLoading(false);
         }

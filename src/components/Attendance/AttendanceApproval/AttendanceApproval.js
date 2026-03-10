@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, Button as ButtonBootstrap } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import { DatePicker, Select, Form, Input, Modal, Row, Col, Button } from 'antd';
 import { SearchToolBtnBootstrap, ClearToolBtnBootstrap, AddToolBtnBootstrap, EditToolBtnBootstrap, DeleteToolBtn, Approve_RejectBtn, CloseModalBtnBootstrap, CloseIconBtn, ApproveModalBtnBootstrap, RejectModalBtnBootstrap } from '../../Utilities/Buttons/Buttons';
 import { RejectTag, ApproveTag, PendingApproveTag } from "../../Utilities/StatusTag/StatusTag";
@@ -15,6 +16,41 @@ import { getLeaveApproval, postLeaveApproval } from '../../../services/leaveappr
 const { Option } = Select;
 
 const AttendanceApproval = () => {
+    const navigate = useNavigate();
+
+    const handleRequestError = (error) => {
+        if (error.response) {
+            const status = error.response.status;
+            if (status === 401) {
+                TokenService.deleteUser();
+                navigate("/signin", { state: { message: "session expire" } });
+                return true;
+            }
+            if (error.response.data && error.response.data.message) {
+                noticeShowMessage(error.response.data.message, true);
+                return false;
+            }
+            if (status === 403) {
+                TokenService.deleteUser();
+                navigate("/signin", { state: { message: "access-denied" } });
+                return true;
+            }
+            if (status === 404) {
+                navigate("/signin", { state: { message: "not-found" } });
+                return true;
+            }
+
+        } else if (error.request) {
+            console.log("No response received:", error.request);
+            return navigate("/signin", { state: { message: "network-error" } });
+
+        } else {
+            console.log("Error setting up request:", error.message);
+            return navigate("/signin", { state: { message: "error" } });
+        }
+        return false;
+    };
+
     // Dropdown Data
     const [teamList, setTeamList] = useState([]);
 
@@ -59,7 +95,7 @@ const AttendanceApproval = () => {
             }
         } catch (error) {
             console.error("Error fetching attendance approval data:", error);
-            noticeShowMessage("เกิดข้อผิดพลาดในการดึงข้อมูล", true);
+            handleRequestError(error);
             setAttApprovalData([]);
         } finally {
             setLoading(false);
@@ -120,7 +156,7 @@ const AttendanceApproval = () => {
 
         } catch (error) {
             console.error("Error fetching modal data:", error);
-            noticeShowMessage("เกิดข้อผิดพลาดในการดึงข้อมูล", true);
+            handleRequestError(error);
         } finally {
             setModalLoading(false);
         }
@@ -181,7 +217,7 @@ const AttendanceApproval = () => {
             }
         } catch (error) {
             console.error("Error submit approval:", error);
-            noticeShowMessage("เกิดข้อผิดพลาดในการบันทึกข้อมูล", true);
+            handleRequestError(error);
         } finally {
             setModalLoading(false);
         }
@@ -248,6 +284,7 @@ const AttendanceApproval = () => {
             }
         } catch (error) {
             console.error("Error fetching leave approval data:", error);
+            handleRequestError(error);
             setLeaveApprovalData([]);
         } finally {
             setLoading(false);
@@ -295,11 +332,7 @@ const AttendanceApproval = () => {
             }
         } catch (error) {
             console.error(`Error ${action} leave approval:`, error);
-            if (error.response && error.response.data && error.response.data.message) {
-                noticeShowMessage(error.response.data.message, true);
-            } else {
-                noticeShowMessage("เกิดข้อผิดพลาดในการบันทึกข้อมูล", true);
-            }
+            handleRequestError(error);
         } finally {
             setLoading(false);
         }

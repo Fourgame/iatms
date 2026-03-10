@@ -29,8 +29,15 @@ const WorkHours = () => {
                 noticeShowMessage(error.response.data.message, true);
                 return false;
             }
-            if (status === 403) return navigate("/signin", { state: { message: "access-denied" } });
-            if (status === 404) return navigate("/signin", { state: { message: "not-found" } });
+            if (status === 403) {
+                TokenService.deleteUser();
+                navigate("/signin", { state: { message: "access-denied" } });
+                return true;
+            }
+            if (status === 404) {
+                navigate("/signin", { state: { message: "not-found" } });
+                return true;
+            }
 
         } else if (error.request) {
             console.log("No response received:", error.request);
