@@ -219,14 +219,24 @@ const Compensation = () => {
             return;
         }
 
-        const exportData = dataSource.map(item => ({
-            "เดือน-ปี": item.monthYear || "-",
-            "OA User": item.oaUser || "-",
-            "ชื่อ-นามสกุล": item.fullName || "-",
-            "Team": item.team || "-",
-            "จำนวนชั่วโมง (ชั่วโมง)": item.workHours !== null && item.workHours !== undefined ? Number(item.workHours).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-",
-            "จำนวนเงิน (บาท)": item.amount !== null && item.amount !== undefined ? Number(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-"
-        }));
+        const exportData = dataSource.map(item => {
+            const minutes = parseFloat((item.workHours || "").toString().replace(/,/g, '')) || 0;
+            const duration = moment.duration(minutes, 'minutes');
+            const hrs = Math.floor(duration.asHours());
+            const mins = duration.minutes();
+
+            return {
+                "เดือน-ปี": item.monthYear || "-",
+                "OA User": item.oaUser || "-",
+                "ชื่อ-นามสกุล": item.fullName || "-",
+                "Team": item.team || "-",
+                "จำนวนชั่วโมง": item.workHours !== null && item.workHours !== undefined ? `${hrs} ชั่วโมง ${mins} นาที` : "-",
+                "จำนวนเงิน (บาท)": item.amount !== null && item.amount !== undefined ? Number(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-"
+            };
+        });
+
+        const totalHrsStr = Math.floor(moment.duration(totalHours, 'minutes').asHours());
+        const totalMinsStr = moment.duration(totalHours, 'minutes').minutes();
 
         // Add Summary row
         exportData.push({
@@ -234,13 +244,17 @@ const Compensation = () => {
             "OA User": "",
             "ชื่อ-นามสกุล": "",
             "Team": "",
-            "จำนวนชั่วโมง (ชั่วโมง)": totalHours !== null && totalHours !== undefined ? Number(totalHours).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00",
+            "จำนวนชั่วโมง": totalHours !== null && totalHours !== undefined ? `${totalHrsStr} ชั่วโมง ${totalMinsStr} นาที` : "-",
             "จำนวนเงิน (บาท)": totalAmount !== null && totalAmount !== undefined ? Number(totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"
         });
 
         const worksheet = XLSX.utils.json_to_sheet(exportData);
-        // Add Autofilter & Protection
-        worksheet['!autofilter'] = { ref: worksheet['!ref'] };
+        const range = XLSX.utils.decode_range(worksheet['!ref']);
+
+        // Add Autofilter excluding summary row
+        const filterRange = { s: { r: 0, c: 0 }, e: { r: range.e.r - 1, c: range.e.c } };
+        worksheet['!autofilter'] = { ref: XLSX.utils.encode_range(filterRange) };
+
         worksheet['!protect'] = {
             password: "admin",
             selectLockedCells: true,
@@ -248,7 +262,6 @@ const Compensation = () => {
         };
 
         // Merge Summary Row (Columns 0 to 3)
-        const range = XLSX.utils.decode_range(worksheet['!ref']);
         worksheet["!merges"] = [
             { s: { r: range.e.r, c: 0 }, e: { r: range.e.r, c: 3 } }
         ];
@@ -259,7 +272,7 @@ const Compensation = () => {
             { wch: 20 }, // OA User
             { wch: 30 }, // ชื่อ-นามสกุล
             { wch: 15 }, // Team
-            { wch: 25 }, // จำนวนชั่วโมง (ชั่วโมง)
+            { wch: 25 }, // จำนวนชั่วโมง
             { wch: 20 }, // จำนวนเงิน (บาท)
         ];
 
@@ -299,11 +312,11 @@ const Compensation = () => {
                     }
                 } else {
                     // Data Rows
-                    if (C === 2 || C === 1) {
-                        // ชื่อ-นามสกุล and OA User let's left align
+                    if (C === 1 || C === 2) {
+                        // OA User, ชื่อ-นามสกุล let's left align
                         worksheet[cell_ref].s.alignment.horizontal = "left";
-                    } else if (C === 4 || C === 5) {
-                        // Amounts right align
+                    } else if (C === 5) {
+                        // Amount right align
                         worksheet[cell_ref].s.alignment.horizontal = "right";
                     } else {
                         // Others center align

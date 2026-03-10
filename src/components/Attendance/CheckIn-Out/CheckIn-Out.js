@@ -688,9 +688,12 @@ const CheckInOut = () => {
                                                 {formatTime(currentDateTime)}
                                                 {/* Time check */}
                                                 {(() => {
-                                                    if (!buttonData) return <CheckOutlined style={{ color: 'green', fontSize: '20px' }} />;
+                                                    if (!buttonData) return null;
 
                                                     const { canCi, canCo, ciThreshold, coThreshold, attDate } = buttonData;
+
+                                                    // If neither button is enabled, do not show any icon
+                                                    if (!canCi && !canCo) return null;
                                                     const currentTimeStr = currentDateTime.toTimeString().slice(0, 5);
 
                                                     // Format current date to YYYY-MM-DD
@@ -733,7 +736,12 @@ const CheckInOut = () => {
                                                     {coordinates.long !== null ? coordinates.long.toFixed(7) : "-"}
                                                 </span>
                                                 {(() => {
-                                                    const { wpCondition } = buttonData || {};
+                                                    if (!buttonData) return null;
+                                                    const { wpCondition, canCi, canCo } = buttonData;
+
+                                                    // If neither button is enabled, do not show any icon
+                                                    if (!canCi && !canCo) return null;
+
                                                     let isInside = false;
                                                     if (wpCondition) {
                                                         const parts = wpCondition.split(',').map(s => parseFloat(s.trim()));

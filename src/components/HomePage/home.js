@@ -130,11 +130,11 @@ const Home = (props) => {
 
         return (
             <div
-                className="flex-grow-1"
                 style={{
                     display: "grid",
                     gridTemplateColumns: "repeat(3, 1fr)",
-                    gridAutoRows: "1fr",
+                    gridAutoRows: "minmax(140px, auto)",
+                    alignContent: "start",
                     gap: "0.5rem",
                 }}
             >
@@ -156,11 +156,11 @@ const Home = (props) => {
     const renderManagerDashboard = () => {
         return (
             <div
-                className="flex-grow-1"
                 style={{
                     display: "grid",
                     gridTemplateColumns: "repeat(3, 1fr)",
-                    gridAutoRows: "1fr",
+                    gridAutoRows: "minmax(140px, auto)",
+                    alignContent: "start",
                     gap: "0.5rem",
                 }}
             >

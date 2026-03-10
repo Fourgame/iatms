@@ -91,7 +91,6 @@ const WorkHours = () => {
             key: 'workingHour',
             align: 'center',
             render: (timeStr) => {
-                if (!timeStr || timeStr === "00:00:00") return "0";
                 const parts = timeStr.split(':');
                 if (parts.length >= 2) {
                     const h = parseInt(parts[0], 10);
@@ -144,9 +143,9 @@ const WorkHours = () => {
         const mins = totalMins % 60;
 
         if (mins > 0) {
-            setTotalHoursString(`รวมทั้งหมด ${hours} ชั่วโมง ${mins} นาที`);
+            setTotalHoursString(`${hours} ชั่วโมง ${mins} นาที`);
         } else {
-            setTotalHoursString(`รวมทั้งหมด ${hours} ชั่วโมง`);
+            setTotalHoursString(`${hours} ชั่วโมง`);
         }
     };
 
@@ -154,6 +153,7 @@ const WorkHours = () => {
         setLoading(true);
         try {
             const payload = {
+                full_name: override?.clear ? null : (searchText || null),
                 start_date: override?.clear ? null : (startDate ? startDate.format('YYYY-MM-DD') : null),
                 end_date: override?.clear ? null : (endDate ? endDate.format('YYYY-MM-DD') : null),
                 team_code: override?.clear ? null : (team === "ทั้งหมด" ? null : team),
@@ -225,8 +225,12 @@ const WorkHours = () => {
         });
 
         const worksheet = XLSX.utils.json_to_sheet(exportData);
-        // Add Autofilter & Protection
-        worksheet['!autofilter'] = { ref: worksheet['!ref'] };
+        const range = XLSX.utils.decode_range(worksheet['!ref']);
+
+        // Add Autofilter excluding summary row
+        const filterRange = { s: { r: 0, c: 0 }, e: { r: range.e.r - 1, c: range.e.c } };
+        worksheet['!autofilter'] = { ref: XLSX.utils.encode_range(filterRange) };
+
         worksheet['!protect'] = {
             password: "admin",
             selectLockedCells: true,
@@ -234,7 +238,6 @@ const WorkHours = () => {
         };
 
         // Merge Summary Row (Columns 0 to 3)
-        const range = XLSX.utils.decode_range(worksheet['!ref']);
         worksheet["!merges"] = [
             { s: { r: range.e.r, c: 0 }, e: { r: range.e.r, c: 3 } }
         ];
