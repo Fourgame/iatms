@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, Button as ButtonBootstrap } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { DatePicker, Select, Form, Input, Modal, Row, Col, Button } from 'antd';
@@ -121,6 +121,24 @@ const Compensation = () => {
 
     // Dropdowns
     const [teamList, setTeamList] = useState([]);
+    const [openTeamDropdown, setOpenTeamDropdown] = useState(false);
+
+    const searchFilterRef = useRef(null);
+
+    const handleSearchKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+
+            // Close dropdowns
+            setOpenTeamDropdown(false);
+
+            // Optional: Blur active element so dropdowns or inputs close
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
+            handleSearch();
+        }
+    };
 
     // Summary calculation
     const totalHours = dataSource.reduce((sum, item) => sum + (Number(item.workHours) || 0), 0);
@@ -342,8 +360,13 @@ const Compensation = () => {
                 >
                     Search
                 </Card.Header>
-                <Card.Body >
-                    <div style={{ background: "white", borderRadius: "6px" }}>
+                <Card.Body>
+                    <div
+                        style={{ background: "white", borderRadius: "6px", outline: "none" }}
+                        ref={searchFilterRef}
+                        tabIndex={-1}
+                        onKeyDown={handleSearchKeyDown}
+                    >
                         <div className="d-flex flex-wrap flex-lg-nowrap justify-content-between align-items-start gap-3">
                             {/* Left Side: Filter Fields */}
                             <div className="d-flex flex-wrap align-items-center gap-4">
@@ -354,6 +377,7 @@ const Compensation = () => {
                                         placeholder="กรอกชื่อ-นามสกุลหรือ OA User"
                                         value={searchText}
                                         onChange={(e) => setSearchText(e.target.value)}
+                                        onKeyDown={handleSearchKeyDown}
                                         style={{ width: 250 }}
                                     />
                                 </div>
@@ -364,10 +388,13 @@ const Compensation = () => {
                                     <Select
                                         placeholder="ทั้งหมด"
                                         value={team}
+                                        open={openTeamDropdown}
+                                        onDropdownVisibleChange={(open) => setOpenTeamDropdown(open)}
                                         onChange={(val) => {
                                             setTeam(val);
                                             setStartMonthYear(null);
                                             setEndMonthYear(null);
+                                            requestAnimationFrame(() => searchFilterRef.current?.focus());
                                         }}
                                         style={{ width: 150 }}
                                     >
@@ -388,7 +415,12 @@ const Compensation = () => {
                                                 allowClear={true}
                                                 picker="month"
                                                 value={startMonthYear}
-                                                onChange={(date) => setStartMonthYear(date)}
+                                                inputReadOnly={true}
+                                                onChange={(date) => {
+                                                    setStartMonthYear(date);
+                                                    requestAnimationFrame(() => searchFilterRef.current?.focus());
+                                                }}
+                                                onKeyDown={handleSearchKeyDown}
                                                 disabledDate={(current) => {
                                                     if (!current) return false;
                                                     const isBeforeMin = minMonthYear ? current.isBefore(minMonthYear, 'month') : false;
@@ -408,7 +440,12 @@ const Compensation = () => {
                                                 allowClear={true}
                                                 picker="month"
                                                 value={endMonthYear}
-                                                onChange={(date) => setEndMonthYear(date)}
+                                                inputReadOnly={true}
+                                                onChange={(date) => {
+                                                    setEndMonthYear(date);
+                                                    requestAnimationFrame(() => searchFilterRef.current?.focus());
+                                                }}
+                                                onKeyDown={handleSearchKeyDown}
                                                 disabledDate={(current) => {
                                                     if (!current) return false;
                                                     const isBeforeMin = minMonthYear ? current.isBefore(minMonthYear, 'month') : false;

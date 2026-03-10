@@ -14,6 +14,7 @@ import Loading from "../../Utilities/Loading";
 import moment from 'moment';
 import { getButton } from '../../../services/CICO.service';
 import { getHolidays } from '../../../services/้้holidays.service';
+import dayjs from 'dayjs';
 
 // Haversine Formula for distance calculation
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -38,6 +39,7 @@ const { Option } = Select;
 
 const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = false }) => {
     const [form] = Form.useForm();
+    const modalFormWrapperRef = useRef(null);
     const [ciNewLocation, setCiNewLocation] = useState(null);
     const [coNewLocation, setCoNewLocation] = useState(null);
     const [ciNewAddress, setCiNewAddress] = useState("");
@@ -506,10 +508,20 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
                                                 >
                                                     <TimePicker
                                                         value={newTime}
+                                                        inputReadOnly={true}
+                                                        defaultOpenValue={dayjs('00:00', 'HH:mm')}
+                                                        hideDisabledOptions={true}
                                                         onChange={(time) => {
                                                             setNewTime(time);
                                                             form.setFieldValue(fieldName, time);
                                                             form.setFields([{ name: fieldName, errors: [] }]);
+                                                            requestAnimationFrame(() => modalFormWrapperRef.current?.focus());
+                                                        }}
+                                                        onClick={() => {
+                                                            if (newTime) {
+                                                                setNewTime(null);
+                                                                form.setFieldValue(fieldName, null);
+                                                            }
                                                         }}
                                                         format="HH:mm"
                                                         placeholder="00:00"
@@ -585,184 +597,187 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
             onCancel={onClose}
             footer={null}
             width={2000}
+            zIndex={9999}
             styles={{ header: { padding: 0, borderBottom: 'none' }, body: { padding: '24px' }, content: { padding: 0, overflow: 'hidden', borderRadius: '8px' } }}
             closeIcon={<CloseIconBtn />}
             centered
         >
-            <Form
-                form={form}
-                layout="vertical"
-                onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        form.submit();
-                    }
-                }}
-                onFinish={async (values) => {
-                    // To ensure proper DateTime mapping for C# backend, formatting time with date if possible,
-                    // otherwise falling back to what was logged.
-                    const formatTime = (timeValue) => {
-                        if (!timeValue) return null;
-                        if (timeValue && typeof timeValue.format === 'function') {
-                            return `${data?.attDate || ''}T${timeValue.format("HH:mm")}:00`;
-                        }
-                        if (typeof timeValue === 'string' && timeValue.length <= 5) {
-                            return `${data?.attDate || ''}T${timeValue}:00`;
-                        }
-                        return timeValue;
-                    };
+            <div ref={modalFormWrapperRef} tabIndex={-1} style={{ outline: 'none' }} onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                    if (e.target.tagName === 'TEXTAREA' || e.target.closest('.ant-select-dropdown')) return;
+                    e.preventDefault();
+                    form.submit();
+                }
+            }}>
+                <Form
+                    form={form}
+                    layout="vertical"
+                    onFinish={async (values) => {
+                        // To ensure proper DateTime mapping for C# backend, formatting time with date if possible,
+                        // otherwise falling back to what was logged.
+                        const formatTime = (timeValue) => {
+                            if (!timeValue) return null;
+                            if (timeValue && typeof timeValue.format === 'function') {
+                                return `${data?.attDate || ''}T${timeValue.format("HH:mm")}:00`;
+                            }
+                            if (typeof timeValue === 'string' && timeValue.length <= 5) {
+                                return `${data?.attDate || ''}T${timeValue}:00`;
+                            }
+                            return timeValue;
+                        };
 
-                    const payload = {
-                        at_date: data?.attDate || null,
-                        ci_time_old: formatTime(data?.ciTimeOld),
-                        ci_time_new: formatTime(ciNewTime),
-                        ci_location_old: data?.ciLatlongOld || null,
-                        ci_location_new: ciNewLocation ? `${ciNewLocation.lat}, ${ciNewLocation.lng}` : null,
-                        ci_address_old: data?.ciAddressOld || null,
-                        ci_address_new: ciNewAddress || null,
-                        ci_request_reason: data?.ciReason || null,
-                        co_time_old: formatTime(data?.coTimeOld),
-                        co_time_new: formatTime(coNewTime),
-                        co_location_old: data?.coLatlongOld || null,
-                        co_location_new: coNewLocation ? `${coNewLocation.lat}, ${coNewLocation.lng}` : null,
-                        co_address_old: data?.coAddressOld || null,
-                        co_address_new: coNewAddress || null,
-                        co_request_reason: data?.coReason || null,
-                        request_reason: values.requestReason || null
-                    };
+                        const payload = {
+                            at_date: data?.attDate || null,
+                            ci_time_old: formatTime(data?.ciTimeOld),
+                            ci_time_new: formatTime(ciNewTime),
+                            ci_location_old: data?.ciLatlongOld || null,
+                            ci_location_new: ciNewLocation ? `${ciNewLocation.lat}, ${ciNewLocation.lng}` : null,
+                            ci_address_old: data?.ciAddressOld || null,
+                            ci_address_new: ciNewAddress || null,
+                            ci_request_reason: data?.ciReason || null,
+                            co_time_old: formatTime(data?.coTimeOld),
+                            co_time_new: formatTime(coNewTime),
+                            co_location_old: data?.coLatlongOld || null,
+                            co_location_new: coNewLocation ? `${coNewLocation.lat}, ${coNewLocation.lng}` : null,
+                            co_address_old: data?.coAddressOld || null,
+                            co_address_new: coNewAddress || null,
+                            co_request_reason: data?.coReason || null,
+                            request_reason: values.requestReason || null
+                        };
 
-                    console.log("Submit Payload:", payload);
+                        console.log("Submit Payload:", payload);
 
-                    try {
-                        const response = await postAttChange.post_att_change(payload);
-                        if (response.data || response.status === 200) {
-                            noticeShowMessage("บันทึกข้อมูลสำเร็จ", false);
-                            if (onSuccess) onSuccess();
-                            onClose();
-                        } else {
+                        try {
+                            const response = await postAttChange.post_att_change(payload);
+                            if (response.data || response.status === 200) {
+                                noticeShowMessage("บันทึกข้อมูลสำเร็จ", false);
+                                if (onSuccess) onSuccess();
+                                onClose();
+                            } else {
+                                noticeShowMessage("เกิดข้อผิดพลาดในการบันทึกข้อมูล", true);
+                            }
+                        } catch (error) {
+                            console.error("Error submitting attendance change:", error);
                             noticeShowMessage("เกิดข้อผิดพลาดในการบันทึกข้อมูล", true);
                         }
-                    } catch (error) {
-                        console.error("Error submitting attendance change:", error);
-                        noticeShowMessage("เกิดข้อผิดพลาดในการบันทึกข้อมูล", true);
-                    }
-                }}
-            >
-                <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '10px' }}>
-                    วันที่ {data?.attDate ? moment(data.attDate).format("DD/MM/YYYY") : "-"}
-                </div>
-
-                <div style={{ display: 'flex', gap: '20px' }}>
-                    {/* Check-In Card */}
-                    <Card className="mb-3" style={{ border: '1px solid #d9d9d9', borderRadius: '8px', overflow: 'hidden', width: '50%', height: '50%' }}>
-                        <Card.Header style={{ backgroundColor: '#A0BDFF', fontWeight: 'bold', borderBottom: '1px solid #d9d9d9' }}>
-                            เวลาเข้า
-                        </Card.Header>
-                        <Card.Body className="p-3">
-                            {renderTimeSection('ci', data?.ciTimeOld, data?.ciCorrectTime, ciNewTime, setCiNewTime)}
-                            {(data?.ciCorrectZone === 'นอกสถานที่' || (isReadOnly && (data?.ciLatlongNew || data?.ciAddressNew))) ? (
-                                renderMapSection('ci', data?.ciLatlongOld, data?.ciCorrectZone, ciNewLocation, setCiNewLocation, data?.ciAddressOld, ciNewAddress)
-                            ) : (
-                                <div style={{ display: 'flex', marginBottom: '10px' }}>
-                                    <div style={{ width: '80px', fontWeight: 'bold' }}>ตำแหน่ง</div>
-                                    <div style={{ flex: 1 }}>{data?.ciAddressOld || "-"}</div>
-                                </div>
-                            )}
-                            <div style={{ display: 'flex', marginBottom: '0', paddingTop: '10px' }}>
-                                <div style={{ width: '80px', fontWeight: 'bold' }}>เหตุผล</div>
-                                <div style={{ flex: 1 }}>{data?.ciReason || "-"}</div>
-                            </div>
-                        </Card.Body>
-                    </Card>
-
-                    {/* Check-Out Card */}
-                    <Card className="mb-3" style={{ border: '1px solid #d9d9d9', borderRadius: '8px', overflow: 'hidden', width: '50%', height: '50%' }}>
-                        <Card.Header style={{ backgroundColor: '#A0BDFF', fontWeight: 'bold', borderBottom: '1px solid #d9d9d9' }}>
-                            เวลาออก
-                        </Card.Header>
-                        <Card.Body className="p-3">
-                            {renderTimeSection('co', data?.coTimeOld, data?.coCorrectTime, coNewTime, setCoNewTime)}
-                            {(data?.coCorrectZone === 'นอกสถานที่' || (isReadOnly && (data?.coLatlongNew || data?.coAddressNew))) ? (
-                                renderMapSection('co', data?.coLatlongOld, data?.coCorrectZone, coNewLocation, setCoNewLocation, data?.coAddressOld, coNewAddress)
-                            ) : (
-                                <div style={{ display: 'flex', marginBottom: '10px' }}>
-                                    <div style={{ width: '80px', fontWeight: 'bold' }}>ตำแหน่ง</div>
-                                    <div style={{ flex: 1 }}>{data?.coAddressOld || "-"}</div>
-                                </div>
-                            )}
-                            <div style={{ display: 'flex', marginBottom: '0', paddingTop: '10px' }}>
-                                <div style={{ width: '80px', fontWeight: 'bold' }}>เหตุผล</div>
-                                <div style={{ flex: 1 }}>{data?.coReason || "-"}</div>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </div>
-
-                {/* Reason Display */}
-                {(data?.requestReason || data?.rejectReason) && (
-                    <div style={{ marginBottom: '15px', padding: '0 5px' }}>
-                        {data?.requestReason && (
-                            <div style={{ display: 'flex', marginBottom: '8px' }}>
-                                <div style={{ width: '120px', fontWeight: 'bold' }}>เหตุผลที่ร้องขอ :</div>
-                                <div style={{ flex: 1 }}>{data.requestReason}</div>
-                            </div>
-                        )}
-
-                        {data?.rejectReason && (
-                            <div style={{ display: 'flex' }}>
-                                <div style={{ width: '120px', fontWeight: 'bold' }}>เหตุผลที่ปฏิเสธ :</div>
-                                <div style={{ flex: 1 }}>{data.rejectReason}</div>
-                            </div>
-                        )}
+                    }}
+                >
+                    <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '10px' }}>
+                        วันที่ {data?.attDate ? moment(data.attDate).format("DD/MM/YYYY") : "-"}
                     </div>
-                )}
 
-                {/* Request Reason Card */}
-                {!isReadOnly && (
-                    <Card className="mb-3" style={{ border: '1px solid #d9d9d9', borderRadius: '8px', overflow: 'hidden' }}>
-                        <Card.Header style={{ backgroundColor: '#A0BDFF', fontWeight: 'bold', borderBottom: '1px solid #d9d9d9' }}>
-                            <span style={{ color: 'red', marginRight: '5px' }}>*</span>เหตุผลที่ร้องขอ
-                        </Card.Header>
-                        <Card.Body className="p-3" style={{ paddingBottom: '0 !important' }}>
-                            <Form.Item shouldUpdate noStyle>
-                                {() => {
-                                    const err = form.getFieldError("requestReason")?.[0];
-                                    return (
-                                        <Form.Item
-                                            name="requestReason"
-                                            style={{ marginBottom: 0 }}
-                                            rules={[{ required: true, message: 'กรุณาระบุเหตุผลที่ร้องขอ' }]}
-                                            validateStatus={err ? "error" : undefined}
-                                            help={fixedHelp(err)}
-                                        >
-                                            <Input.TextArea rows={4} placeholder="ระบุเหตุผลที่ขอแก้ไข..." style={{ resize: 'none' }} />
-                                        </Form.Item>
-                                    );
-                                }}
-                            </Form.Item>
-                        </Card.Body>
-                    </Card>
-                )}
+                    <div style={{ display: 'flex', gap: '20px' }}>
+                        {/* Check-In Card */}
+                        <Card className="mb-3" style={{ border: '1px solid #d9d9d9', borderRadius: '8px', overflow: 'hidden', width: '50%', height: '50%' }}>
+                            <Card.Header style={{ backgroundColor: '#A0BDFF', fontWeight: 'bold', borderBottom: '1px solid #d9d9d9' }}>
+                                เวลาเข้า
+                            </Card.Header>
+                            <Card.Body className="p-3">
+                                {renderTimeSection('ci', data?.ciTimeOld, data?.ciCorrectTime, ciNewTime, setCiNewTime)}
+                                {(data?.ciCorrectZone === 'นอกสถานที่' || (isReadOnly && (data?.ciLatlongNew || data?.ciAddressNew))) ? (
+                                    renderMapSection('ci', data?.ciLatlongOld, data?.ciCorrectZone, ciNewLocation, setCiNewLocation, data?.ciAddressOld, ciNewAddress)
+                                ) : (
+                                    <div style={{ display: 'flex', marginBottom: '10px' }}>
+                                        <div style={{ width: '80px', fontWeight: 'bold' }}>ตำแหน่ง</div>
+                                        <div style={{ flex: 1 }}>{data?.ciAddressOld || "-"}</div>
+                                    </div>
+                                )}
+                                <div style={{ display: 'flex', marginBottom: '0', paddingTop: '10px' }}>
+                                    <div style={{ width: '80px', fontWeight: 'bold' }}>เหตุผล</div>
+                                    <div style={{ flex: 1 }}>{data?.ciReason || "-"}</div>
+                                </div>
+                            </Card.Body>
+                        </Card>
 
-                <div className="modal-footer justify-content-center border-top-0 pb-0 pt-3" style={{ gap: '20px' }}>
-                    {!isReadOnly && (
-                        <>
-                            <SubmitModalBtnBootstrap
-                                onClick={() => form.submit()}
-                            >
-                            </SubmitModalBtnBootstrap>
+                        {/* Check-Out Card */}
+                        <Card className="mb-3" style={{ border: '1px solid #d9d9d9', borderRadius: '8px', overflow: 'hidden', width: '50%', height: '50%' }}>
+                            <Card.Header style={{ backgroundColor: '#A0BDFF', fontWeight: 'bold', borderBottom: '1px solid #d9d9d9' }}>
+                                เวลาออก
+                            </Card.Header>
+                            <Card.Body className="p-3">
+                                {renderTimeSection('co', data?.coTimeOld, data?.coCorrectTime, coNewTime, setCoNewTime)}
+                                {(data?.coCorrectZone === 'นอกสถานที่' || (isReadOnly && (data?.coLatlongNew || data?.coAddressNew))) ? (
+                                    renderMapSection('co', data?.coLatlongOld, data?.coCorrectZone, coNewLocation, setCoNewLocation, data?.coAddressOld, coNewAddress)
+                                ) : (
+                                    <div style={{ display: 'flex', marginBottom: '10px' }}>
+                                        <div style={{ width: '80px', fontWeight: 'bold' }}>ตำแหน่ง</div>
+                                        <div style={{ flex: 1 }}>{data?.coAddressOld || "-"}</div>
+                                    </div>
+                                )}
+                                <div style={{ display: 'flex', marginBottom: '0', paddingTop: '10px' }}>
+                                    <div style={{ width: '80px', fontWeight: 'bold' }}>เหตุผล</div>
+                                    <div style={{ flex: 1 }}>{data?.coReason || "-"}</div>
+                                </div>
+                            </Card.Body>
+                        </Card>
+                    </div>
 
-                            <div style={{ width: '30px' }}></div>
-                        </>
+                    {/* Reason Display */}
+                    {(data?.requestReason || data?.rejectReason) && (
+                        <div style={{ marginBottom: '15px', padding: '0 5px' }}>
+                            {data?.requestReason && (
+                                <div style={{ display: 'flex', marginBottom: '8px' }}>
+                                    <div style={{ width: '120px', fontWeight: 'bold' }}>เหตุผลที่ร้องขอ :</div>
+                                    <div style={{ flex: 1 }}>{data.requestReason}</div>
+                                </div>
+                            )}
+
+                            {data?.rejectReason && (
+                                <div style={{ display: 'flex' }}>
+                                    <div style={{ width: '120px', fontWeight: 'bold' }}>เหตุผลที่ปฏิเสธ :</div>
+                                    <div style={{ flex: 1 }}>{data.rejectReason}</div>
+                                </div>
+                            )}
+                        </div>
                     )}
 
-                    <CloseModalBtnBootstrap
-                        onClick={onClose}
-                    >
-                    </CloseModalBtnBootstrap>
-                </div>
-            </Form>
-        </Modal>
+                    {/* Request Reason Card */}
+                    {!isReadOnly && (
+                        <Card className="mb-3" style={{ border: '1px solid #d9d9d9', borderRadius: '8px', overflow: 'hidden' }}>
+                            <Card.Header style={{ backgroundColor: '#A0BDFF', fontWeight: 'bold', borderBottom: '1px solid #d9d9d9' }}>
+                                <span style={{ color: 'red', marginRight: '5px' }}>*</span>เหตุผลที่ร้องขอ
+                            </Card.Header>
+                            <Card.Body className="p-3" style={{ paddingBottom: '0 !important' }}>
+                                <Form.Item shouldUpdate noStyle>
+                                    {() => {
+                                        const err = form.getFieldError("requestReason")?.[0];
+                                        return (
+                                            <Form.Item
+                                                name="requestReason"
+                                                style={{ marginBottom: 0 }}
+                                                rules={[{ required: true, message: 'กรุณาระบุเหตุผลที่ร้องขอ' }]}
+                                                validateStatus={err ? "error" : undefined}
+                                                help={fixedHelp(err)}
+                                            >
+                                                <Input.TextArea rows={4} placeholder="ระบุเหตุผลที่ขอแก้ไข..." style={{ resize: 'none' }} />
+                                            </Form.Item>
+                                        );
+                                    }}
+                                </Form.Item>
+                            </Card.Body>
+                        </Card>
+                    )}
+
+                    <div className="modal-footer justify-content-center border-top-0 pb-0 pt-3" style={{ gap: '20px' }}>
+                        {!isReadOnly && (
+                            <>
+                                <SubmitModalBtnBootstrap
+                                    onClick={() => form.submit()}
+                                >
+                                </SubmitModalBtnBootstrap>
+
+                                <div style={{ width: '30px' }}></div>
+                            </>
+                        )}
+
+                        <CloseModalBtnBootstrap
+                            onClick={onClose}
+                        >
+                        </CloseModalBtnBootstrap>
+                    </div>
+                </Form>
+            </div>
+        </Modal >
     );
 };
 

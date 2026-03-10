@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, Button as ButtonBootstrap } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { DatePicker, Select, Form, Input, Modal, Row, Col, Button, Spin } from 'antd';
@@ -232,6 +232,33 @@ const AttendanceHistory = () => {
     const [coTimeStatus, setCoTimeStatus] = useState("ทั้งหมด");
     const [ciLocationStatus, setCiLocationStatus] = useState("ทั้งหมด");
     const [coLocationStatus, setCoLocationStatus] = useState("ทั้งหมด");
+
+    const [openCiTimeDropdown, setOpenCiTimeDropdown] = useState(false);
+    const [openCoTimeDropdown, setOpenCoTimeDropdown] = useState(false);
+    const [openCiLocationDropdown, setOpenCiLocationDropdown] = useState(false);
+    const [openCoLocationDropdown, setOpenCoLocationDropdown] = useState(false);
+    const [openTeamDropdown, setOpenTeamDropdown] = useState(false);
+
+    const searchFilterRef = useRef(null);
+
+    const handleSearchKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+
+            // Close all dropdowns
+            setOpenCiTimeDropdown(false);
+            setOpenCoTimeDropdown(false);
+            setOpenCiLocationDropdown(false);
+            setOpenCoLocationDropdown(false);
+            setOpenTeamDropdown(false);
+
+            // Optional: Blur active element so dropdowns or inputs close
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
+            handleSearch();
+        }
+    };
 
     const [dataSource, setDataSource] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -470,7 +497,12 @@ const AttendanceHistory = () => {
                     Search
                 </Card.Header>
                 <Card.Body>
-                    <div style={{ background: "white", borderRadius: "6px" }}>
+                    <div
+                        style={{ background: "white", borderRadius: "6px", outline: "none" }}
+                        ref={searchFilterRef}
+                        tabIndex={-1}
+                        onKeyDown={handleSearchKeyDown}
+                    >
                         <div className="row">
                             <div className="col-lg-9 col-md-12">
                                 {/* Row 1 fields */}
@@ -482,7 +514,12 @@ const AttendanceHistory = () => {
                                             <span style={{ position: 'absolute', top: '-8px', left: '10px', background: 'white', padding: '0 5px', fontSize: '11px', color: '#888', zIndex: 1 }}>Start Date</span>
                                             <DatePicker
                                                 value={startDate}
-                                                onChange={(date) => setStartDate(date)}
+                                                inputReadOnly={true}
+                                                onChange={(date) => {
+                                                    setStartDate(date);
+                                                    requestAnimationFrame(() => searchFilterRef.current?.focus());
+                                                }}
+                                                onKeyDown={handleSearchKeyDown}
                                                 disabledDate={(current) => {
                                                     return endDate ? current && current > endDate.endOf('day') : false;
                                                 }}
@@ -496,7 +533,12 @@ const AttendanceHistory = () => {
                                             <span style={{ position: 'absolute', top: '-8px', left: '10px', background: 'white', padding: '0 5px', fontSize: '11px', color: '#888', zIndex: 1 }}>End Date</span>
                                             <DatePicker
                                                 value={endDate}
-                                                onChange={(date) => setEndDate(date)}
+                                                inputReadOnly={true}
+                                                onChange={(date) => {
+                                                    setEndDate(date);
+                                                    requestAnimationFrame(() => searchFilterRef.current?.focus());
+                                                }}
+                                                onKeyDown={handleSearchKeyDown}
                                                 disabledDate={(current) => {
                                                     return startDate ? current && current < startDate.startOf('day') : false;
                                                 }}
@@ -514,7 +556,12 @@ const AttendanceHistory = () => {
                                             <span style={{ position: 'absolute', top: '-8px', left: '10px', background: 'white', padding: '0 5px', fontSize: '11px', color: '#888', zIndex: 1 }}>Check-In</span>
                                             <Select
                                                 value={ciTimeStatus}
-                                                onChange={(val) => setCiTimeStatus(val)}
+                                                open={openCiTimeDropdown}
+                                                onDropdownVisibleChange={(open) => setOpenCiTimeDropdown(open)}
+                                                onChange={(val) => {
+                                                    setCiTimeStatus(val);
+                                                    requestAnimationFrame(() => searchFilterRef.current?.focus());
+                                                }}
                                                 placeholder="ทั้งหมด"
                                                 style={{ width: 110 }}
 
@@ -527,7 +574,17 @@ const AttendanceHistory = () => {
                                         </div>
                                         <div style={{ position: 'relative', marginTop: '4px' }}>
                                             <span style={{ position: 'absolute', top: '-8px', left: '10px', background: 'white', padding: '0 5px', fontSize: '11px', color: '#888', zIndex: 1 }}>Check-Out</span>
-                                            <Select value={coTimeStatus} onChange={(val) => setCoTimeStatus(val)} placeholder="ทั้งหมด" style={{ width: 110 }} >
+                                            <Select
+                                                value={coTimeStatus}
+                                                open={openCoTimeDropdown}
+                                                onDropdownVisibleChange={(open) => setOpenCoTimeDropdown(open)}
+                                                onChange={(val) => {
+                                                    setCoTimeStatus(val);
+                                                    requestAnimationFrame(() => searchFilterRef.current?.focus());
+                                                }}
+                                                placeholder="ทั้งหมด"
+                                                style={{ width: 110 }}
+                                            >
                                                 <Option value="ทั้งหมด">ทั้งหมด</Option>
                                                 {coTimeStatusList.map((item, idx) => (
                                                     <Option key={idx} value={item.value}>{item.label}</Option>
@@ -541,7 +598,17 @@ const AttendanceHistory = () => {
                                         <span style={{ fontWeight: 700, fontSize: '16px' }}>สถานะตำแหน่ง:</span>
                                         <div style={{ position: 'relative', marginTop: '4px' }}>
                                             <span style={{ position: 'absolute', top: '-8px', left: '10px', background: 'white', padding: '0 5px', fontSize: '11px', color: '#888', zIndex: 1 }}>Check-In</span>
-                                            <Select value={ciLocationStatus} onChange={(val) => setCiLocationStatus(val)} placeholder="ทั้งหมด" style={{ width: 110 }} >
+                                            <Select
+                                                value={ciLocationStatus}
+                                                open={openCiLocationDropdown}
+                                                onDropdownVisibleChange={(open) => setOpenCiLocationDropdown(open)}
+                                                onChange={(val) => {
+                                                    setCiLocationStatus(val);
+                                                    requestAnimationFrame(() => searchFilterRef.current?.focus());
+                                                }}
+                                                placeholder="ทั้งหมด"
+                                                style={{ width: 110 }}
+                                            >
                                                 <Option value="ทั้งหมด">ทั้งหมด</Option>
                                                 {correctZoneList.map((item, idx) => (
                                                     <Option key={idx} value={item.value}>{item.label}</Option>
@@ -550,7 +617,17 @@ const AttendanceHistory = () => {
                                         </div>
                                         <div style={{ position: 'relative', marginTop: '4px' }}>
                                             <span style={{ position: 'absolute', top: '-8px', left: '10px', background: 'white', padding: '0 5px', fontSize: '11px', color: '#888', zIndex: 1 }}>Check-Out</span>
-                                            <Select value={coLocationStatus} onChange={(val) => setCoLocationStatus(val)} placeholder="ทั้งหมด" style={{ width: 110 }} >
+                                            <Select
+                                                value={coLocationStatus}
+                                                open={openCoLocationDropdown}
+                                                onDropdownVisibleChange={(open) => setOpenCoLocationDropdown(open)}
+                                                onChange={(val) => {
+                                                    setCoLocationStatus(val);
+                                                    requestAnimationFrame(() => searchFilterRef.current?.focus());
+                                                }}
+                                                placeholder="ทั้งหมด"
+                                                style={{ width: 110 }}
+                                            >
                                                 <Option value="ทั้งหมด">ทั้งหมด</Option>
                                                 {correctZoneList.map((item, idx) => (
                                                     <Option key={idx} value={item.value}>{item.label}</Option>
@@ -559,12 +636,19 @@ const AttendanceHistory = () => {
                                         </div>
                                     </div>
 
+                                    
+
                                     <div className="d-flex align-items-center gap-2">
                                         <span style={{ fontWeight: 700, fontSize: '16px' }}>Team :</span>
                                         <Select
                                             placeholder="ทั้งหมด"
                                             value={team}
-                                            onChange={(val) => setTeam(val)}
+                                            open={openTeamDropdown}
+                                            onDropdownVisibleChange={(open) => setOpenTeamDropdown(open)}
+                                            onChange={(val) => {
+                                                setTeam(val);
+                                                requestAnimationFrame(() => searchFilterRef.current?.focus());
+                                            }}
                                             style={{ width: 150 }}
 
                                         >
@@ -574,20 +658,19 @@ const AttendanceHistory = () => {
                                             ))}
                                         </Select>
                                     </div>
-                                </div>
 
-                                {/* Row 2 fields */}
-                                <div className="d-flex align-items-center flex-wrap gap-4">
-                                    <div className="d-flex align-items-center gap-2">
+                                     <div className="d-flex align-items-center gap-2">
                                         <span style={{ fontWeight: 700, fontSize: '16px' }}>ชื่อ-นามสกุลหรือ OA User :</span>
                                         <Input
                                             placeholder="กรอกชื่อ-นามสกุลหรือ OA User"
                                             value={searchText}
                                             onChange={(e) => setSearchText(e.target.value)}
+                                            onKeyDown={handleSearchKeyDown}
                                             style={{ width: 250 }}
                                         />
                                     </div>
                                 </div>
+
                             </div>
 
                             {/* Buttons */}
