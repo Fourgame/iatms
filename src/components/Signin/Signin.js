@@ -82,7 +82,7 @@ const Signin = (props) => {
     <div
       className="vh-100 overflow-hidden d-flex justify-content-end align-items-center "  //boder-danger
       style={{
-        backgroundImage: "url(/signin_bg.png)",
+        backgroundImage: "url(/iatms/web/signin_bg.png)",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",

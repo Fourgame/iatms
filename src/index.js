@@ -12,7 +12,7 @@ import setupInterceptors from './services/setupInterceptors';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   // <React.StrictMode>   //off becrerender 2 time
-  <BrowserRouter>
+  <BrowserRouter basename="/iatms/web">
     <App />
   </BrowserRouter>
   // </React.StrictMode>

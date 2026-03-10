@@ -1,4 +1,5 @@
 {
+  "homepage": "/iatms/web",
   "name": "iatms",
   "version": "0.1.0",
   "private": true,
