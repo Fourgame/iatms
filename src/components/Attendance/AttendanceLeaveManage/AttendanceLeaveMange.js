@@ -1819,15 +1819,17 @@ const AttendanceLeaveMange = () => {
                             <ClearToolBtnBootstrap onClick={handleAttClear} />
                         </div>
                     </div>
-                    <div style={{ marginTop: "5px" }}>
-                        <TableUI
-                            columns={attColumns}
-                            dataSource={attChangeData}
-                            pagination={true}
-                            bordered={true}
-                            size="small"
-                            rowKey={(record, index) => index}
-                        />
+                    <div style={{ marginTop: "5px", maxWidth: "100%", overflowX: "auto" }}>
+                        <div style={{ minWidth: "1200px" }}>
+                            <TableUI
+                                columns={attColumns}
+                                dataSource={attChangeData}
+                                pagination={true}
+                                bordered={true}
+                                size="small"
+                                rowKey={(record, index) => index}
+                            />
+                        </div>
                     </div>
                 </Card.Body>
             </Card>
@@ -1935,15 +1937,17 @@ const AttendanceLeaveMange = () => {
                             <ClearToolBtnBootstrap onClick={handleLeaveClear} />
                         </div>
                     </div>
-                    <div style={{ marginTop: "5px" }}>
-                        <TableUI
-                            columns={leaveColumns}
-                            dataSource={leaveHistory}
-                            pagination={false}
-                            bordered={true}
-                            size="small"
-                            loading={loading}
-                        />
+                    <div style={{ marginTop: "5px", maxWidth: "100%", overflowX: "auto" }}>
+                        <div style={{ minWidth: "1200px" }}>
+                            <TableUI
+                                columns={leaveColumns}
+                                dataSource={leaveHistory}
+                                pagination={false}
+                                bordered={true}
+                                size="small"
+                                loading={loading}
+                            />
+                        </div>
                     </div>
                 </Card.Body>
             </Card>

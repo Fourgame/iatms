@@ -102,7 +102,7 @@ const Header = () => {
                     {/* Brand */}
                     <Button variant="primary"
                         onClick={goHome}
-                        className="border border-3 rounded-4 d-flex align-items-center gap-2 px-3 py-1 border-white"
+                        className="border border-3 rounded-4 d-none d-xl-flex align-items-center gap-2 px-3 py-1 border-white"
                         style={{
                             "--bs-btn-bg": "#04318D",
                             "--bs-btn-hover-bg": "#2e59d9",
@@ -116,83 +116,100 @@ const Header = () => {
                     </Button>
 
                     {/* Toggler */}
-                    <a
-                        className="navbar-toggler"
+                    <button
+                        className="navbar-toggler border-white"
                         type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#navbarNav"
-                        aria-controls="navbarNav"
-                        aria-expanded="false"
-                        aria-label="Toggle navigation"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#offcanvasNavbar"
+                        aria-controls="offcanvasNavbar"
                     >
                         <span className="navbar-toggler-icon"></span>
-                    </a>
+                    </button>
 
                     {/* Menus */}
-                    <div className="collapse navbar-collapse" id="navbarNav">
-                        <ul className="navbar-nav me-auto mb-2 mb-lg-0 gap-4">
+                    <div className="offcanvas offcanvas-start" tabIndex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel" style={{ backgroundColor: "#1C3C85" }}>
+                        <div className="offcanvas-header border-bottom" style={{ borderColor: "rgba(255,255,255,0.1) !important" }}>
+                            <Button variant="primary"
+                                onClick={goHome}
+                                className="border border-3 rounded-4 d-flex align-items-center gap-2 px-3 py-1 border-white"
+                                style={{
+                                    "--bs-btn-bg": "#04318D",
+                                    "--bs-btn-hover-bg": "#2e59d9",
+                                    "--bs-btn-active-bg": "#2e59d9",
+                                    height: "48px",
+                                    boxShadow: "0 4px 6px rgba(0,0,0,0.3)"
+                                }}
+                            >
+                                <span className="fw-bold me-2">IATMS</span>
+                                <i className="bi bi-calendar-check-fill"></i>
+                            </Button>
+                            <button type="button" className="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                        </div>
+                        <div className="offcanvas-body">
+                            <ul className="navbar-nav me-auto mb-2 mb-lg-0 gap-4 mt-2 mt-xl-0">
 
-                            {/* 1. Menu: Attendance */}
-                            {activeMenus.attendance && (
-                                <li className="nav-item dropdown">
-                                    <a className="nav-link dropdown-toggle text-white fw-medium" href="#" role="button" data-bs-toggle="dropdown">
-                                        Attendance
-                                    </a>
-                                    <ul className="dropdown-menu shadow border-0 mt-2">
-                                        {activeMenus.func.cico && <li><Link className="dropdown-item" to="/attendance/Check-In-&-Check-Out" onClick={(e) => handleRefresh(e, "/attendance/Check-In-&-Check-Out")}>Check-In & Check-Out</Link></li>}
-                                        {activeMenus.func.cico && <li><Link className="dropdown-item" to="/attendance/Attendance-&-Leave-Management " onClick={(e) => handleRefresh(e, "/attendance/Attendance-&-Leave-Management")}>Attendance & Leave Management</Link></li>}
-                                        {activeMenus.func.approve && <li><Link className="dropdown-item" to="/attendance/Attendance-&-Leave-Approval" onClick={(e) => handleRefresh(e, "/attendance/Attendance-&-Leave-Approval")}>Attendance & Leave Approval</Link></li>}
-                                    </ul>
-                                </li>
-                            )}
+                                {/* 1. Menu: Attendance */}
+                                {activeMenus.attendance && (
+                                    <li className="nav-item dropdown">
+                                        <a className="nav-link dropdown-toggle text-white fw-medium" href="#" role="button" data-bs-toggle="dropdown">
+                                            Attendance
+                                        </a>
+                                        <ul className="dropdown-menu shadow border-0 mt-2">
+                                            {activeMenus.func.cico && <li><Link className="dropdown-item" to="/attendance/Check-In-&-Check-Out" onClick={(e) => handleRefresh(e, "/attendance/Check-In-&-Check-Out")}>Check-In & Check-Out</Link></li>}
+                                            {activeMenus.func.cico && <li><Link className="dropdown-item" to="/attendance/Attendance-&-Leave-Management " onClick={(e) => handleRefresh(e, "/attendance/Attendance-&-Leave-Management")}>Attendance & Leave Management</Link></li>}
+                                            {activeMenus.func.approve && <li><Link className="dropdown-item" to="/attendance/Attendance-&-Leave-Approval" onClick={(e) => handleRefresh(e, "/attendance/Attendance-&-Leave-Approval")}>Attendance & Leave Approval</Link></li>}
+                                        </ul>
+                                    </li>
+                                )}
 
-                            {/* 2. Menu: Report */}
-                            {activeMenus.report && (
-                                <li className="nav-item dropdown">
-                                    <a className="nav-link dropdown-toggle text-white fw-medium" href="#" role="button" data-bs-toggle="dropdown">
-                                        Report
-                                    </a>
-                                    <ul className="dropdown-menu shadow border-0 mt-2">
-                                        {activeMenus.func.rp_attendance && <li><Link className="dropdown-item" to="/report/AttendanceHistory" onClick={(e) => handleRefresh(e, "/report/AttendanceHistory")}>Attendance Report</Link></li>}
-                                        {activeMenus.func.rp_work_hours && <li><Link className="dropdown-item" to="/report/WorkHours" onClick={(e) => handleRefresh(e, "/report/WorkHours")}>Work Hours Report</Link></li>}
-                                        {activeMenus.func.rp_compensation && <li><Link className="dropdown-item" to="/report/Compensation" onClick={(e) => handleRefresh(e, "/report/Compensation")}>Compensation Report</Link></li>}
-                                    </ul>
-                                </li>
-                            )}
+                                {/* 2. Menu: Report */}
+                                {activeMenus.report && (
+                                    <li className="nav-item dropdown">
+                                        <a className="nav-link dropdown-toggle text-white fw-medium" href="#" role="button" data-bs-toggle="dropdown">
+                                            Report
+                                        </a>
+                                        <ul className="dropdown-menu shadow border-0 mt-2">
+                                            {activeMenus.func.rp_attendance && <li><Link className="dropdown-item" to="/report/AttendanceHistory" onClick={(e) => handleRefresh(e, "/report/AttendanceHistory")}>Attendance Report</Link></li>}
+                                            {activeMenus.func.rp_work_hours && <li><Link className="dropdown-item" to="/report/WorkHours" onClick={(e) => handleRefresh(e, "/report/WorkHours")}>Work Hours Report</Link></li>}
+                                            {activeMenus.func.rp_compensation && <li><Link className="dropdown-item" to="/report/Compensation" onClick={(e) => handleRefresh(e, "/report/Compensation")}>Compensation Report</Link></li>}
+                                        </ul>
+                                    </li>
+                                )}
 
-                            {/* 3. Menu: Admin */}
-                            {activeMenus.admin && (
-                                <li className="nav-item dropdown">
-                                    <a className="nav-link dropdown-toggle text-white fw-medium" href="#" role="button" data-bs-toggle="dropdown">
-                                        Admin
-                                    </a>
-                                    <ul className="dropdown-menu shadow border-0 mt-2">
-                                        <li><Link className="dropdown-item" to="/admin/user-management" onClick={(e) => handleRefresh(e, "/admin/user-management")}>User Management</Link></li>
-                                    </ul>
-                                </li>
-                            )}
+                                {/* 3. Menu: Admin */}
+                                {activeMenus.admin && (
+                                    <li className="nav-item dropdown">
+                                        <a className="nav-link dropdown-toggle text-white fw-medium" href="#" role="button" data-bs-toggle="dropdown">
+                                            Admin
+                                        </a>
+                                        <ul className="dropdown-menu shadow border-0 mt-2">
+                                            <li><Link className="dropdown-item" to="/admin/user-management" onClick={(e) => handleRefresh(e, "/admin/user-management")}>User Management</Link></li>
+                                        </ul>
+                                    </li>
+                                )}
 
-                            {/* 4. Menu: Setup */}
-                            {activeMenus.setup && (
-                                <li className="nav-item dropdown">
-                                    <a className="nav-link dropdown-toggle text-white fw-medium" href="#" role="button" data-bs-toggle="dropdown">
-                                        Setup
-                                    </a>
-                                    <ul className="dropdown-menu shadow border-0 mt-2">
-                                        {<li><Link className="dropdown-item" to="/setup/manage-list-of-values" onClick={(e) => handleRefresh(e, "/setup/manage-list-of-values")}>List of Value</Link></li>}
-                                        {<li><Link className="dropdown-item" to="/setup/role" onClick={(e) => handleRefresh(e, "/setup/role")}>Define Role</Link></li>}
-                                        {<li><Link className="dropdown-item" to="/setup/manage-holidays" onClick={(e) => handleRefresh(e, "/setup/manage-holidays")}>Manage Holiday</Link></li>}
-                                    </ul>
-                                </li>
-                            )}
-                        </ul>
+                                {/* 4. Menu: Setup */}
+                                {activeMenus.setup && (
+                                    <li className="nav-item dropdown">
+                                        <a className="nav-link dropdown-toggle text-white fw-medium" href="#" role="button" data-bs-toggle="dropdown">
+                                            Setup
+                                        </a>
+                                        <ul className="dropdown-menu shadow border-0 mt-2">
+                                            {<li><Link className="dropdown-item" to="/setup/manage-list-of-values" onClick={(e) => handleRefresh(e, "/setup/manage-list-of-values")}>List of Value</Link></li>}
+                                            {<li><Link className="dropdown-item" to="/setup/role" onClick={(e) => handleRefresh(e, "/setup/role")}>Define Role</Link></li>}
+                                            {<li><Link className="dropdown-item" to="/setup/manage-holidays" onClick={(e) => handleRefresh(e, "/setup/manage-holidays")}>Manage Holiday</Link></li>}
+                                        </ul>
+                                    </li>
+                                )}
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
                 {/* Right Side */}
-                <div className="d-flex align-items-center gap-4 ms-auto">
-                    <span className="fw-lighter text-white">Version: (Web) | (API)</span>
-                    <span className="fw-bold text-white">Role : {currentUser.profile.role_id}</span>
+                <div className="d-flex align-items-center gap-2 gap-md-4 ms-auto">
+                    <span className="fw-lighter text-white d-none d-xl-inline">Version: (Web) | (API)</span>
+                    <span className="fw-bold text-white d-none d-md-inline">Role : {currentUser.profile.role_id}</span>
 
                     <Button variant="primary"
                         onClick={logOut}
@@ -208,7 +225,7 @@ const Header = () => {
                         onMouseOut={(e) => e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.3)"}
                     >
                         <i className="bi bi-person-fill fs-5"></i>
-                        <span className="fw-bold">{fullName}</span>
+                        <span className="fw-bold d-none d-sm-inline">{fullName}</span>
                         <i className="bi bi-box-arrow-right fs-5"></i>
                     </Button>
 

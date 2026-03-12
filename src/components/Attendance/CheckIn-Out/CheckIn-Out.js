@@ -146,6 +146,7 @@ const CheckInOut = () => {
     const [actionType, setActionType] = useState(""); // "CheckIn" or "CheckOut"
     const [currentAddress, setCurrentAddress] = useState("");
     const [isInside, setIsInside] = useState(false);
+    const [isGeocoding, setIsGeocoding] = useState(false);
     const navigate = useNavigate();
 
     const handleRequestError = (error) => {
@@ -332,6 +333,7 @@ const CheckInOut = () => {
                 },
                 (error) => {
                     console.error("Error getting location: ", error);
+                    setCoordinates({ lat: null, long: null });
                     setLoadingLocation(false);
                 }
             );
@@ -345,6 +347,7 @@ const CheckInOut = () => {
 
     useEffect(() => {
         if (isLoaded && coordinates.lat && coordinates.long) {
+            setIsGeocoding(true);
             const geocoder = new window.google.maps.Geocoder();
             geocoder.geocode({
                 location: { lat: coordinates.lat, lng: coordinates.long },
@@ -356,6 +359,7 @@ const CheckInOut = () => {
                 } else {
                     setCurrentAddress("");
                 }
+                setIsGeocoding(false);
             });
         }
     }, [coordinates, isLoaded]);
@@ -398,6 +402,7 @@ const CheckInOut = () => {
                 },
                 (error) => {
                     console.error("Error: ", error);
+                    setCoordinates({ lat: null, long: null });
                     setLoadingLocation(false);
                 }
             );
@@ -661,6 +666,11 @@ const CheckInOut = () => {
         }
     ];
 
+    const isLocationLoading = loadingLocation || (!isLoaded && !loadError) || isGeocoding;
+    const isServiceReady = isLoaded && !loadError && coordinates.lat !== null && coordinates.long !== null && !isLocationLoading;
+    const canCheckIn = buttonData?.canCi && isServiceReady;
+    const canCheckOut = buttonData?.canCo && isServiceReady;
+
     return (
         <div style={{ paddingLeft: '20px', paddingRight: '20px', paddingBottom: '60px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
             <Spin spinning={pageLoading} size="large" tip="กำลังโหลดข้อมูล...">
@@ -673,110 +683,115 @@ const CheckInOut = () => {
                         boxShadow: "0px 4px 4px rgba(0,0,0,0.25)",
                     }}
                 >
-                    <Spin spinning={loadingLocation}>
-                        <Card
-                            style={{ backgroundColor: "#F8F8F8" }}
-                            className="rounded-4">
+                    <Card
+                        style={{ backgroundColor: "#F8F8F8" }}
+                        className="rounded-4">
 
-                            <Card.Body style={{ padding: "30px" }}
-                                className="border border-3 border-black  rounded-4" >
+                        <Card.Body style={{ padding: "30px" }}
+                            className="border border-3 border-black  rounded-4" >
 
-                                <Row>
-                                    {/* Left Column: Details */}
-                                    <Col md={6}>
+                            <Row>
+                                {/* Left Column: Details */}
+                                <Col md={6}>
 
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                            {/* Date */}
-                                            <div style={{ fontSize: '20px', fontWeight: 'bold' }}>
-                                                {formatDate(currentDateTime)}
-                                            </div>
-                                            {/* Time */}
-                                            <div style={{ fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                {formatTime(currentDateTime)}
-                                                {/* Time check */}
-                                                {(() => {
-                                                    if (!buttonData) return null;
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                        {/* Date */}
+                                        <div style={{ fontSize: '20px', fontWeight: 'bold' }}>
+                                            {formatDate(currentDateTime)}
+                                        </div>
+                                        {/* Time */}
+                                        <div style={{ fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            {formatTime(currentDateTime)}
+                                            {/* Time check */}
+                                            {(() => {
+                                                if (!buttonData) return null;
 
-                                                    const { canCi, canCo, ciThreshold, coThreshold, attDate } = buttonData;
+                                                const { canCi, canCo, ciThreshold, coThreshold, attDate } = buttonData;
 
-                                                    // If neither button is enabled, do not show any icon
-                                                    if (!canCi && !canCo) return null;
-                                                    const currentTimeStr = currentDateTime.toTimeString().slice(0, 5);
+                                                // If neither button is enabled, do not show any icon
+                                                if (!canCi && !canCo) return null;
+                                                const currentTimeStr = currentDateTime.toTimeString().slice(0, 5);
 
-                                                    // Format current date to YYYY-MM-DD
-                                                    const year = currentDateTime.getFullYear();
-                                                    const month = String(currentDateTime.getMonth() + 1).padStart(2, '0');
-                                                    const day = String(currentDateTime.getDate()).padStart(2, '0');
-                                                    const currentDateStr = `${year}-${month}-${day}`;
+                                                // Format current date to YYYY-MM-DD
+                                                const year = currentDateTime.getFullYear();
+                                                const month = String(currentDateTime.getMonth() + 1).padStart(2, '0');
+                                                const day = String(currentDateTime.getDate()).padStart(2, '0');
+                                                const currentDateStr = `${year}-${month}-${day}`;
 
-                                                    let isValid = true;
+                                                let isValid = true;
 
-                                                    // Check if the current date matches the attendance date
-                                                    if (attDate !== currentDateStr) {
-                                                        isValid = false;
-                                                    } else {
-                                                        if (canCi) {
-                                                            // Late Check-in: If current time > threshold, it's invalid (late)
-                                                            if (currentTimeStr > ciThreshold) isValid = false;
-                                                        } else if (canCo) {
-                                                            // Early Check-out: If current time < threshold, it's invalid (early)
-                                                            if (currentTimeStr < coThreshold) isValid = false;
-                                                        }
+                                                // Check if the current date matches the attendance date
+                                                if (attDate !== currentDateStr) {
+                                                    isValid = false;
+                                                } else {
+                                                    if (canCi) {
+                                                        // Late Check-in: If current time > threshold, it's invalid (late)
+                                                        if (currentTimeStr > ciThreshold) isValid = false;
+                                                    } else if (canCo) {
+                                                        // Early Check-out: If current time < threshold, it's invalid (early)
+                                                        if (currentTimeStr < coThreshold) isValid = false;
                                                     }
+                                                }
 
-                                                    return isValid ? (
-                                                        <CheckOutlined style={{ color: 'green', fontSize: '20px' }} />
-                                                    ) : (
-                                                        <CloseOutlined style={{ color: 'red', fontSize: '20px' }} />
-                                                    );
-                                                })()}
-                                            </div>
-                                            {/* Location Name */}
-                                            <div style={{ fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                <span>{currentAddress !== null ? currentAddress : ""}</span>
-                                            </div>
-                                            {/* Coordinates */}
-                                            <div style={{ fontSize: '20px', fontWeight: 'normal', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                return isValid ? (
+                                                    <CheckOutlined style={{ color: 'green', fontSize: '20px' }} />
+                                                ) : (
+                                                    <CloseOutlined style={{ color: 'red', fontSize: '20px' }} />
+                                                );
+                                            })()}
+                                        </div>
+                                        {/* Location Name */}
+                                        <div style={{ fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <span>{isLocationLoading ? "กำลังเรียกข้อมูลตำแหน่ง" : (currentAddress !== null && currentAddress !== "" ? currentAddress : "ไม่พบที่อยู่")}</span>
+                                        </div>
+                                        {/* Coordinates */}
+                                        <div style={{ fontSize: '20px', fontWeight: 'normal', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            {isLocationLoading ? (
+                                                <span>กำลังเรียกข้อมูลตำแหน่ง</span>
+                                            ) : (
                                                 <span>
                                                     {coordinates.lat !== null ? coordinates.lat.toFixed(7) : "-"}
                                                     ,
                                                     {coordinates.long !== null ? coordinates.long.toFixed(7) : "-"}
                                                 </span>
-                                                {(() => {
-                                                    if (!buttonData) return null;
-                                                    const { wpCondition, canCi, canCo } = buttonData;
+                                            )}
+                                            {(() => {
+                                                if (isLocationLoading) return null;
+                                                if (!buttonData) return null;
+                                                const { wpCondition, canCi, canCo } = buttonData;
 
-                                                    // If neither button is enabled, do not show any icon
-                                                    if (!canCi && !canCo) return null;
+                                                // If neither button is enabled, do not show any icon
+                                                if (!canCi && !canCo) return null;
 
-                                                    let isInside = false;
-                                                    if (wpCondition) {
-                                                        const parts = wpCondition.split(',').map(s => parseFloat(s.trim()));
-                                                        if (parts.length >= 3 && coordinates.lat && coordinates.long) {
-                                                            const [targetLat, targetLong, radius] = parts;
-                                                            const dist = calculateDistance(coordinates.lat, coordinates.long, targetLat, targetLong);
-                                                            isInside = dist <= radius;
-                                                        }
+                                                let isInside = false;
+                                                if (wpCondition) {
+                                                    const parts = wpCondition.split(',').map(s => parseFloat(s.trim()));
+                                                    if (parts.length >= 3 && coordinates.lat && coordinates.long) {
+                                                        const [targetLat, targetLong, radius] = parts;
+                                                        const dist = calculateDistance(coordinates.lat, coordinates.long, targetLat, targetLong);
+                                                        isInside = dist <= radius;
                                                     }
-                                                    if (wpCondition && coordinates.lat) {
-                                                        return isInside
-                                                            ? <CheckOutlined style={{ color: 'green', fontSize: '20px' }} />
-                                                            : <CloseOutlined style={{ color: 'red', fontSize: '20px' }} />;
-                                                    }
-                                                    return null;
-                                                })()}
-                                            </div>
-
-                                            {/* Reset Location Button */}
-                                            <div style={{ marginTop: '20px' }}>
-                                                <ResetLocationBtn onClick={handleResetLocation} />
-                                            </div>
+                                                }
+                                                if (wpCondition && coordinates.lat) {
+                                                    return isInside
+                                                        ? <CheckOutlined style={{ color: 'green', fontSize: '20px' }} />
+                                                        : <CloseOutlined style={{ color: 'red', fontSize: '20px' }} />;
+                                                }
+                                                return null;
+                                            })()}
                                         </div>
 
-                                    </Col>
+                                        {/* Reset Location Button */}
+                                        <div style={{ marginTop: '20px' }}>
+                                            <ResetLocationBtn onClick={handleResetLocation} />
+                                        </div>
+                                    </div>
 
-                                    {/* Right Column: Map Placeholder */}
-                                    <Col md={6}>
+                                </Col>
+
+                                {/* Right Column: Map Placeholder */}
+                                <Col md={6}>
+                                    <Spin spinning={isLocationLoading}>
                                         <div style={{ width: "100%", border: "1px solid #000" }}>
                                             {loadError && (
                                                 <div style={{ color: "red" }}>
@@ -829,58 +844,60 @@ const CheckInOut = () => {
                                                 </GoogleMap>
                                             )}
                                         </div>
-                                    </Col>
-                                </Row>
+                                    </Spin>
+                                </Col>
+                            </Row>
 
 
-                            </Card.Body>
+                        </Card.Body>
 
 
-                        </Card>
+                    </Card>
 
-                        {/* Action Buttons */}
-                        <div style={{ display: "flex", justifyContent: "center", gap: "40px", marginTop: "30px" }}>
-                            <CheckInBtn
-                                onClick={handleCheckIn}
-                                disabled={!buttonData?.canCi}
-                                style={{
-                                    "--bs-btn-bg": buttonData?.canCi ? "#D7FFDB" : "#EFEFF0",
-                                    "--bs-btn-disabled-bg": "#EFEFF0",
-                                    borderColor: !buttonData?.canCi ? "#a0a0a0" : "#000",
-                                    color: !buttonData?.canCi ? "#a0a0a0" : "#000",
-                                    opacity: 1 // Override default bootstrap disabled opacity if we want specific color
-                                }}
-                            />
-                            <CheckOutBtn
-                                onClick={handleCheckOut}
-                                disabled={!buttonData?.canCo}
-                                style={{
-                                    "--bs-btn-bg": buttonData?.canCo ? "#FFBCBC" : "#EFEFF0",
-                                    "--bs-btn-disabled-bg": "#EFEFF0",
-                                    borderColor: !buttonData?.canCo ? "#a0a0a0" : "#000",
-                                    color: !buttonData?.canCo ? "#a0a0a0" : "#000",
-                                    opacity: 1
-                                }}
-                            />
-                        </div>
-                    </Spin>
+                    {/* Action Buttons */}
+                    <div style={{ display: "flex", justifyContent: "center", gap: "40px", marginTop: "30px" }}>
+                        <CheckInBtn
+                            onClick={handleCheckIn}
+                            disabled={!canCheckIn}
+                            style={{
+                                "--bs-btn-bg": canCheckIn ? "#D7FFDB" : "#EFEFF0",
+                                "--bs-btn-disabled-bg": "#EFEFF0",
+                                borderColor: !canCheckIn ? "#a0a0a0" : "#000",
+                                color: !canCheckIn ? "#a0a0a0" : "#000",
+                                opacity: 1 // Override default bootstrap disabled opacity if we want specific color
+                            }}
+                        />
+                        <CheckOutBtn
+                            onClick={handleCheckOut}
+                            disabled={!canCheckOut}
+                            style={{
+                                "--bs-btn-bg": canCheckOut ? "#FFBCBC" : "#EFEFF0",
+                                "--bs-btn-disabled-bg": "#EFEFF0",
+                                borderColor: !canCheckOut ? "#a0a0a0" : "#000",
+                                color: !canCheckOut ? "#a0a0a0" : "#000",
+                                opacity: 1
+                            }}
+                        />
+                    </div>
                     <div style={{ marginTop: "5px", fontWeight: "normal", fontSize: "22px", color: "#000000ff" }}>
                         Attendance History
                     </div>
 
-                    <div style={{ marginTop: "5px" }}>
-                        <TableUI
-                            columns={columns}
-                            dataSource={cicoHistory}
-                            pagination={false}
-                            bordered={true}
-                            size="large"
-                            rowClassName={(record) => record.isNomal ? "table-row-error" : ""}
-                        />
+                    <div style={{ marginTop: "5px", maxWidth: "100%", overflowX: "auto" }}>
+                        <div style={{ minWidth: "1200px" }}>
+                            <TableUI
+                                columns={columns}
+                                dataSource={cicoHistory}
+                                pagination={false}
+                                bordered={true}
+                                size="large"
+                                rowClassName={(record) => record.isNomal ? "table-row-error" : ""}
+                            />
+                        </div>
                     </div>
 
                 </Card>
-            </Spin>
+            </Spin >
 
             <ReasonModal
                 open={modalOpen}

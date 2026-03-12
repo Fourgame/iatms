@@ -422,16 +422,18 @@ const WorkHours = () => {
                         </div>
                     </div>
 
-                    <div style={{ marginTop: "15px" }}>
-                        <TableUI
-                            columns={columns}
-                            dataSource={filteredData}
-                            pagination={true}
-                            bordered={true}
-                            size="small"
-                            rowSelection={undefined}
-                            rowKey={(record, index) => record.id || index}
-                        />
+                    <div style={{ marginTop: "15px", maxWidth: "100%", overflowX: "auto" }}>
+                        <div style={{ minWidth: "1200px" }}>
+                            <TableUI
+                                columns={columns}
+                                dataSource={filteredData}
+                                pagination={true}
+                                bordered={true}
+                                size="small"
+                                rowSelection={undefined}
+                                rowKey={(record, index) => record.id || index}
+                            />
+                        </div>
                     </div>
 
                 </Card.Body>

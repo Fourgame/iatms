@@ -335,10 +335,12 @@ const Role = () => {
                     Role List
                 </Card.Header>
                 <Card.Body className="p-0">
-                    <div className="m-3">
-                        <TableUI
-                            {...tableProps}
-                        />
+                    <div className="m-3" style={{ maxWidth: "100%", overflowX: "auto" }}>
+                        <div style={{ minWidth: "1800px" }}>
+                            <TableUI
+                                {...tableProps}
+                            />
+                        </div>
                     </div>
                 </Card.Body>
             </Card>

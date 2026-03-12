@@ -96,7 +96,7 @@ const Compensation = () => {
                     const duration = moment.duration(minutes, 'minutes');
                     const hrs = Math.floor(duration.asHours());
                     const mins = duration.minutes();
-                    return `${hrs} ชั่วโมง ${mins} นาที`;
+                    return mins === 0 ? `${hrs} ชั่วโมง` : `${hrs} ชั่วโมง ${mins} นาที`;
                 }
                 return '-';
             }
@@ -255,7 +255,7 @@ const Compensation = () => {
                 "OA User": item.oaUser || "-",
                 "ชื่อ-นามสกุล": item.fullName || "-",
                 "Team": item.team || "-",
-                "จำนวนชั่วโมง": item.workHours !== null && item.workHours !== undefined ? `${hrs} ชั่วโมง ${mins} นาที` : "-",
+                "จำนวนชั่วโมง": item.workHours !== null && item.workHours !== undefined ? (mins === 0 ? `${hrs} ชั่วโมง` : `${hrs} ชั่วโมง ${mins} นาที`) : "-",
                 "จำนวนเงิน (บาท)": item.amount !== null && item.amount !== undefined ? Number(item.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-"
             };
         });
@@ -269,7 +269,7 @@ const Compensation = () => {
             "OA User": "",
             "ชื่อ-นามสกุล": "",
             "Team": "",
-            "จำนวนชั่วโมง": totalHours !== null && totalHours !== undefined ? `${totalHrsStr} ชั่วโมง ${totalMinsStr} นาที` : "-",
+            "จำนวนชั่วโมง": totalHours !== null && totalHours !== undefined ? (totalMinsStr === 0 ? `${totalHrsStr} ชั่วโมง` : `${totalHrsStr} ชั่วโมง ${totalMinsStr} นาที`) : "-",
             "จำนวนเงิน (บาท)": totalAmount !== null && totalAmount !== undefined ? Number(totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"
         });
 
@@ -501,23 +501,25 @@ const Compensation = () => {
                                     fontSize: "16px",
                                     boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.25)",
                                 }}>
-                                    ชั่วโมงรวม {Math.floor(moment.duration(totalHours, 'minutes').asHours())} ชั่วโมง {moment.duration(totalHours, 'minutes').minutes()} นาที จำนวนเงิน {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
+                                    ชั่วโมงรวม {Math.floor(moment.duration(totalHours, 'minutes').asHours())} ชั่วโมง {moment.duration(totalHours, 'minutes').minutes() === 0 ? '' : `${moment.duration(totalHours, 'minutes').minutes()} นาที `}จำนวนเงิน {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div style={{ marginTop: "15px" }}>
-                        <TableUI
-                            columns={columns}
-                            dataSource={dataSource}
-                            loading={loading}
-                            pagination={true}
-                            bordered={true}
-                            size="small"
-                            rowSelection={undefined}
-                            rowKey={(record, index) => record.id || index}
-                        />
+                    <div style={{ marginTop: "15px", maxWidth: "100%", overflowX: "auto" }}>
+                        <div style={{ minWidth: "1200px" }}>
+                            <TableUI
+                                columns={columns}
+                                dataSource={dataSource}
+                                loading={loading}
+                                pagination={true}
+                                bordered={true}
+                                size="small"
+                                rowSelection={undefined}
+                                rowKey={(record, index) => record.id || index}
+                            />
+                        </div>
                     </div>
 
                 </Card.Body>

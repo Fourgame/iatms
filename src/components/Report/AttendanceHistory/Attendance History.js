@@ -511,7 +511,7 @@ const AttendanceHistory = () => {
                         onKeyDown={handleSearchKeyDown}
                     >
                         <div className="row">
-                            <div className="col-lg-9 col-md-12">
+                            <div className="col-lg-8 col-md-12">
                                 {/* Row 1 fields */}
                                 <div className="d-flex align-items-center flex-wrap gap-4 mb-3">
                                     {/* วันที่ */}
@@ -643,7 +643,7 @@ const AttendanceHistory = () => {
                                         </div>
                                     </div>
 
-                                    
+
 
                                     <div className="d-flex align-items-center gap-2">
                                         <span style={{ fontWeight: 700, fontSize: '16px' }}>Team :</span>
@@ -666,7 +666,7 @@ const AttendanceHistory = () => {
                                         </Select>
                                     </div>
 
-                                     <div className="d-flex align-items-center gap-2">
+                                    <div className="d-flex align-items-center gap-2">
                                         <span style={{ fontWeight: 700, fontSize: '16px' }}>ชื่อ-นามสกุลหรือ OA User :</span>
                                         <Input
                                             placeholder="กรอกชื่อ-นามสกุลหรือ OA User"
@@ -681,7 +681,7 @@ const AttendanceHistory = () => {
                             </div>
 
                             {/* Buttons */}
-                            <div className="col-lg-3 col-md-12 d-flex justify-content-lg-end align-items-start gap-2 mt-3 mt-lg-0">
+                            <div className="col-lg-4 col-md-12 d-flex justify-content-lg-end align-items-start gap-2 mt-3 mt-lg-0">
                                 <SearchToolBtnBootstrap onClick={handleSearch} />
                                 <ClearToolBtnBootstrap onClick={handleClear} />
                                 <ExportToolBtnBootstrap onClick={handleExport} />
@@ -689,16 +689,18 @@ const AttendanceHistory = () => {
                         </div>
                     </div>
 
-                    <div style={{ marginTop: "15px" }}>
-                        <TableUI
-                            columns={columns}
-                            dataSource={dataSource}
-                            pagination={true}
-                            bordered={true}
-                            size="small"
-                            rowSelection={undefined}
-                            rowKey={(record, index) => record.id || index}
-                        />
+                    <div style={{ marginTop: "15px", maxWidth: "100%", overflowX: "auto" }}>
+                        <div style={{ minWidth: "1800px", display: "inline-block" }}>
+                            <TableUI
+                                columns={columns}
+                                dataSource={dataSource}
+                                pagination={true}
+                                bordered={true}
+                                size="small"
+                                rowSelection={undefined}
+                                rowKey={(record, index) => record.id || index}
+                            />
+                        </div>
                     </div>
 
                 </Card.Body>

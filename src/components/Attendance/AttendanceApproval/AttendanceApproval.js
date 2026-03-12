@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, Button as ButtonBootstrap } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { DatePicker, Select, Form, Input, Modal, Row, Col, Button } from 'antd';
@@ -57,12 +57,16 @@ const AttendanceApproval = () => {
     // Attendance Approval Search State
     const [attKeyword, setAttKeyword] = useState('');
     const [attTeam, setAttTeam] = useState("ทั้งหมด");
+    const [attOpenTeamDropdown, setAttOpenTeamDropdown] = useState(false);
     const [attApprovalData, setAttApprovalData] = useState([]);
+    const attSearchFilterRef = useRef(null);
 
     // Leave Approval Search State
     const [leaveKeyword, setLeaveKeyword] = useState('');
     const [leaveTeam, setLeaveTeam] = useState("ทั้งหมด");
+    const [leaveOpenTeamDropdown, setLeaveOpenTeamDropdown] = useState(false);
     const [leaveApprovalData, setLeaveApprovalData] = useState([]);
+    const leaveSearchFilterRef = useRef(null);
 
     // Leave Detail Modal State
     const [isLeaveDetailModalOpen, setIsLeaveDetailModalOpen] = useState(false);
@@ -119,6 +123,17 @@ const AttendanceApproval = () => {
     }, []);
 
     // Handlers for Attendance Approval
+    const handleAttSearchKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            setAttOpenTeamDropdown(false);
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
+            handleAttSearch();
+        }
+    };
+
     const handleAttSearch = () => {
         console.log("Search Attendance Approval:", { attKeyword, attTeam });
         fetchAttApprovalData(attKeyword, attTeam);
@@ -295,6 +310,17 @@ const AttendanceApproval = () => {
         fetchLeaveApproval();
     }, []);
 
+    const handleLeaveSearchKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            setLeaveOpenTeamDropdown(false);
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
+            handleLeaveSearch();
+        }
+    };
+
     const handleLeaveSearch = () => {
         fetchLeaveApproval();
     };
@@ -359,7 +385,7 @@ const AttendanceApproval = () => {
             key: 'attDate',
             align: 'center',
             sorter: (a, b) => String(a.attDate ?? "").localeCompare(String(b.attDate ?? "")),
-            width: 100,
+            width: 80,
             render: (text) => {
                 if (!text) return "-";
                 const [year, month, day] = text.split("-");
@@ -372,7 +398,7 @@ const AttendanceApproval = () => {
             key: 'oaUser',
             align: 'center',
             sorter: (a, b) => String(a.oaUser ?? "").localeCompare(String(b.oaUser ?? "")),
-            width: 100,
+            width: 150,
         },
         {
             title: 'ชื่อ-นามสกุล',
@@ -406,7 +432,7 @@ const AttendanceApproval = () => {
                     dataIndex: 'ciTimeOld',
                     key: 'ciTimeOld',
                     align: 'center',
-                    width: 80,
+                    width: 70,
                     sorter: (a, b) => String(a.ciTimeOld ?? "").localeCompare(String(b.ciTimeOld ?? "")),
                     render: (text) => text ?? "-"
                 },
@@ -438,7 +464,7 @@ const AttendanceApproval = () => {
                     key: 'ciTimeNew',
                     align: 'center',
                     sorter: (a, b) => String(a.ciTimeNew ?? "").localeCompare(String(b.ciTimeNew ?? "")),
-                    width: 120,
+                    width: 70,
                     render: (text) => (
                         <div style={{ textAlign: text && text.trim() ? "center" : "center" }}>
                             {text && text.trim() ? text : "-"}
@@ -468,7 +494,7 @@ const AttendanceApproval = () => {
                     dataIndex: 'coTimeOld',
                     key: 'coTimeOld',
                     align: 'center',
-                    width: 80,
+                    width: 70,
                     sorter: (a, b) => String(a.coTimeOld ?? "").localeCompare(String(b.coTimeOld ?? "")),
                     render: (text) => text ?? "-"
                 },
@@ -500,7 +526,7 @@ const AttendanceApproval = () => {
                     key: 'coTimeNew',
                     align: 'center',
                     sorter: (a, b) => String(a.coTimeNew ?? "").localeCompare(String(b.coTimeNew ?? "")),
-                    width: 120,
+                    width: 70,
                     render: (text) => (
                         <div style={{ textAlign: text && text.trim() ? "center" : "center" }}>
                             {text && text.trim() ? text : "-"}
@@ -527,7 +553,7 @@ const AttendanceApproval = () => {
             dataIndex: 'changeStatus',
             key: 'changeStatus',
             align: 'center',
-            width: 100,
+            width: 80,
             render: (text, record) => {
                 const status = record.changeStatusCode ? String(record.changeStatusCode).trim() : (text ? String(text).trim() : "-");
                 const label = record.changeStatus || status;
@@ -691,76 +717,74 @@ const AttendanceApproval = () => {
                 </Card.Header>
                 <Card.Body className="p-3">
                     <div
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            flexWrap: "wrap",
-                            gap: "15px",
-                            background: "white",
-                        }}
+                        style={{ background: "white", borderRadius: "6px", outline: "none" }}
+                        ref={attSearchFilterRef}
+                        tabIndex={-1}
+                        onKeyDown={handleAttSearchKeyDown}
                     >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span style={{ fontWeight: 700, fontSize: '16px' }}>ชื่อ-นามสกุลหรือ OA User :</span>
-                            <Input
-                                placeholder="กรอกชื่อ-นามสกุลหรือ OA User"
-                                value={attKeyword}
-                                onChange={(e) => setAttKeyword(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        handleAttSearch();
-                                    }
-                                }}
-                                style={{ width: 250 }}
-                            />
-                        </div>
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                flexWrap: "wrap",
+                                gap: "15px",
+                                background: "white",
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ fontWeight: 700, fontSize: '16px' }}>ชื่อ-นามสกุลหรือ OA User :</span>
+                                <Input
+                                    placeholder="กรอกชื่อ-นามสกุลหรือ OA User"
+                                    value={attKeyword}
+                                    onChange={(e) => setAttKeyword(e.target.value)}
+                                    onKeyDown={handleAttSearchKeyDown}
+                                    style={{ width: 250 }}
+                                />
+                            </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <Form component={false}>
-                                <Form.Item label={<span style={{ fontWeight: 700, fontSize: '16px' }}>Team</span>} style={{ marginBottom: 0 }}>
-                                    <Select
-                                        placeholder="-เลือก-"
-                                        value={attTeam}
-                                        onChange={(value) => {
-                                            setAttTeam(value);
-                                            if (document.activeElement) {
-                                                document.activeElement.blur();
-                                            }
-                                        }}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                e.preventDefault();
-                                                handleAttSearch();
-                                            }
-                                        }}
-                                        style={{ width: 180 }}
-                                        allowClear={false}
-                                    >
-                                        <Option value="ทั้งหมด">ทั้งหมด</Option>
-                                        {teamList.map((item) => (
-                                            <Option key={item.value} value={item.value}>{item.label}</Option>
-                                        ))}
-                                    </Select>
-                                </Form.Item>
-                            </Form>
-                        </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <Form component={false}>
+                                    <Form.Item label={<span style={{ fontWeight: 700, fontSize: '16px' }}>Team</span>} style={{ marginBottom: 0 }}>
+                                        <Select
+                                            placeholder="-เลือก-"
+                                            value={attTeam}
+                                            open={attOpenTeamDropdown}
+                                            onDropdownVisibleChange={(open) => setAttOpenTeamDropdown(open)}
+                                            onChange={(value) => {
+                                                setAttTeam(value);
+                                                requestAnimationFrame(() => attSearchFilterRef.current?.focus());
+                                            }}
+                                            style={{ width: 180 }}
+                                            allowClear={false}
+                                        >
+                                            <Option value="ทั้งหมด">ทั้งหมด</Option>
+                                            {teamList.map((item) => (
+                                                <Option key={item.value} value={item.value}>{item.label}</Option>
+                                            ))}
+                                        </Select>
+                                    </Form.Item>
+                                </Form>
+                            </div>
 
-                        <div style={{ marginLeft: "auto", display: 'flex', gap: '10px' }}>
-                            <SearchToolBtnBootstrap onClick={handleAttSearch} />
-                            <ClearToolBtnBootstrap onClick={handleAttClear} />
+                            <div style={{ marginLeft: "auto", display: 'flex', gap: '10px' }}>
+                                <SearchToolBtnBootstrap onClick={handleAttSearch} />
+                                <ClearToolBtnBootstrap onClick={handleAttClear} />
+                            </div>
                         </div>
                     </div>
 
-                    <div style={{ marginTop: "15px" }}>
-                        <TableUI
-                            columns={attApprovalColumns}
-                            dataSource={attApprovalData}
-                            pagination={true}
-                            bordered={true}
-                            size="small"
-                            rowSelection={undefined}
-                            rowKey={(record, index) => record.id || index}
-                        />
+                    <div style={{ marginTop: "15px", maxWidth: "100%", overflowX: "auto" }}>
+                        <div style={{ minWidth: "1200px" }}>
+                            <TableUI
+                                columns={attApprovalColumns}
+                                dataSource={attApprovalData}
+                                pagination={true}
+                                bordered={true}
+                                size="small"
+                                rowSelection={undefined}
+                                rowKey={(record, index) => record.id || index}
+                            />
+                        </div>
                     </div>
 
                 </Card.Body>
@@ -800,13 +824,15 @@ const AttendanceApproval = () => {
                     </div>
                 ) : (
                     <div
-                        style={{ marginTop: '10px' }}
+                        tabIndex={0}
+                        ref={(input) => input && input.focus()}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {
                                 e.preventDefault();
                                 handleReject();
                             }
                         }}
+                        style={{ marginTop: '10px', outline: 'none' }}
                     >
                         <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '15px' }}>
                             วันที่ &nbsp; {modalData?.attDate ? moment(modalData.attDate).format("DD/MM/YYYY") : "-"}
@@ -952,77 +978,74 @@ const AttendanceApproval = () => {
                 </Card.Header>
                 <Card.Body className="p-3">
                     <div
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            flexWrap: "wrap",
-                            gap: "15px",
-                            background: "white",
-                        }}
-
+                        style={{ background: "white", borderRadius: "6px", outline: "none" }}
+                        ref={leaveSearchFilterRef}
+                        tabIndex={-1}
+                        onKeyDown={handleLeaveSearchKeyDown}
                     >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span style={{ fontWeight: 700, fontSize: '16px' }}>ชื่อ-นามสกุลหรือ OA User :</span>
-                            <Input
-                                placeholder="กรอกชื่อ-นามสกุลหรือ OA User"
-                                value={leaveKeyword}
-                                onChange={(e) => setLeaveKeyword(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        handleLeaveSearch();
-                                    }
-                                }}
-                                style={{ width: 250 }}
-                            />
-                        </div>
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                flexWrap: "wrap",
+                                gap: "15px",
+                                background: "white",
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ fontWeight: 700, fontSize: '16px' }}>ชื่อ-นามสกุลหรือ OA User :</span>
+                                <Input
+                                    placeholder="กรอกชื่อ-นามสกุลหรือ OA User"
+                                    value={leaveKeyword}
+                                    onChange={(e) => setLeaveKeyword(e.target.value)}
+                                    onKeyDown={handleLeaveSearchKeyDown}
+                                    style={{ width: 250 }}
+                                />
+                            </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <Form component={false}>
-                                <Form.Item label={<span style={{ fontWeight: 700, fontSize: '16px' }}>Team</span>} style={{ marginBottom: 0 }}>
-                                    <Select
-                                        placeholder="-เลือก-"
-                                        value={leaveTeam}
-                                        onChange={(value) => {
-                                            setLeaveTeam(value);
-                                            if (document.activeElement) {
-                                                document.activeElement.blur();
-                                            }
-                                        }}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                e.preventDefault();
-                                                handleLeaveSearch();
-                                            }
-                                        }}
-                                        style={{ width: 180 }}
-                                        allowClear={false}
-                                    >
-                                        <Option value="ทั้งหมด">ทั้งหมด</Option>
-                                        {teamList.map((item) => (
-                                            <Option key={item.value} value={item.value}>{item.label}</Option>
-                                        ))}
-                                    </Select>
-                                </Form.Item>
-                            </Form>
-                        </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <Form component={false}>
+                                    <Form.Item label={<span style={{ fontWeight: 700, fontSize: '16px' }}>Team</span>} style={{ marginBottom: 0 }}>
+                                        <Select
+                                            placeholder="-เลือก-"
+                                            value={leaveTeam}
+                                            open={leaveOpenTeamDropdown}
+                                            onDropdownVisibleChange={(open) => setLeaveOpenTeamDropdown(open)}
+                                            onChange={(value) => {
+                                                setLeaveTeam(value);
+                                                requestAnimationFrame(() => leaveSearchFilterRef.current?.focus());
+                                            }}
+                                            style={{ width: 180 }}
+                                            allowClear={false}
+                                        >
+                                            <Option value="ทั้งหมด">ทั้งหมด</Option>
+                                            {teamList.map((item) => (
+                                                <Option key={item.value} value={item.value}>{item.label}</Option>
+                                            ))}
+                                        </Select>
+                                    </Form.Item>
+                                </Form>
+                            </div>
 
-                        <div style={{ marginLeft: "auto", display: 'flex', gap: '10px' }}>
-                            <SearchToolBtnBootstrap onClick={handleLeaveSearch} />
-                            <ClearToolBtnBootstrap onClick={handleLeaveClear} />
+                            <div style={{ marginLeft: "auto", display: 'flex', gap: '10px' }}>
+                                <SearchToolBtnBootstrap onClick={handleLeaveSearch} />
+                                <ClearToolBtnBootstrap onClick={handleLeaveClear} />
+                            </div>
                         </div>
                     </div>
 
-                    <div style={{ marginTop: "15px" }}>
-                        <TableUI
-                            columns={leaveApprovalColumns}
-                            dataSource={leaveApprovalData}
-                            pagination={true}
-                            bordered={true}
-                            size="large"
-                            rowSelection={undefined}
-                            rowKey={(record, index) => index}
-                        />
+                    <div style={{ marginTop: "15px", maxWidth: "100%", overflowX: "auto" }}>
+                        <div style={{ minWidth: "1200px" }}>
+                            <TableUI
+                                columns={leaveApprovalColumns}
+                                dataSource={leaveApprovalData}
+                                pagination={true}
+                                bordered={true}
+                                size="large"
+                                rowSelection={undefined}
+                                rowKey={(record, index) => index}
+                            />
+                        </div>
                     </div>
 
                 </Card.Body>

@@ -565,15 +565,17 @@ const Listofvalues = () => {
                     </div>
 
                     {/* Table */}
-                    <div className="m-3">
-                        <TableUI
-                            dataSource={lov || []}
-                            columns={columnsWithActions}
-                            rowKey={(r) => `${r.fieldName}__${r.code}`}
-                            pagination={true}
-                            bordered={true}
-                            size={"large"}
-                        />
+                    <div className="m-3" style={{ maxWidth: "100%", overflowX: "auto" }}>
+                        <div style={{ minWidth: "1200px" }}>
+                            <TableUI
+                                dataSource={lov || []}
+                                columns={columnsWithActions}
+                                rowKey={(r) => `${r.fieldName}__${r.code}`}
+                                pagination={true}
+                                bordered={true}
+                                size={"large"}
+                            />
+                        </div>
                     </div>
                 </Card.Body>
             </Card>

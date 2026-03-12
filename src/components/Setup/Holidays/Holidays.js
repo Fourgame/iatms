@@ -527,17 +527,19 @@ const Holidays = () => {
                     </div>
 
                     {/* Table */}
-                    <div className="m-3">
-                        <TableUI
-                            dataSource={data}
-                            columns={columnsWithActions}
-                            // If no ID, I might need to generate one or use index.
-                            // Replacing rowKey with function just in case
-                            rowKey={(r, index) => r.id || index}
-                            pagination={true}
-                            bordered={true}
-                            size={"large"}
-                        />
+                    <div className="m-3" style={{ maxWidth: "100%", overflowX: "auto" }}>
+                        <div style={{ minWidth: "1000px" }}>
+                            <TableUI
+                                dataSource={data}
+                                columns={columnsWithActions}
+                                // If no ID, I might need to generate one or use index.
+                                // Replacing rowKey with function just in case
+                                rowKey={(r, index) => r.id || index}
+                                pagination={true}
+                                bordered={true}
+                                size={"large"}
+                            />
+                        </div>
                     </div>
                 </Card.Body>
             </Card>

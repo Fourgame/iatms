@@ -482,8 +482,10 @@ const UserManage = () => {
                         </Space>
                     </div>
 
-                    <div className="m-3">
-                        <TableUI {...tableProps} />
+                    <div className="m-3" style={{ maxWidth: "100%", overflowX: "auto" }}>
+                        <div style={{ minWidth: "1200px" }}>
+                            <TableUI {...tableProps} />
+                        </div>
                     </div>
                 </Card.Body>
             </Card>
