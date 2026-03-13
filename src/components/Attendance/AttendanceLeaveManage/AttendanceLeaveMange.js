@@ -13,6 +13,7 @@ import { getDropdown } from '../../../services/dropdown.service';
 import { noticeShowMessage } from '../../Utilities/Notification';
 import Loading from "../../Utilities/Loading";
 import moment from 'moment';
+import Title from '../../Utilities/Title';
 import { getButton } from '../../../services/CICO.service';
 import { getHolidays } from '../../../services/้้holidays.service';
 import dayjs from 'dayjs';
@@ -817,7 +818,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
     );
 };
 
-const AttendanceLeaveMange = () => {
+const AttendanceLeaveMange = ( {title} ) => {
     const navigate = useNavigate();
 
     const handleRequestError = (error) => {
@@ -914,6 +915,7 @@ const AttendanceLeaveMange = () => {
     const [geofence, setGeofence] = useState(null);
 
     useEffect(() => {
+        document.title = Title.get_title(title);
         const fetchInitialData = async () => {
             setLoading(true);
             try {

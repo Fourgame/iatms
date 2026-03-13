@@ -12,10 +12,11 @@ import Loading from "../../Utilities/Loading";
 import { getCompensation, getMonthYearCompensation } from '../../../services/Compensation.service';
 import moment from 'moment';
 import * as XLSX from 'xlsx-js-style';
+import Title from '../../Utilities/Title';
 
 const { Option } = Select;
 
-const Compensation = () => {
+const Compensation = ( {title} ) => {
     const navigate = useNavigate();
 
     const handleRequestError = (error) => {
@@ -211,6 +212,7 @@ const Compensation = () => {
     };
 
     useEffect(() => {
+        document.title = Title.get_title(title);
         fetchDropdowns();
         fetchMinMonthYear();
         fetchData();

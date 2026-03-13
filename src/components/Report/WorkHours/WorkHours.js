@@ -11,10 +11,11 @@ import Loading from "../../Utilities/Loading";
 import { workHoursService } from '../../../services/workhours.service';
 import moment from 'moment';
 import * as XLSX from 'xlsx-js-style';
+import Title from '../../Utilities/Title';
 
 const { Option } = Select;
 
-const WorkHours = () => {
+const WorkHours = ( {title} ) => {
     const navigate = useNavigate();
 
     const handleRequestError = (error) => {
@@ -111,6 +112,7 @@ const WorkHours = () => {
     ];
 
     useEffect(() => {
+        document.title = Title.get_title(title);
         const fetchDropdowns = async () => {
             try {
                 const teamRes = await getDropdown.get_dropdown({ type: 'Team' });

@@ -32,6 +32,7 @@ const Header = () => {
 
     const logOut = () => {
         TokenService.deleteUser();
+        document.title = process.env.REACT_APP_TITLE || "IATMS";
         noticeShowMessage("Logged out successfully");
         navigate("/signin");
     };
@@ -70,6 +71,9 @@ const Header = () => {
     const roleName = currentUser?.profile?.role_id ?? "";
     const fullName = currentUser?.profile?.name_en ?? "Full Name";
 
+    // Check if current path starts with a given prefix to determine active nav group
+    const isNavActive = (prefix) => location.pathname.toLowerCase().startsWith(prefix.toLowerCase());
+
     if (!currentUser) return null;
 
 
@@ -91,8 +95,12 @@ const Header = () => {
                     transition: color 0.3s ease;
                 }
                 .nav-item.dropdown:hover .nav-link.dropdown-toggle {
-                    color: #ffffffff !important; /* Gold/yellow on hover */
+                    color: #ffffffff !important;
                     text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+                }
+                .nav-active-underline > .nav-link.dropdown-toggle {
+                    border-bottom: 3px solid #ffffff;
+                    padding-bottom: 4px;
                 }
                 `}
             </style>
@@ -150,7 +158,7 @@ const Header = () => {
 
                                 {/* 1. Menu: Attendance */}
                                 {activeMenus.attendance && (
-                                    <li className="nav-item dropdown">
+                                    <li className={`nav-item dropdown${isNavActive('/attendance') ? ' nav-active-underline' : ''}`}>
                                         <a className="nav-link dropdown-toggle text-white fw-medium" href="#" role="button" data-bs-toggle="dropdown">
                                             Attendance
                                         </a>
@@ -164,7 +172,7 @@ const Header = () => {
 
                                 {/* 2. Menu: Report */}
                                 {activeMenus.report && (
-                                    <li className="nav-item dropdown">
+                                    <li className={`nav-item dropdown${isNavActive('/report') ? ' nav-active-underline' : ''}`}>
                                         <a className="nav-link dropdown-toggle text-white fw-medium" href="#" role="button" data-bs-toggle="dropdown">
                                             Report
                                         </a>
@@ -178,7 +186,7 @@ const Header = () => {
 
                                 {/* 3. Menu: Admin */}
                                 {activeMenus.admin && (
-                                    <li className="nav-item dropdown">
+                                    <li className={`nav-item dropdown${isNavActive('/admin') ? ' nav-active-underline' : ''}`}>
                                         <a className="nav-link dropdown-toggle text-white fw-medium" href="#" role="button" data-bs-toggle="dropdown">
                                             Admin
                                         </a>
@@ -190,7 +198,7 @@ const Header = () => {
 
                                 {/* 4. Menu: Setup */}
                                 {activeMenus.setup && (
-                                    <li className="nav-item dropdown">
+                                    <li className={`nav-item dropdown${isNavActive('/setup') ? ' nav-active-underline' : ''}`}>
                                         <a className="nav-link dropdown-toggle text-white fw-medium" href="#" role="button" data-bs-toggle="dropdown">
                                             Setup
                                         </a>

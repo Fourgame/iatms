@@ -36,7 +36,7 @@ const StatCard = ({ title, value, footer, bg, hoverBg, onClick }) => {
 
 
 
-const Home = (props) => {
+const Home = ( {title} ) => {
     let navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [dashboardData, setDashboardData] = useState(null);
@@ -88,7 +88,7 @@ const Home = (props) => {
 
 
     useEffect(() => {
-
+        document.title = Title.get_title(title);
         if (!token.isSignIn()) {
             return navigate("/signin", { state: { message: "token not found" } });
 
@@ -191,25 +191,25 @@ const Home = (props) => {
                 className="border border-2 border-secondary h-100 p-3"
                 style={{ backgroundColor: "#F5F5F5", flex: 1 }}
             >
-                <div className="fw-bold fs-4 mb-3 text-start">{user.profile.name_en}</div>
+                <div className="fw-bold fs-1 mb-3 text-start">{user.profile.name_en}</div>
                 <div className="text-start" style={{ fontSize: "14px", lineHeight: "28px" }}>
-                    <div>
-                        <span className="fw-bold">OA User ID :</span> {user.profile.oa_user}
+                    <div className="fs-4   mb-3">
+                        <span className="fw-medium fs-4 ">OA User ID :</span> {user.profile.oa_user}
                     </div>
-                    <div>
-                        <span className="fw-bold">Email :</span> {user.profile.email}
+                    <div className="fs-4  mb-3">
+                        <span className="fw-medium  ">Email :</span> {user.profile.email}
                     </div>
-                    <div>
-                        <span className="fw-bold">Role :</span> {user.profile.role_id}
+                    <div className="fs-4  mb-3">
+                        <span className="fw-medium ">Role :</span> {user.profile.role_id}
                     </div>
-                    <div>
-                        <span className="fw-bold">Division :</span> {user.profile.division_code}
+                    <div className="fs-4  mb-3">
+                        <span className="fw-medium  ">Division :</span> {user.profile.division_code}
                     </div>
-                    <div>
-                        <span className="fw-bold">Team :</span> {user.profile.team}
+                    <div className="fs-4  mb-3">
+                        <span className="fw-medium  ">Team :</span> {user.profile.team}
                     </div>
-                    <div>
-                        <span className="fw-bold">Workplace :</span> {user.profile.work_Place}
+                    <div className="fs-4  mb-3">
+                        <span className="fw-medium  ">Workplace :</span> {user.profile.work_Place}
                     </div>
                 </div>
             </div>

@@ -11,6 +11,7 @@ import { noticeShowMessage } from '../../Utilities/Notification';
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import TokenService from "../../../services/token.service";
+import Title from '../../Utilities/Title';
 
 const { Option } = Select;
 
@@ -190,7 +191,7 @@ const HolidaysModal = ({ show, onClose, onSave, title, data, existingData = [] }
     );
 };
 
-const Holidays = () => {
+const Holidays = ( {title} ) => {
     const navigate = useNavigate();
     const currentYear = new Date().getFullYear();
     const [yearSearch, setYearSearch] = useState(currentYear);
@@ -391,6 +392,7 @@ const Holidays = () => {
     };
 
     useEffect(() => {
+        document.title = Title.get_title(title);
         if (!TokenService.isSignIn()) {
             return navigate("/", { state: { message: "please login" } });
 

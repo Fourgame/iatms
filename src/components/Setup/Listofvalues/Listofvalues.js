@@ -12,6 +12,7 @@ import { ActiveTag, InactiveTag } from "../../Utilities/StatusTag/StatusTag";
 import { Navigate, useNavigate } from "react-router-dom";
 import AuthService from "../../../services/auth.service";
 import TokenService from "../../../services/token.service";
+import Title from '../../Utilities/Title';
 
 
 
@@ -301,7 +302,7 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
 };
 
 
-const Listofvalues = () => {
+const Listofvalues = ( {title} ) => {
     const navigate = useNavigate();
     const [lov, setLov] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -484,6 +485,7 @@ const Listofvalues = () => {
     const columnsWithActions = [actionColumn, ...columns];
 
     useEffect(() => {
+        document.title = Title.get_title(title);
         if (!TokenService.isSignIn()) {
             return navigate("/", { state: { message: "please login" } });
 

@@ -12,10 +12,11 @@ import Loading from "../../Utilities/Loading";
 import moment from 'moment';
 import { getAttHistory } from '../../../services/AttendanceHistory.service';
 import * as XLSX from 'xlsx-js-style';
+import Title from '../../Utilities/Title';
 
 const { Option } = Select;
 
-const AttendanceHistory = () => {
+const AttendanceHistory = ( {title} ) => {
     const navigate = useNavigate();
 
     const handleRequestError = (error) => {
@@ -458,6 +459,7 @@ const AttendanceHistory = () => {
     };
 
     useEffect(() => {
+        document.title = Title.get_title(title);
         const fetchDropdowns = async () => {
             try {
                 const [ciTimeRes, coTimeRes, zoneRes, teamRes] = await Promise.all([
@@ -689,8 +691,8 @@ const AttendanceHistory = () => {
                         </div>
                     </div>
 
-                    <div style={{ marginTop: "15px", maxWidth: "100%", overflowX: "auto" }}>
-                        <div style={{ minWidth: "1800px", display: "inline-block" }}>
+                    <div style={{ marginTop: "15px", maxWidth: "100%", overflowX: "auto", overflowY: "hidden" }}>
+                        <div style={{ minWidth: "1800px" }}>
                             <TableUI
                                 columns={columns}
                                 dataSource={dataSource}

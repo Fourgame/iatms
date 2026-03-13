@@ -9,6 +9,7 @@ import TokenService from "../../../services/token.service";
 import { noticeShowMessage } from "../../Utilities/Notification";
 import { GoogleMap, MarkerF, CircleF, useJsApiLoader } from "@react-google-maps/api";
 import { Modal, Form, Input, Spin } from "antd";
+import Title from '../../Utilities/Title';
 
 const ReasonModal = ({ open, onClose, onSave, errorMessage, actionType }) => {
     const [form] = Form.useForm();
@@ -20,6 +21,7 @@ const ReasonModal = ({ open, onClose, onSave, errorMessage, actionType }) => {
             setLoading(false);
         }
     }, [open, form]);
+
 
     const handleSave = async () => {
         try {
@@ -131,7 +133,7 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
     return d;
 };
 
-const CheckInOut = () => {
+const CheckInOut = ({ title }) => {
 
     const [currentDateTime, setCurrentDateTime] = useState(new Date());
     const [coordinates, setCoordinates] = useState({ lat: null, long: null });
@@ -263,6 +265,7 @@ const CheckInOut = () => {
 
 
     useEffect(() => {
+        document.title = Title.get_title(title);
         const fetchButtonStatus = async () => {
             try {
                 const response = await getButton.get_button();
@@ -408,6 +411,7 @@ const CheckInOut = () => {
             );
         }
     };
+    
 
 
 

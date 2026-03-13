@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 
 const { Option } = Select;
 
-const UserManage = () => {
+const UserManage = ( {title} ) => {
     // State
     const [userData, setUserData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -47,7 +47,7 @@ const UserManage = () => {
 
     const navigate = useNavigate();
     useEffect(() => {
-        document.title = Title.get_title("User Management");
+        document.title = Title.get_title(title);
 
         const initPage = async () => {
             setLoading(true);

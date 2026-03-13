@@ -11,11 +11,12 @@ import { getAttApproval, getModalAttApproval, postAttApproval } from '../../../s
 import { noticeShowMessage } from '../../Utilities/Notification';
 import Loading from "../../Utilities/Loading";
 import moment from 'moment';
+import Title from '../../Utilities/Title';
 import { getLeaveApproval, postLeaveApproval } from '../../../services/leaveapproval.service';
 
 const { Option } = Select;
 
-const AttendanceApproval = () => {
+const AttendanceApproval = ( {title} ) => {
     const navigate = useNavigate();
 
     const handleRequestError = (error) => {
@@ -107,6 +108,7 @@ const AttendanceApproval = () => {
     };
 
     useEffect(() => {
+        document.title = Title.get_title(title);
         const fetchDropdowns = async () => {
             try {
                 const teamRes = await getDropdown.get_dropdown({ type: 'Team' });
