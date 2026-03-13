@@ -337,7 +337,7 @@ const AttendanceApproval = ( {title} ) => {
         if (!selectedLeave) return;
 
         if (action === 'Reject' && (!rejectReasonInput || rejectReasonInput.trim() === '')) {
-            setRejectReasonError('* กรุณาระบุเหตุผลที่ปฏิเสธ');
+            setRejectReasonError('กรุณาระบุเหตุผลที่ปฏิเสธ');
             return;
         }
 
