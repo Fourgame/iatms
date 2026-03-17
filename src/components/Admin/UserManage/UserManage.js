@@ -52,8 +52,15 @@ const UserManage = ({ title }) => {
         const initPage = async () => {
             setLoading(true);
             try {
-                // Fetch only UserManage data initially to speed up page load
-                const userRes = await getUserManage.get_user_manage({ Keyword: '' });
+                // Fetch UserManage data and Role dropdown initially
+                const [userRes, roleRes] = await Promise.all([
+                    getUserManage.get_user_manage({ Keyword: '' }),
+                    getDropdown.get_dropdown({ type: 'Role' })
+                ]);
+
+                if (roleRes.data) {
+                    setRoleList(roleRes.data);
+                }
 
                 // Set Users
                 if (userRes.data) {
@@ -219,8 +226,6 @@ const UserManage = ({ title }) => {
                     email: data.email || "",
                     division: data.division_code || "" // ใส่ในช่อง "ส่วนงาน"
                 });
-
-                noticeShowMessage("ดึงข้อมูลจาก LDAP สำเร็จ", false);
             } else {
                 noticeShowMessage("ไม่พบข้อมูลผู้ใช้งานในระบบ LDAP", true);
             }
@@ -394,6 +399,10 @@ const UserManage = ({ title }) => {
             dataIndex: 'role',
             key: 'role',
             SortName: 'role',
+            render: (text) => {
+                const found = roleList.find(r => r.value === text);
+                return found ? found.label : text;
+            }
         },
         {
             title: <div style={{ textAlign: 'center' }}>Team</div>,
