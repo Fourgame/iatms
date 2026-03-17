@@ -90,7 +90,7 @@ const Home = ( {title} ) => {
     useEffect(() => {
         document.title = Title.get_title(title);
         if (!token.isSignIn()) {
-            return navigate("/signin", { state: { message: "token not found" } });
+            return navigate("/signin", { state: { message: "Token missing: Unable to retrieve token from the message payload." } });
 
         } else {
             onPageLoad();

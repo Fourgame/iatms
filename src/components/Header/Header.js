@@ -177,9 +177,9 @@ const Header = () => {
                                             Report
                                         </a>
                                         <ul className="dropdown-menu shadow border-0 mt-2">
-                                            {activeMenus.func.rp_attendance && <li><Link className="dropdown-item" to="/report/AttendanceHistory" onClick={(e) => handleRefresh(e, "/report/AttendanceHistory")}>Attendance Report</Link></li>}
-                                            {activeMenus.func.rp_work_hours && <li><Link className="dropdown-item" to="/report/WorkHours" onClick={(e) => handleRefresh(e, "/report/WorkHours")}>Work Hours Report</Link></li>}
-                                            {activeMenus.func.rp_compensation && <li><Link className="dropdown-item" to="/report/Compensation" onClick={(e) => handleRefresh(e, "/report/Compensation")}>Compensation Report</Link></li>}
+                                            {activeMenus.func.rp_attendance && <li><Link className="dropdown-item" to="/report/AttendanceHistory" onClick={(e) => handleRefresh(e, "/report/AttendanceHistory")}>Attendance History</Link></li>}
+                                            {activeMenus.func.rp_work_hours && <li><Link className="dropdown-item" to="/report/WorkHours" onClick={(e) => handleRefresh(e, "/report/WorkHours")}>Work Hours</Link></li>}
+                                            {activeMenus.func.rp_compensation && <li><Link className="dropdown-item" to="/report/Compensation" onClick={(e) => handleRefresh(e, "/report/Compensation")}>Compensation</Link></li>}
                                         </ul>
                                     </li>
                                 )}
@@ -188,7 +188,7 @@ const Header = () => {
                                 {activeMenus.admin && (
                                     <li className={`nav-item dropdown${isNavActive('/admin') ? ' nav-active-underline' : ''}`}>
                                         <a className="nav-link dropdown-toggle text-white fw-medium" href="#" role="button" data-bs-toggle="dropdown">
-                                            Admin
+                                            Administrator
                                         </a>
                                         <ul className="dropdown-menu shadow border-0 mt-2">
                                             <li><Link className="dropdown-item" to="/admin/user-management" onClick={(e) => handleRefresh(e, "/admin/user-management")}>User Management</Link></li>
@@ -203,8 +203,8 @@ const Header = () => {
                                             Setup
                                         </a>
                                         <ul className="dropdown-menu shadow border-0 mt-2">
-                                            {<li><Link className="dropdown-item" to="/setup/manage-list-of-values" onClick={(e) => handleRefresh(e, "/setup/manage-list-of-values")}>List of Value</Link></li>}
                                             {<li><Link className="dropdown-item" to="/setup/role" onClick={(e) => handleRefresh(e, "/setup/role")}>Define Role</Link></li>}
+                                            {<li><Link className="dropdown-item" to="/setup/manage-list-of-values" onClick={(e) => handleRefresh(e, "/setup/manage-list-of-values")}>List of Value</Link></li>}
                                             {<li><Link className="dropdown-item" to="/setup/manage-holidays" onClick={(e) => handleRefresh(e, "/setup/manage-holidays")}>Manage Holiday</Link></li>}
                                         </ul>
                                     </li>

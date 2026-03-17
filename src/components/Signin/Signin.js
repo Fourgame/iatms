@@ -27,7 +27,7 @@ const Signin = (props) => {
     const message = location.state?.message;
     if (message) {
       setMessage(message);
-      noticeShowMessage(`${message} from message`, true);
+      noticeShowMessage(`${message}`, true);
     }
   }, []);
 

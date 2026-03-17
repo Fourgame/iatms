@@ -47,7 +47,7 @@ const HolidaysModal = ({ show, onClose, onSave, title, data, existingData = [] }
             const currentUser = TokenService.getUser();
             if (!currentUser) {
                 TokenService.deleteUser();
-                return navigate("/signin", { state: { message: "token not found" } });
+                return navigate("/signin", { state: { message: "Token missing: Unable to retrieve token from the message payload." } });
             }
 
             const values = await form.validateFields();
@@ -245,7 +245,7 @@ const Holidays = ( {title} ) => {
             const currentUser = TokenService.getUser();
             if (!currentUser) {
                 TokenService.deleteUser();
-                return navigate("/signin", { state: { message: "token not found" } });
+                return navigate("/signin", { state: { message: "Token missing: Unable to retrieve token from the message payload." } });
             }
 
             // 1. Get Years from API
@@ -289,7 +289,7 @@ const Holidays = ( {title} ) => {
             const currentUser = TokenService.getUser();
             if (!currentUser) {
                 TokenService.deleteUser();
-                return navigate("/signin", { state: { message: "token not found" } });
+                return navigate("/signin", { state: { message: "Token missing: Unable to retrieve token from the message payload." } });
             }
 
             const payload = {

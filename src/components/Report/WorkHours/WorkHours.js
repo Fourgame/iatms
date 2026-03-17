@@ -15,7 +15,7 @@ import Title from '../../Utilities/Title';
 
 const { Option } = Select;
 
-const WorkHours = ( {title} ) => {
+const WorkHours = ({ title }) => {
     const navigate = useNavigate();
 
     const handleRequestError = (error) => {

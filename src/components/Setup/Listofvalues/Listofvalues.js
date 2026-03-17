@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "../../Utilities/Table/Table.css";
-import { getLov, postLov } from "../../../services/lov.service";
+import { getLov, postLov } from "../../../services/Lov.service";
 import TableUI from "../../Utilities/Table/TableUI";
 import Loading from "../../Utilities/Loading";
 import { Button, Input, Alert, Modal, Form, Checkbox } from "antd";
@@ -56,7 +56,7 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
             const currentUser = TokenService.getUser();
             if (!currentUser) {
                 TokenService.deleteUser();
-                return navigate("/signin", { state: { message: "token not found" } });
+                return navigate("/signin", { state: { message: "Token missing: Unable to retrieve token from the message payload." } });
             }
             const values = await form.validateFields();
 
@@ -369,7 +369,7 @@ const Listofvalues = ( {title} ) => {
             const currentUser = TokenService.getUser();
             if (!currentUser) {
                 TokenService.deleteUser();
-                return navigate("/signin", { state: { message: "token not found" } });
+                return navigate("/signin", { state: { message: "Token missing: Unable to retrieve token from the message payload." } });
             }
 
             let payload = {

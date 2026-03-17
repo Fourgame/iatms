@@ -30,7 +30,7 @@ const Role = () => {
             const currentUser = token.getUser();
             if (!currentUser) {
                 token.deleteUser();
-                return navigate("/signin", { state: { message: "token not found" } });
+                return navigate("/signin", { state: { message: "Token missing: Unable to retrieve token from the message payload." } });
             }
             const response = await RoleService.getRole();
             if (response.data) {
@@ -142,7 +142,7 @@ const Role = () => {
                 const currentUser = token.getUser();
                 if (!currentUser) {
                     token.deleteUser();
-                    return navigate("/signin", { state: { message: "token not found" } });
+                    return navigate("/signin", { state: { message: "Token missing: Unable to retrieve token from the message payload." } });
                 }
                 const username = currentUser?.username || "System";
                 const payload = {
@@ -165,7 +165,7 @@ const Role = () => {
                 const response = await RoleService.postRole(payload);
 
                 if (response.status === 200 || response.data?.res_code === 200) {
-                    noticeShowMessage(modalMode === 'add' ? "เพิ่ม Role สำเร็จ" : "แก้ไข Role สำเร็จ", false);
+                    noticeShowMessage(modalMode === 'add' ? "บันทึกข้อมูลสำเร็จ" : "บันทึกข้อมูลสำเร็จ", false);
                     setIsModalOpen(false);
                     fetchRoles();
                 } else {
@@ -261,21 +261,21 @@ const Role = () => {
             title: 'Function',
             children: [
                 {
-                    title: 'Check-In & Check-Out',
+                    title: <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', lineHeight: '1.2' }}>Check-In & <br />Check-Out</div>,
                     dataIndex: 'func_cico',
                     key: 'func_cico',
                     align: 'center',
                     render: (val) => val ? <CheckOutlined style={{ color: '#198754', fontSize: '18px' }} /> : <CloseOutlined style={{ color: '#dc3545', fontSize: '18px' }} />
                 },
                 {
-                    title: 'Attendance & Leave Approval',
+                    title: <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', lineHeight: '1.2' }}>Attendance & <br />Leave Approval</div>,
                     dataIndex: 'func_approve',
                     key: 'func_approve',
                     align: 'center',
                     render: (val) => val ? <CheckOutlined style={{ color: '#198754', fontSize: '18px' }} /> : <CloseOutlined style={{ color: '#dc3545', fontSize: '18px' }} />
                 },
                 {
-                    title: 'Attendance History',
+                    title: <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', lineHeight: '1.2' }}>Attendance <br />History</div>,
                     dataIndex: 'func_rp_attendance',
                     key: 'func_rp_attendance',
                     align: 'center',
@@ -305,7 +305,7 @@ const Role = () => {
         defaultPageSize: 20,
         bordered: true,
         size: "middle",
-        // scroll: { x: 'max-content' },
+        scroll: { x: 'max-content' },
         loading: loading
     };
 
@@ -336,11 +336,9 @@ const Role = () => {
                 </Card.Header>
                 <Card.Body className="p-0">
                     <div className="m-3" style={{ maxWidth: "100%", overflowX: "auto" }}>
-                        <div style={{ minWidth: "1800px" }}>
-                            <TableUI
-                                {...tableProps}
-                            />
-                        </div>
+                        <TableUI
+                            {...tableProps}
+                        />
                     </div>
                 </Card.Body>
             </Card>
@@ -433,6 +431,7 @@ const Role = () => {
                                 name="roleLevel"
                                 label={<span style={{ fontWeight: 'bold' }}>Role Level</span>}
                                 style={{ marginLeft: '-10px' }}
+                                normalize={(value) => (value || '').replace(/[^0-9]/g, '')}
                                 rules={[
                                     { required: true, message: 'กรอก Role Level' },
                                     { pattern: /^[1-9][0-9]*$/, message: 'รูปแบบไม่ถูกต้อง ห้ามขึ้นต้นด้วย 0' }
@@ -501,6 +500,7 @@ const Role = () => {
                     </Form.Item>
                     <Row justify="center" style={{ marginTop: '24px' }}>
                         <Space size="large">
+                            <button type="submit" style={{ display: 'none' }}>Submit</button>
                             <SaveModalBtnBootstrap onClick={handleOk} loading={loading} />
                             <CloseModalBtnBootstrap onClick={handleCancel} />
                         </Space>
