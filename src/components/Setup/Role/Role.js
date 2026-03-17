@@ -30,7 +30,7 @@ const Role = () => {
             const currentUser = token.getUser();
             if (!currentUser) {
                 token.deleteUser();
-                return navigate("/signin", { state: { message: "Token missing: Unable to retrieve token from the message payload." } });
+                return navigate("/signin", { state: { message: "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่" } });
             }
             const response = await RoleService.getRole();
             if (response.data) {
@@ -52,7 +52,7 @@ const Role = () => {
             const status = error.response.status;
             if (status === 401) {
                 token.deleteUser();
-                navigate("/signin", { state: { message: "session expire" } });
+                navigate("/signin", { state: { message: "please sign-in again." } });
                 return true;
             }
             if (error.response.data && error.response.data.message) {
@@ -142,7 +142,7 @@ const Role = () => {
                 const currentUser = token.getUser();
                 if (!currentUser) {
                     token.deleteUser();
-                    return navigate("/signin", { state: { message: "Token missing: Unable to retrieve token from the message payload." } });
+                    return navigate("/signin", { state: { message: "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่" } });
                 }
                 const username = currentUser?.username || "System";
                 const payload = {
@@ -349,6 +349,7 @@ const Role = () => {
                         color: 'white',
                         padding: '16px 24px',
                         margin: '-20px -24px',
+                        borderRadius: '8px 8px 0 0',
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',

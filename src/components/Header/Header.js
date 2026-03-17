@@ -3,12 +3,14 @@ import { Link } from "react-router-dom";
 import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import TokenService from "../../services/token.service";
 import { noticeShowMessage } from "../Utilities/Notification";
+import VersionService from "../../services/version.service";
 import { Button } from 'react-bootstrap';
 const Header = () => {
 
     const navigate = useNavigate();
     const location = useLocation();
     const currentUser = TokenService.getUser();
+    const [apiVersion, setApiVersion] = useState("");
     const handleRefresh = (e, path) => {
         if (location.pathname.toLowerCase() === path.toLowerCase()) {
             e.preventDefault();
@@ -66,6 +68,18 @@ const Header = () => {
             });
         }
 
+    }, []);
+
+    useEffect(() => {
+        const fetchApiVersion = async () => {
+            try {
+                const response = await VersionService.getApiVersion();
+                setApiVersion(response.data?.version || response.data || "");
+            } catch (err) {
+                setApiVersion("-");
+            }
+        };
+        fetchApiVersion();
     }, []);
 
     const roleName = currentUser?.profile?.role_id ?? "";
@@ -177,8 +191,8 @@ const Header = () => {
                                             Report
                                         </a>
                                         <ul className="dropdown-menu shadow border-0 mt-2">
-                                            {activeMenus.func.rp_attendance && <li><Link className="dropdown-item" to="/report/AttendanceHistory" onClick={(e) => handleRefresh(e, "/report/AttendanceHistory")}>Attendance History</Link></li>}
-                                            {activeMenus.func.rp_work_hours && <li><Link className="dropdown-item" to="/report/WorkHours" onClick={(e) => handleRefresh(e, "/report/WorkHours")}>Work Hours</Link></li>}
+                                            {activeMenus.func.rp_attendance && <li><Link className="dropdown-item" to="/report/Attendance-History" onClick={(e) => handleRefresh(e, "/report/Attendance-History")}>Attendance History</Link></li>}
+                                            {activeMenus.func.rp_work_hours && <li><Link className="dropdown-item" to="/report/Work-Hours" onClick={(e) => handleRefresh(e, "/report/Work-Hours")}>Work Hours</Link></li>}
                                             {activeMenus.func.rp_compensation && <li><Link className="dropdown-item" to="/report/Compensation" onClick={(e) => handleRefresh(e, "/report/Compensation")}>Compensation</Link></li>}
                                         </ul>
                                     </li>
@@ -203,9 +217,9 @@ const Header = () => {
                                             Setup
                                         </a>
                                         <ul className="dropdown-menu shadow border-0 mt-2">
-                                            {<li><Link className="dropdown-item" to="/setup/role" onClick={(e) => handleRefresh(e, "/setup/role")}>Define Role</Link></li>}
-                                            {<li><Link className="dropdown-item" to="/setup/manage-list-of-values" onClick={(e) => handleRefresh(e, "/setup/manage-list-of-values")}>List of Value</Link></li>}
-                                            {<li><Link className="dropdown-item" to="/setup/manage-holidays" onClick={(e) => handleRefresh(e, "/setup/manage-holidays")}>Manage Holiday</Link></li>}
+                                            {<li><Link className="dropdown-item" to="/setup/manage-list-of-values" onClick={(e) => handleRefresh(e, "/setup/manage-list-of-values")}>Manage List Of Values</Link></li>}
+                                            {<li><Link className="dropdown-item" to="/setup/role" onClick={(e) => handleRefresh(e, "/setup/role")}>Role</Link></li>}
+                                            {<li><Link className="dropdown-item" to="/setup/manage-holidays" onClick={(e) => handleRefresh(e, "/setup/manage-holidays")}>Manage Holidays</Link></li>}
                                         </ul>
                                     </li>
                                 )}
@@ -216,7 +230,7 @@ const Header = () => {
 
                 {/* Right Side */}
                 <div className="d-flex align-items-center gap-2 gap-md-4 ms-auto">
-                    <span className="fw-lighter text-white d-none d-xl-inline">Version: (Web) | (API)</span>
+                    <span className="fw-lighter text-white d-none d-xl-inline">Version: {process.env.REACT_APP_VERSION} (Web) | {apiVersion} (API)</span>
                     <span className="fw-bold text-white d-none d-md-inline">Role : {currentUser.profile.role_id}</span>
 
                     <Button variant="primary"

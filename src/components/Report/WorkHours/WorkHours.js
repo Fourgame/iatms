@@ -23,7 +23,7 @@ const WorkHours = ({ title }) => {
             const status = error.response.status;
             if (status === 401) {
                 TokenService.deleteUser();
-                navigate("/signin", { state: { message: "session expire" } });
+                navigate("/signin", { state: { message: "please sign-in again." } });
                 return true;
             }
             if (error.response.data && error.response.data.message) {

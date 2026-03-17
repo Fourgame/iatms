@@ -89,7 +89,7 @@ const UserManage = ({ title }) => {
             const status = error.response.status;
             if (status === 401) {
                 TokenService.deleteUser();
-                navigate("/signin", { state: { message: "session expire" } });
+                navigate("/signin", { state: { message: "please sign-in again." } });
                 return true;
             }
             if (error.response.data && error.response.data.message) {
@@ -194,7 +194,7 @@ const UserManage = ({ title }) => {
             const currentUser = TokenService.getUser();
             if (!currentUser) {
                 TokenService.deleteUser();
-                return navigate("/signin", { state: { message: "Token missing: Unable to retrieve token from the message payload." } });
+                return navigate("/signin", { state: { message: "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่" } });
             }
             const response = await findLdap.find_ldap({
                 oa_user: searchOa,
@@ -227,7 +227,7 @@ const UserManage = ({ title }) => {
                 const status = error.response.status;
                 if (status === 401) {
                     TokenService.deleteUser();
-                    return navigate("/signin", { state: { message: "session expire" } });
+                    return navigate("/signin", { state: { message: "please sign-in again." } });
                 }
                 if (status === 403) return noticeShowMessage("access-denied", true);
                 if (status === 404) return noticeShowMessage("not-found", true);
@@ -331,7 +331,7 @@ const UserManage = ({ title }) => {
                     const status = error.response.status;
                     if (status === 401) {
                         TokenService.deleteUser();
-                        return navigate("/signin", { state: { message: "session expire" } });
+                        return navigate("/signin", { state: { message: "please sign-in again." } });
                     }
                     if (status === 403) return noticeShowMessage("access-denied", true);
                     if (status === 404) return noticeShowMessage("not-found", true);
@@ -496,6 +496,7 @@ const UserManage = ({ title }) => {
                         color: 'white',
                         padding: '16px 24px',
                         margin: '-20px -24px',
+                        borderRadius: '8px 8px 0 0',
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',

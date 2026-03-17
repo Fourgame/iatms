@@ -58,7 +58,7 @@ const Home = ( {title} ) => {
             const status = error.response.status;
             if (status === 401) {
                 token.deleteUser();
-                navigate("/signin", { state: { message: "session expire" } });
+                navigate("/signin", { state: { message: "please sign-in again." } });
                 return true;
             }
             if (error.response.data && error.response.data.message) {
@@ -90,7 +90,7 @@ const Home = ( {title} ) => {
     useEffect(() => {
         document.title = Title.get_title(title);
         if (!token.isSignIn()) {
-            return navigate("/signin", { state: { message: "Token missing: Unable to retrieve token from the message payload." } });
+            return navigate("/signin", { state: { message: "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่" } });
 
         } else {
             onPageLoad();
@@ -194,7 +194,7 @@ const Home = ( {title} ) => {
                 <div className="fw-bold fs-1 mb-3 text-start">{user.profile.name_en}</div>
                 <div className="text-start" style={{ fontSize: "14px", lineHeight: "28px", wordBreak: "break-word", overflowWrap: "break-word" }}>
                     <div className="fs-4   mb-3">
-                        <span className="fw-medium fs-4 ">OA User ID :</span> {user.profile.oa_user}
+                        <span className="fw-medium fs-4 ">OA User :</span> {user.profile.oa_user}
                     </div>
                     <div className="fs-4  mb-3">
                         <span className="fw-medium  ">Email :</span> {user.profile.email}

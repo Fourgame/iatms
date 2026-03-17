@@ -98,8 +98,6 @@ const ReasonModal = ({ open, onClose, onSave, errorMessage, actionType }) => {
                         placeholder="กรอกเหตุผล"
                         style={{
                             borderRadius: '6px',
-                            borderColor: '#000',
-                            borderWidth: '2px', // Thicker border as per design
                             fontSize: '16px'
                         }}
                     />
@@ -156,7 +154,7 @@ const CheckInOut = ({ title }) => {
             const status = error.response.status;
             if (status === 401) {
                 TokenService.deleteUser();
-                navigate("/signin", { state: { message: "session expire" } });
+                navigate("/signin", { state: { message: "please sign-in again." } });
                 return true;
             }
             if (error.response.data && error.response.data.message) {
@@ -883,8 +881,9 @@ const CheckInOut = ({ title }) => {
                             }}
                         />
                     </div>
-                    <div style={{ marginTop: "5px", fontWeight: "normal", fontSize: "22px", color: "#000000ff" }}>
-                        Attendance History
+                    <div style={{ marginTop: "5px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontWeight: "normal", fontSize: "22px", color: "#000000ff" }}>Attendance History</span>
+                        <span style={{ fontWeight: "normal", fontSize: "16px", color: "#000000ff" }}>แสดงข้อมูลย้อนหลัง 7 วัน</span>
                     </div>
 
                     <div style={{ marginTop: "5px", maxWidth: "100%", overflowX: "auto" }}>

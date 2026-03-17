@@ -126,7 +126,7 @@ const Signin = (props) => {
                   </label>
                   <input
                     type={showPassword ? "text" : "password"}
-                    className="form-control form-control-lg bg-light border-0 py-3 px-4 rounded-3"
+                    className="form-control bg-light border-0 py-2 px-3 rounded-3"
                     id="txt_password"
                     name="password"
                     value={password}
@@ -161,18 +161,18 @@ const Signin = (props) => {
                 {/* Button */}
                 <div className="text-center">
                   {loading ? (
-                    <button className="btn btn-primary btn-sm py-3 w-50 rounded-3" type="button" disabled>
+                    <button className="btn btn-primary btn-sm py-2 w-50 rounded-3" type="button" disabled>
                       <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                       &nbsp;Loading...
                     </button>
                   ) : (
                     <button
                       type="submit"
-                      className="btn btn-primary btn-sm py-3 w-50 rounded-3"
+                      className="btn btn-primary btn-sm py-2 w-50 rounded-3"
                     // style={{ backgroundColor: "#0020BF" }}
                     >
-                      <i className="bi bi-box-arrow-in-right me-2 fs-4"></i>
-                      <span className="fs-4">Login</span>
+                      <i className="bi bi-box-arrow-in-right me-2 fs-6"></i>
+                      <span className="fs-6">Login</span>
                     </button>
                   )}
                 </div>

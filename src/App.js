@@ -87,11 +87,11 @@ function App() {
               <AttendanceApproval title="Attendance & Leave Approval" />
             } />
 
-            <Route path="/report/AttendanceHistory" element={
+            <Route path="/report/Attendance-History" element={
               <AttendanceHistory title="Attendance History" />
             } />
 
-            <Route path="/report/WorkHours" element={
+            <Route path="/report/Work-Hours" element={
               <WorkHours title="Work Hours" />
             } />
 
