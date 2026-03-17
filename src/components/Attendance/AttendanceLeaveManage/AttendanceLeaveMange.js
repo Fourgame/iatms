@@ -1417,7 +1417,7 @@ const AttendanceLeaveMange = ( {title} ) => {
             }
         },
         {
-            title: 'เหตุผลคำขอ',
+            title: 'เหตุผล',
             dataIndex: 'requestReason',
             key: 'requestReason',
             align: 'left',
@@ -2305,7 +2305,7 @@ const AttendanceLeaveMange = ( {title} ) => {
             <Modal
                 title={
                     <div style={{ backgroundColor: '#2750B0', color: 'white', padding: '16px 24px', margin: '-20px -24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '18px', fontWeight: '600', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
-                        <span>เหตุผลคำขอ</span>
+                        <span>เหตุผล</span>
                         <i className="bi bi-x-lg" onClick={() => setIsViewReasonModalOpen(false)} style={{ cursor: "pointer", fontSize: "20px" }}></i>
                     </div>
                 }

@@ -339,13 +339,13 @@ const Holidays = ( {title} ) => {
 
     // Modal Handlers
     const handleAdd = () => {
-        setModalTitle("Add - Manage Holiday");
+        setModalTitle("Add - Holiday");
         setSelectedRecord(null);
         setIsModalOpen(true);
     };
 
     const handleEdit = (record) => {
-        setModalTitle("Edit - Manage Holiday");
+        setModalTitle("Edit - Holiday");
         setSelectedRecord(record);
         setIsModalOpen(true);
     };

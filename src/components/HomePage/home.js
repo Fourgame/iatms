@@ -185,14 +185,14 @@ const Home = ( {title} ) => {
     };
 
     return (
-        <div className="d-flex gap-3 p-3 my-3" style={{ height: "70vh" }}>
+        <div className="d-flex gap-3 p-3 my-3" style={{ minHeight: "70vh" }}>
             {/* LEFT BOX */}
             <div
-                className="border border-2 border-secondary h-100 p-3"
-                style={{ backgroundColor: "#F5F5F5", flex: 1 }}
+                className="border border-2 border-secondary p-3"
+                style={{ backgroundColor: "#F5F5F5", flex: 1, minWidth: 0 }}
             >
                 <div className="fw-bold fs-1 mb-3 text-start">{user.profile.name_en}</div>
-                <div className="text-start" style={{ fontSize: "14px", lineHeight: "28px" }}>
+                <div className="text-start" style={{ fontSize: "14px", lineHeight: "28px", wordBreak: "break-word", overflowWrap: "break-word" }}>
                     <div className="fs-4   mb-3">
                         <span className="fw-medium fs-4 ">OA User ID :</span> {user.profile.oa_user}
                     </div>
@@ -217,8 +217,8 @@ const Home = ( {title} ) => {
             {/* RIGHT */}
             {menu_manager || menu_teamled || menu_intern ? (
                 <div
-                    className="border border-2 border-secondary h-100 p-2 d-flex flex-column"
-                    style={{ backgroundColor: "#F5F5F5", flex: 1 }}
+                    className="border border-2 border-secondary p-2 d-flex flex-column"
+                    style={{ backgroundColor: "#F5F5F5", flex: 1, minWidth: 0 }}
                 >
                     <div className="text-center fw-bold mb-2">
                         ข้อมูล ณ วันที่ {displaydate || "-"}

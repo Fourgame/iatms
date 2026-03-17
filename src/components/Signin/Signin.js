@@ -52,13 +52,12 @@ const Signin = (props) => {
           navigate("/home");
           setIsLoggedIn(true);
         } else {
-          debugger;
-          setMessage("Login failed. 1");
+          setMessage("ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่");
           setLoading(false);
         }
       } catch (err) {
         const msg =
-          err?.response?.data?.message || err.message || "Login failed. 2";
+          err?.response?.data?.message || err.message || "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่";
         setMessage(msg);
         setLoading(false);
       }
@@ -66,7 +65,7 @@ const Signin = (props) => {
       window.location.reload();
     } catch (err) {
       const msg =
-        err?.response?.data?.message || err.message || "Login failed. 3";
+        err?.response?.data?.message || err.message || "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่";
       setMessage(msg);
       setLoading(false);
     }
@@ -86,6 +85,9 @@ const Signin = (props) => {
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
+        backgroundColor: "#1a2332",
+        maxWidth: "1920px",
+        margin: "0 auto",
       }}
     >
       <div className="justify-content-end me-5">
@@ -95,18 +97,18 @@ const Signin = (props) => {
           <i className="ms-3 bi bi-calendar"></i>
         </h3>
         <div className="align-items-center">
-          <div className="card rounded-4 mt-4 " style={{ width: "38rem", maxWidth: "90vw" }}>
+          <div className="card rounded-4 mt-4 " style={{ width: "clamp(20rem, 30vw, 38rem)", maxWidth: "90vw" }}>
             <div className="card-body p-4">
 
               <form onSubmit={handleLogin}>
                 {/* OA User */}
-                <div className="mb-4 text-start">
-                  <label htmlFor="txt_username" className="form-label fw-bold fs-4">
+                <div className="mb-3 text-start">
+                  <label htmlFor="txt_username" className="form-label fw-bold fs-6">
                     OA User
                   </label>
                   <input
                     type="text"
-                    className="form-control form-control-lg bg-light border-0 py-3 px-4 rounded-3"
+                    className="form-control bg-light border-0 py-2 px-3 rounded-3"
                     id="txt_username"
                     name="username"
                     value={username}
@@ -118,8 +120,8 @@ const Signin = (props) => {
                 </div>
 
                 {/* Password */}
-                <div className="mb-3 text-start">
-                  <label htmlFor="txt_password" className="form-label fw-bold fs-4">
+                <div className="mb-2 text-start">
+                  <label htmlFor="txt_password" className="form-label fw-bold fs-6">
                     Password
                   </label>
                   <input
