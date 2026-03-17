@@ -202,7 +202,7 @@ const Header = () => {
                                 {activeMenus.admin && (
                                     <li className={`nav-item dropdown${isNavActive('/admin') ? ' nav-active-underline' : ''}`}>
                                         <a className="nav-link dropdown-toggle text-white fw-medium" href="#" role="button" data-bs-toggle="dropdown">
-                                            Admin
+                                            Administrator
                                         </a>
                                         <ul className="dropdown-menu shadow border-0 mt-2">
                                             <li><Link className="dropdown-item" to="/admin/user-management" onClick={(e) => handleRefresh(e, "/admin/user-management")}>User Management</Link></li>

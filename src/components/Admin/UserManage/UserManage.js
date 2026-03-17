@@ -6,7 +6,7 @@ import { ActiveTag, InactiveTag } from "../../Utilities/StatusTag/StatusTag";
 import TableUI from '../../Utilities/Table/TableUI';
 import { getUserManage, postUserManage, getDropdown, findLdap } from '../../../services/user-manage.service';
 import TokenService from '../../../services/token.service';
-import { getLov } from '../../../services/lov.service';
+import { getLov } from '../../../services/Lov.service';
 import Title from '../../Utilities/Title';
 import Loading from '../../Utilities/Loading';
 import { noticeShowMessage } from '../../Utilities/Notification';
@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 
 const { Option } = Select;
 
-const UserManage = ( {title} ) => {
+const UserManage = ({ title }) => {
     // State
     const [userData, setUserData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -579,7 +579,7 @@ const UserManage = ( {title} ) => {
                                 </Col>
                                 <Col span={12}>
                                     <span style={{ fontWeight: 'bold', marginRight: '5px' }}>ส่วนงาน:</span>
-                                    <span>{currentUser.Division}</span>
+                                    <span>{currentUser.division}</span>
                                 </Col>
                             </Row>
                             <Row gutter={24} style={{ marginBottom: '10px', marginLeft: '-5px' }}>
