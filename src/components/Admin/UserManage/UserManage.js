@@ -219,8 +219,6 @@ const UserManage = ({ title }) => {
                     email: data.email || "",
                     division: data.division_code || "" // ใส่ในช่อง "ส่วนงาน"
                 });
-
-                noticeShowMessage("ดึงข้อมูลจาก LDAP สำเร็จ", false);
             } else {
                 noticeShowMessage("ไม่พบข้อมูลผู้ใช้งานในระบบ LDAP", true);
             }
