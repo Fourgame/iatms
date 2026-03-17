@@ -56,7 +56,7 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
             const currentUser = TokenService.getUser();
             if (!currentUser) {
                 TokenService.deleteUser();
-                return navigate("/signin", { state: { message: "token not found" } });
+                return navigate("/signin", { state: { message: "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่" } });
             }
             const values = await form.validateFields();
 
@@ -84,7 +84,7 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
             } catch (err) {
                 if (err.response.status === 401) {
                     TokenService.deleteUser();
-                    navigate("/", { state: { message: "session expire" } })
+                    navigate("/", { state: { message: "please sign-in again." } })
                 }
                 const serverMessage = err.response?.data?.message || err.response?.data || err.message;
                 noticeShowMessage(serverMessage || "เกิดข้อผิดพลาดในการบันทึกข้อมูล", true);
@@ -317,7 +317,7 @@ const Listofvalues = ( {title} ) => {
             const status = error.response.status;
             if (status === 401) {
                 TokenService.deleteUser();
-                navigate("/signin", { state: { message: "session expire" } });
+                navigate("/signin", { state: { message: "please sign-in again." } });
                 return true;
             }
             if (error.response.data && error.response.data.message) {
@@ -369,7 +369,7 @@ const Listofvalues = ( {title} ) => {
             const currentUser = TokenService.getUser();
             if (!currentUser) {
                 TokenService.deleteUser();
-                return navigate("/signin", { state: { message: "token not found" } });
+                return navigate("/signin", { state: { message: "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่" } });
             }
 
             let payload = {
@@ -496,10 +496,7 @@ const Listofvalues = ( {title} ) => {
     }, []);
 
 
-    //     if (!TokenService.isSignIn()) {
-    //     return navigate("/", { state: { message: "session expire 1" } });
-
-    //   }
+   
 
 
 

@@ -57,7 +57,7 @@ thead[class="ant-table-thead"] th {
 }
 
 .table-striped-rows tr.table-row-error:nth-child(n) td {
-  background-color: #ffa9a9 !important;
+  background-color: #ffbfbf !important;
 }
 
 

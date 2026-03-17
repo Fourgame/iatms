@@ -47,7 +47,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
             const status = error.response.status;
             if (status === 401) {
                 TokenService.deleteUser();
-                navigate("/signin", { state: { message: "session expire" } });
+                navigate("/signin", { state: { message: "please sign-in again." } });
                 return true;
             }
             if (error.response.data && error.response.data.message) {
@@ -826,7 +826,7 @@ const AttendanceLeaveMange = ( {title} ) => {
             const status = error.response.status;
             if (status === 401) {
                 TokenService.deleteUser();
-                navigate("/signin", { state: { message: "session expire" } });
+                navigate("/signin", { state: { message: "please sign-in again." } });
                 return true;
             }
             if (error.response.data && error.response.data.message) {
@@ -1764,35 +1764,41 @@ const AttendanceLeaveMange = ( {title} ) => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <span style={{ fontWeight: 700, fontSize: '16px' }}>วันที่:</span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                <DatePicker
-                                    format="DD/MM/YYYY"
-                                    placeholder="DD/MM/YYYY"
-                                    inputReadOnly={true}
-                                    value={attStartDate}
-                                    onChange={(date) => {
-                                        setAttStartDate(date);
-                                        requestAnimationFrame(() => attFilterRef.current?.focus());
-                                    }}
-                                    disabledDate={(current) => {
-                                        return attEndDate ? current && current > attEndDate.endOf('day') : false;
-                                    }}
-                                    style={{ width: 140 }}
-                                />
+                                <div style={{ position: 'relative', marginTop: '4px' }}>
+                                    <span style={{ position: 'absolute', top: '-8px', left: '10px', background: 'white', padding: '0 5px', fontSize: '11px', color: '#888', zIndex: 1 }}>Start Date</span>
+                                    <DatePicker
+                                        format="DD/MM/YYYY"
+                                        placeholder="DD/MM/YYYY"
+                                        inputReadOnly={true}
+                                        value={attStartDate}
+                                        onChange={(date) => {
+                                            setAttStartDate(date);
+                                            requestAnimationFrame(() => attFilterRef.current?.focus());
+                                        }}
+                                        disabledDate={(current) => {
+                                            return attEndDate ? current && current > attEndDate.endOf('day') : false;
+                                        }}
+                                        style={{ width: 140 }}
+                                    />
+                                </div>
                                 <span>-</span>
-                                <DatePicker
-                                    format="DD/MM/YYYY"
-                                    placeholder="DD/MM/YYYY"
-                                    inputReadOnly={true}
-                                    value={attEndDate}
-                                    onChange={(date) => {
-                                        setAttEndDate(date);
-                                        requestAnimationFrame(() => attFilterRef.current?.focus());
-                                    }}
-                                    disabledDate={(current) => {
-                                        return attStartDate ? current && current < attStartDate.startOf('day') : false;
-                                    }}
-                                    style={{ width: 140 }}
-                                />
+                                <div style={{ position: 'relative', marginTop: '4px' }}>
+                                    <span style={{ position: 'absolute', top: '-8px', left: '10px', background: 'white', padding: '0 5px', fontSize: '11px', color: '#888', zIndex: 1 }}>End Date</span>
+                                    <DatePicker
+                                        format="DD/MM/YYYY"
+                                        placeholder="DD/MM/YYYY"
+                                        inputReadOnly={true}
+                                        value={attEndDate}
+                                        onChange={(date) => {
+                                            setAttEndDate(date);
+                                            requestAnimationFrame(() => attFilterRef.current?.focus());
+                                        }}
+                                        disabledDate={(current) => {
+                                            return attStartDate ? current && current < attStartDate.startOf('day') : false;
+                                        }}
+                                        style={{ width: 140 }}
+                                    />
+                                </div>
                             </div>
                         </div>
 
@@ -1883,31 +1889,37 @@ const AttendanceLeaveMange = ( {title} ) => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <span style={{ fontWeight: 700, fontSize: '16px' }}>วันที่:</span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                <DatePicker
-                                    format="DD/MM/YYYY"
-                                    placeholder="DD/MM/YYYY"
-                                    inputReadOnly={true}
-                                    value={leaveStartDate}
-                                    onChange={(date) => {
-                                        setLeaveStartDate(date);
-                                        requestAnimationFrame(() => leaveFilterRef.current?.focus());
-                                    }}
-                                    disabledDate={(current) => leaveEndDate ? current && current.isAfter(leaveEndDate, 'day') : false}
-                                    style={{ width: 140 }}
-                                />
+                                <div style={{ position: 'relative', marginTop: '4px' }}>
+                                    <span style={{ position: 'absolute', top: '-8px', left: '10px', background: 'white', padding: '0 5px', fontSize: '11px', color: '#888', zIndex: 1 }}>Start Date</span>
+                                    <DatePicker
+                                        format="DD/MM/YYYY"
+                                        placeholder="DD/MM/YYYY"
+                                        inputReadOnly={true}
+                                        value={leaveStartDate}
+                                        onChange={(date) => {
+                                            setLeaveStartDate(date);
+                                            requestAnimationFrame(() => leaveFilterRef.current?.focus());
+                                        }}
+                                        disabledDate={(current) => leaveEndDate ? current && current.isAfter(leaveEndDate, 'day') : false}
+                                        style={{ width: 140 }}
+                                    />
+                                </div>
                                 <span>-</span>
-                                <DatePicker
-                                    format="DD/MM/YYYY"
-                                    placeholder="DD/MM/YYYY"
-                                    inputReadOnly={true}
-                                    value={leaveEndDate}
-                                    onChange={(date) => {
-                                        setLeaveEndDate(date);
-                                        requestAnimationFrame(() => leaveFilterRef.current?.focus());
-                                    }}
-                                    disabledDate={(current) => leaveStartDate ? current && current.isBefore(leaveStartDate, 'day') : false}
-                                    style={{ width: 140 }}
-                                />
+                                <div style={{ position: 'relative', marginTop: '4px' }}>
+                                    <span style={{ position: 'absolute', top: '-8px', left: '10px', background: 'white', padding: '0 5px', fontSize: '11px', color: '#888', zIndex: 1 }}>End Date</span>
+                                    <DatePicker
+                                        format="DD/MM/YYYY"
+                                        placeholder="DD/MM/YYYY"
+                                        inputReadOnly={true}
+                                        value={leaveEndDate}
+                                        onChange={(date) => {
+                                            setLeaveEndDate(date);
+                                            requestAnimationFrame(() => leaveFilterRef.current?.focus());
+                                        }}
+                                        disabledDate={(current) => leaveStartDate ? current && current.isBefore(leaveStartDate, 'day') : false}
+                                        style={{ width: 140 }}
+                                    />
+                                </div>
                             </div>
                         </div>
 

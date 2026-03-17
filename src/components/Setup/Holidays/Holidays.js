@@ -47,7 +47,7 @@ const HolidaysModal = ({ show, onClose, onSave, title, data, existingData = [] }
             const currentUser = TokenService.getUser();
             if (!currentUser) {
                 TokenService.deleteUser();
-                return navigate("/signin", { state: { message: "token not found" } });
+                return navigate("/signin", { state: { message: "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่" } });
             }
 
             const values = await form.validateFields();
@@ -68,7 +68,7 @@ const HolidaysModal = ({ show, onClose, onSave, title, data, existingData = [] }
             } catch (err) {
                 if (err.response?.status === 401) {
                     TokenService.deleteUser();
-                    return navigate("/", { state: { message: "session expire from save handle" } });
+                    return navigate("/", { state: { message: "please sign-in again." } });
                 }
                 setLoading(false);
                 const serverMessage = err.response?.data?.message || err.message;
@@ -211,7 +211,7 @@ const Holidays = ( {title} ) => {
             const status = error.response.status;
             if (status === 401) {
                 TokenService.deleteUser();
-                navigate("/signin", { state: { message: "session expire" } });
+                navigate("/signin", { state: { message: "please sign-in again." } });
                 return true;
             }
             if (error.response.data && error.response.data.message) {
@@ -245,7 +245,7 @@ const Holidays = ( {title} ) => {
             const currentUser = TokenService.getUser();
             if (!currentUser) {
                 TokenService.deleteUser();
-                return navigate("/signin", { state: { message: "token not found" } });
+                return navigate("/signin", { state: { message: "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่" } });
             }
 
             // 1. Get Years from API
@@ -289,7 +289,7 @@ const Holidays = ( {title} ) => {
             const currentUser = TokenService.getUser();
             if (!currentUser) {
                 TokenService.deleteUser();
-                return navigate("/signin", { state: { message: "token not found" } });
+                return navigate("/signin", { state: { message: "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่" } });
             }
 
             const payload = {
@@ -448,10 +448,7 @@ const Holidays = ( {title} ) => {
             <EditToolBtnBootstrap onClick={() => handleEdit(record)} />
         ),
     };
-    // if (!TokenService.isSignIn()) {
-    //     noticeShowMessage("session expire", true);
-    //     return navigate("/", { state: { message: "session expire 1" } });
-    // }
+    
 
     const columnsWithActions = [actionColumn, ...columns];
 
