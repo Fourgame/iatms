@@ -190,7 +190,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
     // ✅ Reserve help space on both columns to keep same height
     const renderMapSection = (type, latLongStr, currentZone, newLocation, setNewLocation, originalAddress, newAddress) => {
         const fieldName = type === 'ci' ? 'ciNewLocation' : 'coNewLocation';
-        const msg = `กรุณาระบุตำแหน่ง${type === 'ci' ? 'เข้า' : 'ออก'}ที่ขอแก้ไข`;
+        const msg = `ระบุตำแหน่ง${type === 'ci' ? 'เข้า' : 'ออก'}ที่ขอแก้ไข`;
 
         const originalLocation = parseLatLong(latLongStr);
         const mapContainerStyle = { width: '100%', height: '250px', borderRadius: '8px' };
@@ -398,7 +398,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
         }
 
         const fieldName = type === "ci" ? "ciNewTime" : "coNewTime";
-        const msg = `กรุณาระบุเวลา${type === 'ci' ? 'เข้า' : 'ออก'}ที่ขอแก้ไข`;
+        const msg = `ระบุเวลา${type === 'ci' ? 'เข้า' : 'ออก'}ที่ขอแก้ไข`;
 
         const readonlyBoxStyle = (hasError = false) => ({
             display: 'flex',
@@ -782,7 +782,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
                                             <Form.Item
                                                 name="requestReason"
                                                 style={{ marginBottom: 0 }}
-                                                rules={[{ required: true, message: 'กรุณาระบุเหตุผลที่ร้องขอ' }]}
+                                                rules={[{ required: true, message: 'ระบุเหตุผลที่ร้องขอ' }]}
                                                 validateStatus={err ? "error" : undefined}
                                                 help={fixedHelp(err)}
                                             >
@@ -1188,17 +1188,17 @@ const AttendanceLeaveMange = ( {title} ) => {
         let hasError = false;
         let errors = { type_leave: "", startDate: "", endDate: "", time: "", reason: "" };
 
-        if (modalMode === "add" && !leaveForm.type_leave) { errors.type_leave = "กรุณาเลือกประเภทการลา"; hasError = true; }
+        if (modalMode === "add" && !leaveForm.type_leave) { errors.type_leave = "เลือกประเภทการลา"; hasError = true; }
         if (!leaveForm.startDate || !leaveForm.endDate) {
-            if (!leaveForm.startDate) errors.startDate = "กรุณาเลือกวันที่เริ่มต้น";
-            if (!leaveForm.endDate) errors.endDate = "กรุณาเลือกวันที่สิ้นสุด";
+            if (!leaveForm.startDate) errors.startDate = "เลือกวันที่เริ่มต้น";
+            if (!leaveForm.endDate) errors.endDate = "เลือกวันที่สิ้นสุด";
             hasError = true;
         } else if (checkDuplicateDate(leaveForm.startDate, leaveForm.endDate, leaveForm.id)) {
             errors.startDate = "วันลานี้มีการลางานแล้ว (ซ้ำ)"; errors.endDate = "วันลานี้มีการลางานแล้ว (ซ้ำ)"; hasError = true;
         }
 
         if (!leaveForm.isFullDay) {
-            if (!leaveForm.startTime || !leaveForm.endTime) { errors.time = "กรุณาระบุช่วงเวลา"; hasError = true; }
+            if (!leaveForm.startTime || !leaveForm.endTime) { errors.time = "ระบุช่วงเวลา"; hasError = true; }
             else if (leaveForm.startDate && leaveForm.endDate && leaveForm.startDate.isSame(leaveForm.endDate, 'day')) {
                 const st = moment(typeof leaveForm.startTime.format === 'function' ? leaveForm.startTime.format("HH:mm") : leaveForm.startTime, "HH:mm");
                 const et = moment(typeof leaveForm.endTime.format === 'function' ? leaveForm.endTime.format("HH:mm") : leaveForm.endTime, "HH:mm");
@@ -1206,7 +1206,7 @@ const AttendanceLeaveMange = ( {title} ) => {
             }
         }
 
-        if (!leaveForm.reason || !leaveForm.reason.trim()) { errors.reason = "กรุณาระบุเหตุผล"; hasError = true; }
+        if (!leaveForm.reason || !leaveForm.reason.trim()) { errors.reason = "ระบุเหตุผล"; hasError = true; }
         setLeaveFormErrors(errors);
         if (hasError) return;
 
@@ -1398,7 +1398,7 @@ const AttendanceLeaveMange = ( {title} ) => {
                 }
 
                 const statusStr = String(record.changeStatusCode ?? record.changeStatus ?? "").trim();
-                if (statusStr === 'Ap' || statusStr === 'Approved' || statusStr === 'Approve') {
+                if (statusStr === 'Ap' || statusStr === 'PA' ) {
                     return (
                         <a
                             href="#"

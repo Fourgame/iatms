@@ -90,7 +90,7 @@ const Home = ( {title} ) => {
     useEffect(() => {
         document.title = Title.get_title(title);
         if (!token.isSignIn()) {
-            return navigate("/signin", { state: { message: "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่" } });
+            return navigate("/signin");
 
         } else {
             onPageLoad();
