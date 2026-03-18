@@ -348,6 +348,21 @@ const CheckInOut = ({ title }) => {
 
     useEffect(() => {
         if (isLoaded && coordinates.lat && coordinates.long) {
+            // ตรวจสอบว่าอยู่ในพื้นที่ที่กำหนดหรือไม่
+            if (buttonData?.wpCondition && buttonData?.wpName) {
+                const parts = buttonData.wpCondition.split(',').map(s => parseFloat(s.trim()));
+                if (parts.length >= 3) {
+                    const [targetLat, targetLong, radius] = parts;
+                    const dist = calculateDistance(coordinates.lat, coordinates.long, targetLat, targetLong);
+                    if (dist <= radius) {
+                        setCurrentAddress(`ธนาคารกรุงเทพ สำนักงาน ${buttonData.wpName}`);
+                        setIsGeocoding(false);
+                        return; // เลิกทำงานทันที ไม่ต้องรอ API ฝั่ง Google Maps
+                    }
+                }
+            }
+
+            // ถ้าไม่อยู่ ให้ไปดึงตำแหน่งจาก Google Maps API
             setIsGeocoding(true);
             const geocoder = new window.google.maps.Geocoder();
             geocoder.geocode({
@@ -363,7 +378,7 @@ const CheckInOut = ({ title }) => {
                 setIsGeocoding(false);
             });
         }
-    }, [coordinates, isLoaded]);
+    }, [coordinates, isLoaded, buttonData]);
 
     const formatDate = (date) => {
         const options = { day: 'numeric', month: 'long', year: 'numeric' };
@@ -409,7 +424,7 @@ const CheckInOut = ({ title }) => {
             );
         }
     };
-    
+
 
 
 
@@ -760,7 +775,7 @@ const CheckInOut = ({ title }) => {
                                             {(() => {
                                                 if (isLocationLoading) return null;
                                                 if (!buttonData) return null;
-                                                const { wpCondition, canCi, canCo } = buttonData;
+                                                const { wpName, wpCondition, canCi, canCo } = buttonData;
 
                                                 // If neither button is enabled, do not show any icon
                                                 if (!canCi && !canCo) return null;
