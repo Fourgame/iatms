@@ -392,23 +392,19 @@ const AttendanceHistory = ( {title} ) => {
             selectUnlockedCells: true
         };
 
-        // Column widths
-        worksheet['!cols'] = [
-            { wch: 15 }, // วันที่
-            { wch: 20 }, // OA user
-            { wch: 30 }, // ชื่อ-นามสกุล
-            { wch: 15 }, // Team
-            { wch: 15 }, // CI เวลา
-            { wch: 20 }, // CI สถานะ
-            { wch: 40 }, // CI ตำแหน่ง
-            { wch: 20 }, // CI สถานะตำแหน่ง
-            { wch: 30 }, // CI เหตุผล
-            { wch: 15 }, // CO เวลา
-            { wch: 20 }, // CO สถานะ
-            { wch: 40 }, // CO ตำแหน่ง
-            { wch: 20 }, // CO สถานะตำแหน่ง
-            { wch: 30 }, // CO เหตุผล
-        ];
+        // Column widths - Autofit up to max 80 characters
+        const colCount = wsData[0].length;
+        const colWidths = [];
+        for (let i = 0; i < colCount; i++) {
+            let max = 0;
+            wsData.forEach(row => {
+                const valStr = row[i] ? row[i].toString() : "";
+                if (valStr.length > max) max = valStr.length;
+            });
+            // Tahoma 14 is wider than default, so scale up max length and add padding
+            colWidths.push({ wch: Math.min(Math.floor(max * 1.2) + 8, 80) });
+        }
+        worksheet['!cols'] = colWidths;
 
         // Apply styles
         const range = XLSX.utils.decode_range(worksheet['!ref']);
@@ -428,17 +424,20 @@ const AttendanceHistory = ( {title} ) => {
                     right: { style: "thin", color: { auto: 1 } }
                 };
 
-                // Vertical Center & wrap text by default
+                // Vertical Center & wrap text by default, Tahoma 14
                 worksheet[cell_ref].s.alignment = { vertical: "center", wrapText: true };
+                worksheet[cell_ref].s.font = { name: "Tahoma", sz: 14 };
 
                 if (R === 0 || R === 1) {
                     // Header Row
                     worksheet[cell_ref].s.fill = { fgColor: { rgb: "A0BDFF" } };
-                    worksheet[cell_ref].s.font = { bold: true };
+                    worksheet[cell_ref].s.font.bold = true;
                     worksheet[cell_ref].s.alignment.horizontal = "center";
                 } else {
                     // Data Rows
-                    if (C === 1 || C === 2) {
+                    if (worksheet[cell_ref].v === "-") {
+                        worksheet[cell_ref].s.alignment.horizontal = "center";
+                    } else if (C === 1 || C === 2) {
                         // OA User, ชื่อ-นามสกุล
                         worksheet[cell_ref].s.alignment.horizontal = "left";
                     } else if (C === 6 || C === 8 || C === 11 || C === 13) {
