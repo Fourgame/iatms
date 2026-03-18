@@ -32,6 +32,7 @@ const ReasonModal = ({ open, onClose, onSave, errorMessage, actionType }) => {
             setLoading(false);
         } catch (error) {
             console.log("Validation Failed:", error);
+            setLoading(false); // Enable the button again if validation fails
         }
     };
 

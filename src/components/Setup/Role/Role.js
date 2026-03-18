@@ -441,8 +441,9 @@ const Role = () => {
                                 <Input
                                     placeholder="กรอก Role Level"
                                     maxLength={5}
+                                    onPressEnter={handleOk}
                                     onKeyPress={(event) => {
-                                        if (!/[0-9]/.test(event.key)) {
+                                        if (!/[0-9]/.test(event.key) && event.key !== 'Enter') {
                                             event.preventDefault();
                                         }
                                     }}
