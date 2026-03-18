@@ -11,7 +11,11 @@ class GetModalAttChange {
     return api.get("getModalAtt", { params: payload });
   }
 }
-
+class GetLeaveHoliday {
+  GetLeaveHoliday(payload) {
+    return api.get("getLeaveHoliday", { params: payload });
+  }
+}
 class PostAttChange {
   post_att_change(payload) {
     return api.post("postAttChange", payload);
@@ -27,4 +31,5 @@ class DeleteAttChange {
 export const getAttChange = new GetAttChange();
 export const postAttChange = new PostAttChange();
 export const getModalAttChange = new GetModalAttChange();
+export const getLeaveHoliday = new GetLeaveHoliday();
 export const deleteAttChange = new DeleteAttChange();
