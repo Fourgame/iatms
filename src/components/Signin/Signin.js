@@ -86,7 +86,10 @@ const Signin = (props) => {
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
         backgroundColor: "#1a2332",
-        maxWidth: "1920px",
+        minHeight: "100%",
+        minWidth: "80%",
+        maxWidth: "100%",
+        maxHeight: "100%",
         margin: "0 auto",
       }}
     >
