@@ -302,7 +302,7 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
 };
 
 
-const Listofvalues = ({ title }) => {
+const Listofvalues = ( {title} ) => {
     const navigate = useNavigate();
     const [lov, setLov] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -496,7 +496,7 @@ const Listofvalues = ({ title }) => {
     }, []);
 
 
-
+   
 
 
 
