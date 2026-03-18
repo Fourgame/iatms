@@ -192,7 +192,7 @@ const UserManage = ({ title }) => {
     const handleUserSearch = async () => {
         // 1. ตรวจสอบเงื่อนไขการค้นหา
         if (!searchFnEn && !searchLnEn && !searchOa) {
-            noticeShowMessage("กรุณาระบุเงื่อนไขในการค้นหาอย่างน้อย 1 อย่าง", true);
+            noticeShowMessage("ระบุเงื่อนไขในการค้นหาอย่างน้อย 1 อย่าง", true);
             return;
         }
 
@@ -664,7 +664,7 @@ const UserManage = ({ title }) => {
                     {/* Editable Fields */}
                     <Row gutter={24}>
                         <Col span={12}>
-                            <Form.Item name="team_code" label={<span style={{ fontWeight: 'bold' }}>Team</span>} rules={[{ required: true, message: 'กรุณาเลือก Team' }]}>
+                            <Form.Item name="team_code" label={<span style={{ fontWeight: 'bold' }}>Team</span>} rules={[{ required: true, message: 'เลือก Team' }]}>
                                 <Select placeholder="-เลือก-">
                                     {teamList.map(team => (
                                         <Option key={team.value}
@@ -687,7 +687,7 @@ const UserManage = ({ title }) => {
 
                     <Row gutter={24}>
                         <Col span={12}>
-                            <Form.Item name="role_id" label={<span style={{ fontWeight: 'bold' }}>Role</span>} rules={[{ required: true, message: 'กรุณาเลือก Role' }]}>
+                            <Form.Item name="role_id" label={<span style={{ fontWeight: 'bold' }}>Role</span>} rules={[{ required: true, message: 'เลือก Role' }]}>
                                 <Select placeholder="-เลือก-">
                                     {roleList.map(role => (
                                         <Option key={role.value} value={role.value}>{role.label}</Option>
@@ -699,7 +699,7 @@ const UserManage = ({ title }) => {
                             <Form.Item
                                 name="work_place"
                                 label={<span style={{ fontWeight: 'bold' }}>สถานที่ปฏิบัติงาน</span>}
-                                rules={[{ required: true, message: 'กรุณาเลือกสถานที่ปฏิบัติงาน' }]}
+                                rules={[{ required: true, message: 'เลือกสถานที่ปฏิบัติงาน' }]}
                                 labelCol={{ span: 9 }}
                                 wrapperCol={{ span: 15 }}
                                 style={{ marginLeft: '-5px' }}

@@ -72,6 +72,7 @@ const Header = () => {
 
     useEffect(() => {
         const fetchApiVersion = async () => {
+            if (!TokenService.isSignIn()) return;
             try {
                 const response = await VersionService.getApiVersion();
                 setApiVersion(response.data?.version || response.data || "");

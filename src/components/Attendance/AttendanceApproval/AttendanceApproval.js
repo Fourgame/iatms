@@ -198,7 +198,7 @@ const AttendanceApproval = ( {title} ) => {
 
     const handleSubmit = async (isApprove) => {
         if (!isApprove && !rejectReason.trim()) {
-            setAttRejectReasonError("กรุณาระบุเหตุผลที่ปฏิเสธ");
+            setAttRejectReasonError("ระบุเหตุผลที่ปฏิเสธ");
             return;
         }
 
@@ -337,7 +337,7 @@ const AttendanceApproval = ( {title} ) => {
         if (!selectedLeave) return;
 
         if (action === 'Reject' && (!rejectReasonInput || rejectReasonInput.trim() === '')) {
-            setRejectReasonError('กรุณาระบุเหตุผลที่ปฏิเสธ');
+            setRejectReasonError('ระบุเหตุผลที่ปฏิเสธ');
             return;
         }
 
@@ -815,6 +815,7 @@ const AttendanceApproval = ( {title} ) => {
                 onCancel={handleCloseModal}
                 footer={null}
                 width={1000}
+                zIndex={9999}
                 centered
                 closeIcon={<CloseIconBtn />}
                 className="attendance-detail-modal"
@@ -827,7 +828,6 @@ const AttendanceApproval = ( {title} ) => {
                 ) : (
                     <div
                         tabIndex={0}
-                        ref={(input) => input && input.focus()}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {
                                 e.preventDefault();
@@ -1075,6 +1075,7 @@ const AttendanceApproval = ( {title} ) => {
                 onCancel={() => setIsLeaveDetailModalOpen(false)}
                 footer={null}
                 width={700}
+                zIndex={9999}
                 centered
                 closeIcon={<CloseIconBtn />}
                 className="leave-detail-modal"
