@@ -293,15 +293,17 @@ const Compensation = ( {title} ) => {
             { s: { r: range.e.r, c: 0 }, e: { r: range.e.r, c: 3 } }
         ];
 
-        // Column widths
-        worksheet['!cols'] = [
-            { wch: 15 }, // เดือน-ปี
-            { wch: 20 }, // OA User
-            { wch: 30 }, // ชื่อ-นามสกุล
-            { wch: 15 }, // Team
-            { wch: 25 }, // จำนวนชั่วโมง
-            { wch: 20 }, // จำนวนเงิน (บาท)
-        ];
+        // Column widths - Autofit up to max 80 characters
+        const colKeys = Object.keys(exportData[0]);
+        worksheet['!cols'] = colKeys.map(key => {
+            let max = key.length;
+            exportData.forEach(row => {
+                const valStr = row[key] ? row[key].toString() : "";
+                if (valStr.length > max) max = valStr.length;
+            });
+            // Tahoma 14 is wider than default, so scale up max length and add padding
+            return { wch: Math.min(Math.floor(max * 1.2) + 8, 80) };
+        });
 
         // Apply styles
         for (let R = range.s.r; R <= range.e.r; ++R) {
@@ -320,18 +322,19 @@ const Compensation = ( {title} ) => {
                     right: { style: "thin", color: { auto: 1 } }
                 };
 
-                // Vertical Center by default
-                worksheet[cell_ref].s.alignment = { vertical: "center" };
+                // Vertical Center by default, wrap text, and Tahoma 14
+                worksheet[cell_ref].s.alignment = { vertical: "center", wrapText: true };
+                worksheet[cell_ref].s.font = { name: "Tahoma", sz: 14 };
 
                 if (R === 0) {
                     // Header Row
                     worksheet[cell_ref].s.fill = { fgColor: { rgb: "A0BDFF" } };
-                    worksheet[cell_ref].s.font = { bold: true };
+                    worksheet[cell_ref].s.font.bold = true;
                     worksheet[cell_ref].s.alignment.horizontal = "center";
                 } else if (R === range.e.r) {
                     // Summary Row
                     worksheet[cell_ref].s.fill = { fgColor: { rgb: "DEE8FF" } };
-                    worksheet[cell_ref].s.font = { bold: true };
+                    worksheet[cell_ref].s.font.bold = true;
                     if (C === 0) {
                         worksheet[cell_ref].s.alignment.horizontal = "right";
                     } else if (C === 4 || C === 5) {
@@ -339,7 +342,9 @@ const Compensation = ( {title} ) => {
                     }
                 } else {
                     // Data Rows
-                    if (C === 1 || C === 2) {
+                    if (worksheet[cell_ref].v === "-") {
+                        worksheet[cell_ref].s.alignment.horizontal = "center";
+                    } else if (C === 1 || C === 2) {
                         // OA User, ชื่อ-นามสกุล let's left align
                         worksheet[cell_ref].s.alignment.horizontal = "left";
                     } else if (C === 5) {

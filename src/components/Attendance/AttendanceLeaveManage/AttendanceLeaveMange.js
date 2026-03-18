@@ -17,6 +17,7 @@ import Title from '../../Utilities/Title';
 import { getButton } from '../../../services/CICO.service';
 import { getHolidays } from '../../../services/้้holidays.service';
 import dayjs from 'dayjs';
+import TimePickerBootstrap from 'react-bootstrap-time-picker';
 
 // Haversine Formula for distance calculation
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -138,7 +139,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
                 coNewLocation: data.coLatlongNew ? data.coLatlongNew : null,
                 ciNewTime: data.ciTimeNew ? moment(data.ciTimeNew, "HH:mm") : null,
                 coNewTime: data.coTimeNew ? moment(data.coTimeNew, "HH:mm") : null,
-                requestReason: data.requestReason || "",
+                requestReason: isReadOnly ? (data.requestReason || "") : "",
             });
 
             setCiNewLocation(data.ciLatlongNew ? parseLatLong(data.ciLatlongNew) : null);
@@ -543,6 +544,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
                                                         width: '100%'
                                                     }}
                                                 >
+                                                    {/*
                                                     <TimePicker
                                                         value={newTime}
                                                         inputReadOnly={true}
@@ -565,6 +567,30 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
                                                         bordered={false}
                                                         style={{ flex: 1 }}
                                                         suffixIcon={<i className="far fa-clock" style={{ color: '#000' }}></i>}
+                                                    />
+                                                    */}
+                                                    <TimePickerBootstrap
+                                                        start="00:00"
+                                                        end="23:59"
+                                                        step={30}
+                                                        format={24}
+                                                        value={newTime ? (typeof newTime.format === 'function' ? newTime.format('HH:mm') : newTime) : null}
+                                                        onChange={(timeInt) => {
+                                                            if (timeInt || timeInt === 0) {
+                                                                const h = Math.floor(timeInt / 3600);
+                                                                const m = Math.floor((timeInt % 3600) / 60);
+                                                                const timeObj = moment().hour(h).minute(m).second(0);
+                                                                setNewTime(timeObj);
+                                                                form.setFieldValue(fieldName, timeObj);
+                                                                form.setFields([{ name: fieldName, errors: [] }]);
+                                                                requestAnimationFrame(() => modalFormWrapperRef.current?.focus());
+                                                            } else {
+                                                                setNewTime(null);
+                                                                form.setFieldValue(fieldName, null);
+                                                            }
+                                                        }}
+                                                        className="form-select border-0 shadow-none"
+                                                        style={{ flex: 1, border: 'none', boxShadow: 'none', height: '100%', backgroundColor: 'transparent', padding: '0 8px' }}
                                                     />
                                                     <div
                                                         style={{
@@ -750,11 +776,11 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
                     </div>
 
                     {/* Reason Display */}
-                    {(data?.requestReason || data?.rejectReason) && (
+                    {(data?.requestReason || data?.rejectReason) && isReadOnly && (
                         <div style={{ marginBottom: '15px', padding: '0 5px' }}>
                             {data?.requestReason && (
                                 <div style={{ display: 'flex', marginBottom: '8px' }}>
-                                    <div style={{ width: '120px', fontWeight: 'bold' }}>เหตุผลที่ร้องขอ :</div>
+                                    <div style={{ width: '120px', fontWeight: 'bold' }}>เหตุผลคำขอ :</div>
                                     <div style={{ flex: 1 }}>{data.requestReason}</div>
                                 </div>
                             )}
@@ -772,7 +798,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
                     {!isReadOnly && (
                         <Card className="mb-3" style={{ border: '1px solid #d9d9d9', borderRadius: '8px', overflow: 'hidden' }}>
                             <Card.Header style={{ backgroundColor: '#A0BDFF', fontWeight: 'bold', borderBottom: '1px solid #d9d9d9' }}>
-                                <span style={{ color: 'red', marginRight: '5px' }}>*</span>เหตุผลที่ร้องขอ
+                                <span style={{ color: 'red', marginRight: '5px' }}>*</span>เหตุผลคำขอ
                             </Card.Header>
                             <Card.Body className="p-3" style={{ paddingBottom: '0 !important' }}>
                                 <Form.Item shouldUpdate noStyle>
@@ -782,7 +808,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
                                             <Form.Item
                                                 name="requestReason"
                                                 style={{ marginBottom: 0 }}
-                                                rules={[{ required: true, message: 'ระบุเหตุผลที่ร้องขอ' }]}
+                                                rules={[{ required: true, message: 'เหตุผลคำขอ' }]}
                                                 validateStatus={err ? "error" : undefined}
                                                 help={fixedHelp(err)}
                                             >
@@ -1427,18 +1453,16 @@ const AttendanceLeaveMange = ( {title} ) => {
                 const status = String(record.changeStatusCode ?? record.changeStatus ?? "").trim();
                 if (record.action === 'delete' || status === 'Rj') {
                     return (
-                        <div style={{ textAlign: text && text.trim() ? "left" : "center" }}>
-                            <a
-                                href="#"
+                        <div style={{ textAlign: "center" }}>
+                            <i
+                                className="bi bi-eye"
                                 onClick={(e) => {
                                     e.preventDefault();
                                     setViewReasonData(record);
                                     setIsViewReasonModalOpen(true);
                                 }}
-                                style={{ color: '#1890ff', textDecoration: 'underline' }}
-                            >
-                                {text && text.trim() ? text : "-"}
-                            </a>
+                                style={{ cursor: 'pointer', color: '#1890ff', fontSize: '18px' }}
+                            ></i>
                         </div>
                     );
                 }
@@ -2119,6 +2143,7 @@ const AttendanceLeaveMange = ( {title} ) => {
                                     <div style={{ position: 'relative', opacity: leaveForm.isFullDay ? 0.6 : 1 }}>
                                         <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.time ? '#ff4d4f' : '#666', zIndex: 1 }}>Start</span>
                                         <div style={{ display: 'flex', alignItems: 'center', border: leaveFormErrors.time ? '1px solid #ff4d4f' : '1px solid #888', borderRadius: '6px', paddingRight: '10px', height: '40px' }}>
+                                            {/*
                                             <TimePicker
                                                 disabled={leaveForm.isFullDay}
                                                 format="HH:mm"
@@ -2158,6 +2183,30 @@ const AttendanceLeaveMange = ( {title} ) => {
                                                 style={{ width: 100, border: 'none', boxShadow: 'none' }}
                                                 suffixIcon={<i className="bi bi-clock"></i>}
                                             />
+                                            */}
+                                            <TimePickerBootstrap
+                                                disabled={leaveForm.isFullDay}
+                                                step={30}
+                                                format={24}
+                                                start={`${String(workTimeLimits.startH).padStart(2, '0')}:${String(workTimeLimits.startM).padStart(2, '0')}`}
+                                                end={leaveForm.endTime ? leaveForm.endTime.format('HH:mm') : `${String(workTimeLimits.endH).padStart(2, '0')}:${String(workTimeLimits.endM).padStart(2, '0')}`}
+                                                value={leaveForm.startTime ? leaveForm.startTime.format('HH:mm') : null}
+                                                onChange={(timeInt) => {
+                                                    if (timeInt || timeInt === 0) {
+                                                        const h = Math.floor(timeInt / 3600);
+                                                        const m = Math.floor((timeInt % 3600) / 60);
+                                                        const timeObj = moment().hour(h).minute(m).second(0);
+                                                        const isSameDay = leaveForm.startDate?.isSame(leaveForm.endDate, 'day');
+                                                        const endInv = isSameDay && leaveForm.endTime && (h * 60 + m >= leaveForm.endTime.hour() * 60 + leaveForm.endTime.minute());
+                                                        setLeaveForm({ ...leaveForm, startTime: timeObj, ...(endInv && { endTime: null }) });
+                                                        setLeaveFormErrors({ ...leaveFormErrors, time: "" });
+                                                    } else {
+                                                        setLeaveForm({ ...leaveForm, startTime: null });
+                                                    }
+                                                }}
+                                                className="form-select border-0 shadow-none"
+                                                style={{ width: 100, border: 'none', boxShadow: 'none', height: '100%', backgroundColor: 'transparent', padding: '0 8px' }}
+                                            />
                                             <span style={{ fontWeight: 500 }}>น.</span>
                                         </div>
                                     </div>
@@ -2165,6 +2214,7 @@ const AttendanceLeaveMange = ( {title} ) => {
                                     <div style={{ position: 'relative', opacity: leaveForm.isFullDay ? 0.6 : 1 }}>
                                         <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.time ? '#ff4d4f' : '#666', zIndex: 1 }}>End</span>
                                         <div style={{ display: 'flex', alignItems: 'center', border: leaveFormErrors.time ? '1px solid #ff4d4f' : '1px solid #888', borderRadius: '6px', paddingRight: '10px', height: '40px' }}>
+                                            {/*
                                             <TimePicker
                                                 disabled={leaveForm.isFullDay}
                                                 format="HH:mm"
@@ -2201,6 +2251,28 @@ const AttendanceLeaveMange = ( {title} ) => {
                                                 }}
                                                 style={{ width: 100, border: 'none', boxShadow: 'none' }}
                                                 suffixIcon={<i className="bi bi-clock"></i>}
+                                            />
+                                            */}
+                                            <TimePickerBootstrap
+                                                disabled={leaveForm.isFullDay}
+                                                step={30}
+                                                format={24}
+                                                start={leaveForm.startTime ? leaveForm.startTime.format('HH:mm') : `${String(workTimeLimits.startH).padStart(2, '0')}:${String(workTimeLimits.startM).padStart(2, '0')}`}
+                                                end={`${String(workTimeLimits.endH).padStart(2, '0')}:${String(workTimeLimits.endM).padStart(2, '0')}`}
+                                                value={leaveForm.endTime ? leaveForm.endTime.format('HH:mm') : null}
+                                                onChange={(timeInt) => {
+                                                    if (timeInt || timeInt === 0) {
+                                                        const h = Math.floor(timeInt / 3600);
+                                                        const m = Math.floor((timeInt % 3600) / 60);
+                                                        const timeObj = moment().hour(h).minute(m).second(0);
+                                                        setLeaveForm({ ...leaveForm, endTime: timeObj });
+                                                        setLeaveFormErrors({ ...leaveFormErrors, time: "" });
+                                                    } else {
+                                                        setLeaveForm({ ...leaveForm, endTime: null });
+                                                    }
+                                                }}
+                                                className="form-select border-0 shadow-none"
+                                                style={{ width: 100, border: 'none', boxShadow: 'none', height: '100%', backgroundColor: 'transparent', padding: '0 8px' }}
                                             />
                                             <span style={{ fontWeight: 500 }}>น.</span>
                                         </div>
@@ -2331,7 +2403,7 @@ const AttendanceLeaveMange = ( {title} ) => {
             >
                 <div style={{ fontSize: '16px', color: '#000', marginTop: '20px', marginBottom: '20px' }}>
                     <div style={{ display: 'flex', marginBottom: '8px' }}>
-                        <div style={{ width: '130px', fontWeight: 'bold' }}>เหตุผลที่ร้องขอ :</div>
+                        <div style={{ width: '130px', fontWeight: 'bold' }}>เหตุผลคำขอ :</div>
                         <div style={{ flex: 1 }}>{viewReasonData?.requestReason || "-"}</div>
                     </div>
                     <div style={{ display: 'flex' }}>
