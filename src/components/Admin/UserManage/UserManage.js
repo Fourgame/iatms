@@ -6,7 +6,7 @@ import { ActiveTag, InactiveTag } from "../../Utilities/StatusTag/StatusTag";
 import TableUI from '../../Utilities/Table/TableUI';
 import { getUserManage, postUserManage, getDropdown, findLdap } from '../../../services/user-manage.service';
 import TokenService from '../../../services/token.service';
-import { getLov } from '../../../services/Lov.service';
+import { getLov } from '../../../services/lov.service';
 import Title from '../../Utilities/Title';
 import Loading from '../../Utilities/Loading';
 import { noticeShowMessage } from '../../Utilities/Notification';
