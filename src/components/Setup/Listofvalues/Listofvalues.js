@@ -302,11 +302,7 @@ const EditModal = ({ show, onClose, onSave, title, data, existingData = [] }) =>
 };
 
 
-<<<<<<< HEAD:src/components/Setup/Listofvalues/Listofvalues.js
-const Listofvalues = ( {title} ) => {
-=======
-const listofvalues = ({ title }) => {
->>>>>>> 87e60a29216d039d7be9feb16c8508c7a22f53fa:src/components/Setup/Listofvalues/listofvalues.js
+const Listofvalues = ({ title }) => {
     const navigate = useNavigate();
     const [lov, setLov] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -500,7 +496,7 @@ const listofvalues = ({ title }) => {
     }, []);
 
 
-   
+
 
 
 
@@ -596,4 +592,4 @@ const listofvalues = ({ title }) => {
     );
 };
 
-export default listofvalues;
+export default Listofvalues;
