@@ -5,7 +5,7 @@ import { GoogleMap, MarkerF, CircleF, useJsApiLoader } from "@react-google-maps/
 import { DatePicker, Select, Form, Input, TimePicker, Modal, Button, Checkbox } from 'antd';
 import { SearchToolBtnBootstrap, ClearToolBtnBootstrap, AddToolBtnBootstrap, EditToolBtnBootstrap, DeleteToolBtn, CloseModalBtnBootstrap, CloseIconBtn, SubmitModalBtnBootstrap } from '../../Utilities/Buttons/Buttons';
 import { RejectTag, ApproveTag, PendingApproveTag } from "../../Utilities/StatusTag/StatusTag";
-import { getAttChange, getModalAttChange, postAttChange, deleteAttChange } from '../../../services/att-change.service';
+import { getAttChange, getModalAttChange, getLeaveHoliday, postAttChange, deleteAttChange } from '../../../services/att-change.service';
 import { getLeave, postLeave, deleteLeave } from '../../../services/leave.service';
 import TokenService from '../../../services/token.service';
 import TableUI from '../../Utilities/Table/TableUI';
@@ -15,7 +15,6 @@ import Loading from "../../Utilities/Loading";
 import moment from 'moment';
 import Title from '../../Utilities/Title';
 import { getButton } from '../../../services/CICO.service';
-import { getHolidays } from '../../../services/้้holidays.service';
 import dayjs from 'dayjs';
 import TimePickerBootstrap from 'react-bootstrap-time-picker';
 
@@ -973,8 +972,8 @@ const AttendanceLeaveMange = ({ title }) => {
                 const currentYear = moment().year();
                 try {
                     const [holidaysRes1, holidaysRes2] = await Promise.all([
-                        getHolidays.get_holidays({ isActive: true, yearSearch: currentYear }),
-                        getHolidays.get_holidays({ isActive: true, yearSearch: currentYear + 1 })
+                        getLeaveHoliday.GetLeaveHoliday({ is_active: 1, yearSearch: currentYear }),
+                        getLeaveHoliday.GetLeaveHoliday({ is_active: 1, yearSearch: currentYear + 1 })
                     ]);
 
                     let combinedHolidays = [];
