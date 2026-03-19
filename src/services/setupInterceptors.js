@@ -2,6 +2,8 @@ import axiosInstance from "./api";
 import TokenService from "./token.service";
 import authService from "./auth.service";
 
+let refreshTokenPromise = null;
+
 const setupInterceptors = () => {
     axiosInstance.interceptors.request.use(
         (config) => {
@@ -35,11 +37,24 @@ const setupInterceptors = () => {
                 ) {
                     originalConfig._retry = true;
                     try {
-                        const rs = await axiosInstance.post("/auth/refresh_token", {
-                            refresh_token: TokenService.getLocalRefreshToken(),
-                        });
-                        const token = rs.data;
-                        TokenService.updateLocalAccessToken(token);
+                        // เช็คว่ามีการเรียก refresh_token ไปแล้วหรือยัง ถ้ายังให้สร้าง Promise
+                        if (!refreshTokenPromise) {
+                            refreshTokenPromise = axiosInstance.post("/auth/refresh_token", {
+                                refresh_token: TokenService.getLocalRefreshToken(),
+                            }).then(rs => {
+                                const token = rs.data;
+                                TokenService.updateLocalAccessToken(token);
+                                return token.token; // ส่ง access_token ใหม่กลับไปให้คนที่รอ
+                            }).catch(error => {
+                                return Promise.reject(error);
+                            }).finally(() => {
+                                refreshTokenPromise = null; // คืนค่าเป็น null เมื่อจบงาน
+                            });
+                        }
+
+                        // รอ Promise ตัวเดียวกัน ไม่ว่าจะเข้ามากี่ Request ก็จะรอ token อันเดียว
+                        const newAccessToken = await refreshTokenPromise;
+                        originalConfig.headers["Authorization"] = "Bearer " + newAccessToken;
 
                         return axiosInstance(originalConfig);
                     } catch (_error) {
