@@ -11,8 +11,8 @@ import { noticeShowMessage } from "../Utilities/Notification";
 const Signin = (props) => {
 
   const navigate = useNavigate();
-  const [username, setUsername] = useState("nattapol.prai");
-  const [password, setPassword] = useState("@Int1234");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const skipLogin = false;
