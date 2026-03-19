@@ -844,7 +844,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
     );
 };
 
-const AttendanceLeaveMange = ( {title} ) => {
+const AttendanceLeaveMange = ({ title }) => {
     const navigate = useNavigate();
 
     const handleRequestError = (error) => {
@@ -1424,7 +1424,7 @@ const AttendanceLeaveMange = ( {title} ) => {
                 }
 
                 const statusStr = String(record.changeStatusCode ?? record.changeStatus ?? "").trim();
-                if (statusStr === 'Ap' || statusStr === 'PA' ) {
+                if (statusStr === 'Ap' || statusStr === 'PA') {
                     return (
                         <a
                             href="#"
