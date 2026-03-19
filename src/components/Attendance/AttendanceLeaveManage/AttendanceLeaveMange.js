@@ -2137,7 +2137,15 @@ const AttendanceLeaveMange = ({ title }) => {
                                     <Checkbox
                                         disabled={leaveForm.startDate && leaveForm.endDate && !leaveForm.startDate.isSame(leaveForm.endDate, 'day')}
                                         checked={!leaveForm.isFullDay}
-                                        onChange={() => setLeaveForm({ ...leaveForm, isFullDay: false })}
+                                        onChange={() => {
+                                            setLeaveForm({
+                                                ...leaveForm,
+                                                isFullDay: false,
+                                                startTime: leaveForm.startTime || moment().hour(workTimeLimits.startH).minute(workTimeLimits.startM).second(0),
+                                                endTime: leaveForm.endTime || moment().hour(workTimeLimits.endH).minute(workTimeLimits.endM).second(0)
+                                            });
+                                            setLeaveFormErrors({ ...leaveFormErrors, time: "" });
+                                        }}
                                     />
                                     <div style={{ position: 'relative', opacity: leaveForm.isFullDay ? 0.6 : 1 }}>
                                         <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.time ? '#ff4d4f' : '#666', zIndex: 1 }}>Start</span>

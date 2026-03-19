@@ -406,6 +406,22 @@ const CheckInOut = ({ title }) => {
         return `เวลา ${hours}:${minutes} น.`;
     };
 
+    const formatLeaveDateTime = (dateStr) => {
+        if (!dateStr) return "";
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return dateStr;
+
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+
+        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds} น.`;
+    };
+
     const handleResetLocation = () => {
         if (navigator.geolocation) {
             setLoadingLocation(true); // เปิด Loading เมื่อกดรีเซ็ต
@@ -802,6 +818,21 @@ const CheckInOut = ({ title }) => {
                                         {/* Reset Location Button */}
                                         <div style={{ marginTop: '20px' }}>
                                             <ResetLocationBtn onClick={handleResetLocation} />
+                                        </div>
+                                        <div style={{ marginTop: '40px' }}>
+
+                                        {/* Leave Info */}
+                                        {(buttonData?.leaveStartDate || buttonData?.leaveStart) && (
+                                            <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#ecececff', border: '1px solid #000000ff', borderRadius: '8px', display: 'inline-block' }}>
+                                                <div style={{ fontWeight: 'bold', fontSize: '18px', color: '#000000ff', marginBottom: '5px' }}>
+                                                    {/* <i className="bi bi-info-circle-fill" style={{ marginRight: '8px' }}></i>ข้อมูลวันลาหยุด */}
+                                                    <span>ลาหยุด</span>
+                                                </div>
+                                                <div style={{ fontSize: '16px', color: '#000000ff' }}>
+                                                    {formatLeaveDateTime(buttonData.leaveStartDate || buttonData.leaveStart)} - {formatLeaveDateTime(buttonData.leaveEndDate || buttonData.leaveEnd)}
+                                                </div>
+                                            </div>
+                                        )}
                                         </div>
                                     </div>
 

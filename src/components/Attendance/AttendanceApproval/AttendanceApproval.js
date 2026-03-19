@@ -948,7 +948,9 @@ const AttendanceApproval = ( {title} ) => {
 
                         {/* Footer Buttons */}
                         <div className="modal-footer justify-content-center border-top-0 pb-0 pt-3" style={{ gap: '20px' }}>
-                            <ApproveModalBtnBootstrap onClick={handleApprove} />
+                            {(!modalData?.attDate || moment().startOf('day').diff(moment(modalData.attDate).startOf('day'), 'days') <= 7) && (
+                                <ApproveModalBtnBootstrap onClick={handleApprove} />
+                            )}
                             <RejectModalBtnBootstrap onClick={handleReject} style={{ "--bs-btn-bg": "#FFBCBC", "--bs-btn-hover-bg": "#ffcccc", "--bs-btn-active-bg": "#ffcccc" }} />
 
                             <CloseModalBtnBootstrap onClick={handleCloseModal} style={{ width: '150px', height: '40px', backgroundColor: '#E8E8E8', borderColor: '#000' }} />
