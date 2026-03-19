@@ -195,7 +195,6 @@ const Holidays = ({ title }) => {
     const navigate = useNavigate();
     const currentYear = new Date().getFullYear();
     const [yearSearch, setYearSearch] = useState(currentYear);
-    const [isActive, setIsActive] = useState(true);
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [yearOptions, setYearOptions] = useState([]);
@@ -283,7 +282,7 @@ const Holidays = ({ title }) => {
         }
     };
 
-    const fetchData = async (searchYear = yearSearch, isactive = isActive) => {
+    const fetchData = async (searchYear = yearSearch) => {
         setLoading(true);
         try {
             const currentUser = TokenService.getUser();
@@ -293,8 +292,7 @@ const Holidays = ({ title }) => {
             }
 
             const payload = {
-                yearSearch: searchYear,
-                isActive: isactive
+                yearSearch: searchYear
             };
 
             const response = await getHolidays.get_holidays(payload);
@@ -319,15 +317,13 @@ const Holidays = ({ title }) => {
         // Reset to default? The default is dynamic (Max Year).
         // Since we stored options, we can reset to options[0] (Max).
         const defaultYear = yearOptions.length > 0 ? yearOptions[0] : currentYear;
-        const defaultIsActive = true;
         setYearSearch(defaultYear);
-        setIsActive(defaultIsActive);
         setOpenDropdown(false);
 
 
 
         // Fetch with defaults
-        fetchData(defaultYear, defaultIsActive); // Pass explicitly to ensure correct value used
+        fetchData(defaultYear); // Pass explicitly to ensure correct value used
     };
 
     const handleKeyDown = (e) => {
@@ -507,17 +503,7 @@ const Holidays = ({ title }) => {
                             </Select>
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span style={{ fontWeight: 700, fontSize: '16px' }}>สถานะ:</span>
-                            <Checkbox
-                                checked={isActive}
-                                onChange={(e) => setIsActive(e.target.checked)}
-                                onKeyDown={handleKeyDown}
-                                style={{ fontSize: '14px' }}
-                            >
-                                ใช้งาน
-                            </Checkbox>
-                        </div>
+                        {/* Status Checkbox Removed */}
 
                         <div style={{ marginLeft: "auto", display: 'flex', gap: '10px' }}>
                             <SearchToolBtnBootstrap onClick={handleSearch} />
