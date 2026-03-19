@@ -190,7 +190,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
     // ✅ Reserve help space on both columns to keep same height
     const renderMapSection = (type, latLongStr, currentZone, newLocation, setNewLocation, originalAddress, newAddress) => {
         const fieldName = type === 'ci' ? 'ciNewLocation' : 'coNewLocation';
-        const msg = `ระบุตำแหน่ง${type === 'ci' ? 'เข้า' : 'ออก'}ที่ขอแก้ไข`;
+        const msg = `เลือกตำแหน่ง${type === 'ci' ? 'เข้า' : 'ออก'}ที่ขอแก้ไข`;
 
         const originalLocation = parseLatLong(latLongStr);
         const mapContainerStyle = { width: '100%', height: '250px', borderRadius: '8px' };
@@ -398,7 +398,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
         }
 
         const fieldName = type === "ci" ? "ciNewTime" : "coNewTime";
-        const msg = `ระบุเวลา${type === 'ci' ? 'เข้า' : 'ออก'}ที่ขอแก้ไข`;
+        const msg = `เวลา${type === 'ci' ? 'เข้า' : 'ออก'}ที่ขอแก้ไข`;
 
         const readonlyBoxStyle = (hasError = false) => ({
             display: 'flex',
@@ -1223,7 +1223,7 @@ const AttendanceLeaveMange = ({ title }) => {
         }
 
         if (!leaveForm.isFullDay) {
-            if (!leaveForm.startTime || !leaveForm.endTime) { errors.time = "ระบุช่วงเวลา"; hasError = true; }
+            if (!leaveForm.startTime || !leaveForm.endTime) { errors.time = "เลือกช่วงเวลา"; hasError = true; }
             else if (leaveForm.startDate && leaveForm.endDate && leaveForm.startDate.isSame(leaveForm.endDate, 'day')) {
                 const st = moment(typeof leaveForm.startTime.format === 'function' ? leaveForm.startTime.format("HH:mm") : leaveForm.startTime, "HH:mm");
                 const et = moment(typeof leaveForm.endTime.format === 'function' ? leaveForm.endTime.format("HH:mm") : leaveForm.endTime, "HH:mm");

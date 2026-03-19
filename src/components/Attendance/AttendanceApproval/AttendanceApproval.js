@@ -16,7 +16,7 @@ import { getLeaveApproval, postLeaveApproval } from '../../../services/leaveappr
 
 const { Option } = Select;
 
-const AttendanceApproval = ( {title} ) => {
+const AttendanceApproval = ({ title }) => {
     const navigate = useNavigate();
 
     const handleRequestError = (error) => {
@@ -198,7 +198,7 @@ const AttendanceApproval = ( {title} ) => {
 
     const handleSubmit = async (isApprove) => {
         if (!isApprove && !rejectReason.trim()) {
-            setAttRejectReasonError("ระบุเหตุผลที่ปฏิเสธ");
+            setAttRejectReasonError("กรอกเหตุผลที่ปฏิเสธ");
             return;
         }
 
@@ -337,7 +337,7 @@ const AttendanceApproval = ( {title} ) => {
         if (!selectedLeave) return;
 
         if (action === 'Reject' && (!rejectReasonInput || rejectReasonInput.trim() === '')) {
-            setRejectReasonError('ระบุเหตุผลที่ปฏิเสธ');
+            setRejectReasonError('กรอกเหตุผลที่ปฏิเสธ');
             return;
         }
 

@@ -191,7 +191,7 @@ const HolidaysModal = ({ show, onClose, onSave, title, data, existingData = [] }
     );
 };
 
-const Holidays = ( {title} ) => {
+const Holidays = ({ title }) => {
     const navigate = useNavigate();
     const currentYear = new Date().getFullYear();
     const [yearSearch, setYearSearch] = useState(currentYear);
@@ -448,7 +448,7 @@ const Holidays = ( {title} ) => {
             <EditToolBtnBootstrap onClick={() => handleEdit(record)} />
         ),
     };
-    
+
 
     const columnsWithActions = [actionColumn, ...columns];
 

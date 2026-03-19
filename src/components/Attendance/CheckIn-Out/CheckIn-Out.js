@@ -52,7 +52,7 @@ const ReasonModal = ({ open, onClose, onSave, errorMessage, actionType }) => {
                     borderTopLeftRadius: '8px',
                     borderTopRightRadius: '8px'
                 }}>
-                    <span>ระบุเหตุผล</span>
+                    <span>กรุณาเหตุผล</span>
                     <CloseOutlined onClick={onClose} style={{ cursor: "pointer", fontSize: "20px" }} />
                 </div>
             }
@@ -92,7 +92,7 @@ const ReasonModal = ({ open, onClose, onSave, errorMessage, actionType }) => {
                 <Form.Item
                     name="reason"
                     label={<span style={{ fontWeight: "bold", fontSize: "16px" }}>เหตุผล</span>}
-                    rules={[{ required: true, message: 'กรุณากรอกเหตุผล' }]}
+                    rules={[{ required: true, message: 'กรอกเหตุผล' }]}
                 >
                     <Input.TextArea
                         rows={5}
@@ -821,18 +821,18 @@ const CheckInOut = ({ title }) => {
                                         </div>
                                         <div style={{ marginTop: '40px' }}>
 
-                                        {/* Leave Info */}
-                                        {(buttonData?.leaveStartDate || buttonData?.leaveStart) && (
-                                            <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#ecececff', border: '1px solid #000000ff', borderRadius: '8px', display: 'inline-block' }}>
-                                                <div style={{ fontWeight: 'bold', fontSize: '18px', color: '#000000ff', marginBottom: '5px' }}>
-                                                    {/* <i className="bi bi-info-circle-fill" style={{ marginRight: '8px' }}></i>ข้อมูลวันลาหยุด */}
-                                                    <span>ลาหยุด</span>
+                                            {/* Leave Info */}
+                                            {(buttonData?.leaveStartDate || buttonData?.leaveStart) && (
+                                                <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#ecececff', border: '1px solid #000000ff', borderRadius: '8px', display: 'inline-block' }}>
+                                                    <div style={{ fontWeight: 'bold', fontSize: '18px', color: '#000000ff', marginBottom: '5px' }}>
+                                                        {/* <i className="bi bi-info-circle-fill" style={{ marginRight: '8px' }}></i>ข้อมูลวันลาหยุด */}
+                                                        <span>ลาหยุด</span>
+                                                    </div>
+                                                    <div style={{ fontSize: '16px', color: '#000000ff' }}>
+                                                        {formatLeaveDateTime(buttonData.leaveStartDate || buttonData.leaveStart)} - {formatLeaveDateTime(buttonData.leaveEndDate || buttonData.leaveEnd)}
+                                                    </div>
                                                 </div>
-                                                <div style={{ fontSize: '16px', color: '#000000ff' }}>
-                                                    {formatLeaveDateTime(buttonData.leaveStartDate || buttonData.leaveStart)} - {formatLeaveDateTime(buttonData.leaveEndDate || buttonData.leaveEnd)}
-                                                </div>
-                                            </div>
-                                        )}
+                                            )}
                                         </div>
                                     </div>
 
