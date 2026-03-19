@@ -36,7 +36,7 @@ const StatCard = ({ title, value, footer, bg, hoverBg, onClick }) => {
 
 
 
-const Home = ( {title} ) => {
+const Home = ({ title }) => {
     let navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [dashboardData, setDashboardData] = useState(null);
@@ -105,7 +105,7 @@ const Home = ( {title} ) => {
     const {
         menu_intern, menu_teamled, menu_manager,
         check_in, check_out, working_hour, ci_address, co_address,
-        approve_leave, pending_leave, reject_leave,
+        approve, pending, reject,
         check_in_summary, ci_late_count, ci_outside_count,
         co_summary, co_early_count, co_outside_count,
         pending_requests, displaydate
@@ -153,9 +153,9 @@ const Home = ( {title} ) => {
                 {canCico && <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="สถานที่เช็คอิน" value={ci_address || "-"} />}
                 {canCico && <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="สถานที่เช็คเอาท์" value={co_address || "-"} />}
 
-                {canCico && <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องอนุมัติ" value={approve_leave || "0"} footer="รายการ" bg="#c9ffd9" hoverBg="#A8EBB8" />}
-                {canCico && <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องรออนุมัติ" value={pending_leave || "0"} footer="รายการ" bg="#fff0c9" hoverBg="#FFE099" />}
-                {canCico && <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องไม่อนุมัติ" value={reject_leave || "0"} footer="รายการ" bg="#ffd0d0" hoverBg="#FFB2B2" />}
+                {canCico && <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องอนุมัติ" value={approve || "0"} footer="รายการ" bg="#c9ffd9" hoverBg="#A8EBB8" />}
+                {canCico && <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องรออนุมัติ" value={pending || "0"} footer="รายการ" bg="#fff0c9" hoverBg="#FFE099" />}
+                {canCico && <StatCard onClick={() => navigate("/attendance/Attendance-&-Leave-Management")} title="คำร้องไม่อนุมัติ" value={reject || "0"} footer="รายการ" bg="#ffd0d0" hoverBg="#FFB2B2" />}
             </div>
         );
     };
