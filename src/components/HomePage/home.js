@@ -149,7 +149,7 @@ const Home = ({ title }) => {
                 {canCico && <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="เวลาที่เช็คอิน" value={check_in !== "-" && check_in ? `${check_in} น.` : "-"} />}
                 {canCico && <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="เวลาเช็คเอาท์" value={check_out !== "-" && check_out ? `${check_out} น.` : "-"} />}
 
-                <StatCard onClick={canRpWorkHours ? () => navigate("/report/WorkHours") : null} title="จำนวนชั่วโมงสะสม" value={timeString} />
+                <StatCard onClick={canRpWorkHours ? () => navigate("/report/Work-Hours") : null} title="จำนวนชั่วโมงสะสม" value={timeString} />
                 {canCico && <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="สถานที่เช็คอิน" value={ci_address || "-"} />}
                 {canCico && <StatCard onClick={() => navigate("/attendance/Check-In-&-Check-Out")} title="สถานที่เช็คเอาท์" value={co_address || "-"} />}
 
