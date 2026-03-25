@@ -685,7 +685,7 @@ const AttendanceApproval = ({ title }) => {
             width: 120,
             render: (text, record) => {
                 const statusLabel = text ? String(text).trim() : "-";
-                if (statusLabel === "Pending Approval" || statusLabel === "Pending") return <PendingApproveTag text={statusLabel} />;
+                if (statusLabel === "Pending Approval" || statusLabel === "Pending" || statusLabel === "Pending Approve" || statusLabel === "Pending Apporve") return <PendingApproveTag text="Pending Approve" />;
                 if (statusLabel === "Approved") return <ApproveTag text={statusLabel} />;
                 if (statusLabel === "Rejected") return <RejectTag text={statusLabel} />;
                 return statusLabel;
