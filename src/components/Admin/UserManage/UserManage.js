@@ -197,6 +197,17 @@ const UserManage = ({ title }) => {
         }
 
         setLoading(true);
+        // เคลียร์ข้อมูลเก่าทิ้งให้เป็นช่องว่าง (Reset) ทุกครั้งที่กดค้นหาใหม่
+        setSearchedUser({
+            oa_user: "",
+            first_name_th: "",
+            last_name_th: "",
+            first_name_en: "",
+            last_name_en: "",
+            email: "",
+            division: ""
+        });
+
         try {
             const currentUser = TokenService.getUser();
             if (!currentUser) {
@@ -209,7 +220,8 @@ const UserManage = ({ title }) => {
                 lname: searchLnEn
             });
 
-            if (response.data && response.data.res_code === 200) {
+            // เช็คว่าเจอข้อมูลจริงๆ (ต้องมี oa_user ส่งกลับมา) ไม่ใช่ Object ว่างๆ
+            if (response.data && response.data.res_code === 200 && response.data.result && response.data.result.oa_user) {
                 const data = response.data.result;
 
                 // 3. แยกชื่อ-นามสกุล (เนื่องจาก LDAP มักให้ Name รวมมา)
@@ -218,7 +230,7 @@ const UserManage = ({ title }) => {
 
                 // 4. อัปเดต State searchedUser เพื่อให้ Modal แสดงข้อมูล
                 setSearchedUser({
-                    oa_user: data.oa_user || "N/A",
+                    oa_user: data.oa_user || "",
                     first_name_th: splitTh[0] || "",
                     last_name_th: splitTh.slice(1).join(" ") || "", // เผื่อนามสกุลมีเว้นวรรค
                     first_name_en: splitEn[0] || "",
@@ -227,6 +239,15 @@ const UserManage = ({ title }) => {
                     division: data.division_code || "" // ใส่ในช่อง "ส่วนงาน"
                 });
             } else {
+                setSearchedUser({
+                    oa_user: "",
+                    first_name_th: "",
+                    last_name_th: "",
+                    first_name_en: "",
+                    last_name_en: "",
+                    email: "",
+                    division: ""
+                });
                 noticeShowMessage("ไม่พบข้อมูลผู้ใช้งานในระบบ LDAP", true);
             }
         } catch (error) {
