@@ -191,8 +191,8 @@ const UserManage = ({ title }) => {
 
     const handleUserSearch = async () => {
         // 1. ตรวจสอบเงื่อนไขการค้นหา
-        if (!searchFnEn && !searchLnEn && !searchOa) {
-            noticeShowMessage("ระบุเงื่อนไขในการค้นหาอย่างน้อย 1 อย่าง", true);
+        if (!searchOa && (!searchFnEn || !searchLnEn)) {
+            noticeShowMessage("กรุณาระบุ OA-User หรือระบุทั้งชื่อและนามสกุล (EN) เพื่อค้นหา", true);
             return;
         }
 
