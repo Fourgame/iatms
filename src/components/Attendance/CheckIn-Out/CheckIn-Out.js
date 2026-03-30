@@ -52,7 +52,7 @@ const ReasonModal = ({ open, onClose, onSave, errorMessage, actionType }) => {
                     borderTopLeftRadius: '8px',
                     borderTopRightRadius: '8px'
                 }}>
-                    <span>ระบุเหตุผล</span>
+                    <span>เหตุผล</span>
                     <CloseOutlined onClick={onClose} style={{ cursor: "pointer", fontSize: "20px" }} />
                 </div>
             }
@@ -92,7 +92,7 @@ const ReasonModal = ({ open, onClose, onSave, errorMessage, actionType }) => {
                 <Form.Item
                     name="reason"
                     label={<span style={{ fontWeight: "bold", fontSize: "16px" }}>เหตุผล</span>}
-                    rules={[{ required: true, message: 'กรุณากรอกเหตุผล' }]}
+                    rules={[{ required: true, message: 'กรอกเหตุผล' }]}
                 >
                     <Input.TextArea
                         rows={5}
@@ -707,7 +707,7 @@ const CheckInOut = ({ title }) => {
 
     return (
         <div style={{ paddingLeft: '20px', paddingRight: '20px', paddingBottom: '60px', backgroundColor: '#e9ecef', minHeight: '80vh' }}>
-            <Spin spinning={pageLoading} size="large" tip="กำลังโหลดข้อมูล...">
+            <Spin spinning={pageLoading || isLocationLoading} size="large" tip="กำลังโหลดข้อมูล...">
                 {/* Main Card */}
                 <Card
                     className="shadow-sm border-0 p-3 "
@@ -840,13 +840,12 @@ const CheckInOut = ({ title }) => {
 
                                 {/* Right Column: Map Placeholder */}
                                 <Col md={6}>
-                                    <Spin spinning={isLocationLoading}>
-                                        <div style={{ width: "100%", border: "1px solid #000" }}>
-                                            {loadError && (
-                                                <div style={{ color: "red" }}>
-                                                    โหลดแผนที่ไม่สำเร็จ (เช็ค API key / เปิด Maps JavaScript API)
-                                                </div>
-                                            )}
+                                    <div style={{ width: "100%", border: "1px solid #000" }}>
+                                        {loadError && (
+                                            <div style={{ color: "red" }}>
+                                                โหลดแผนที่ไม่สำเร็จ (เช็ค API key / เปิด Maps JavaScript API)
+                                            </div>
+                                        )}
 
                                             {!isLoaded ? (
                                                 <div
@@ -893,7 +892,6 @@ const CheckInOut = ({ title }) => {
                                                 </GoogleMap>
                                             )}
                                         </div>
-                                    </Spin>
                                 </Col>
                             </Row>
 

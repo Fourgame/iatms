@@ -14,6 +14,14 @@ const Breadcrumb = () => {
     .split("/")
     .filter((segment) => segment && !segment.includes("="))
     .map((segment) => {
+      const customNames = {
+        "list-of-values": "List of Values",
+        "define-roles": "Define Roles",
+        "manage-holidays": "Manage Holidays"
+      };
+      if (customNames[segment.toLowerCase()]) {
+        return customNames[segment.toLowerCase()];
+      }
       return segment
         .replace(/-/g, " ")
         .split(" ")

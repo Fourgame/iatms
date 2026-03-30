@@ -201,7 +201,7 @@ const UserManage = ({ title }) => {
             const currentUser = TokenService.getUser();
             if (!currentUser) {
                 TokenService.deleteUser();
-                return navigate("/signin", { state: { message: "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่" } });
+                return navigate("/signin", { state: { message: "ไม่สามารถเข้าสู่ระบบได้ ลองใหม่" } });
             }
             const response = await findLdap.find_ldap({
                 oa_user: searchOa,
@@ -327,7 +327,7 @@ const UserManage = ({ title }) => {
                 const response = await postUserManage.post_user_manage(payload);
 
                 if (response.status === 200 || response.data?.res_code === 200) {
-                    noticeShowMessage(modalMode === 'add' ? "User added successfully" : "User updated successfully", false);
+                    noticeShowMessage(modalMode === 'add' ? "บันทึกข้อมูลสำเร็จ" : "บันทึกข้อมูลสำเร็จ", false);
                     setIsModalOpen(false);
                     fetchUsers(keyword);
                 } else {

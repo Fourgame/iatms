@@ -10,6 +10,7 @@ export const SearchToolBtnBootstrap = ({ onClick, style, className, ...props }) 
     return (
         <ButtonBootstrap
             variant="primary"
+            size="sm"
             onClick={onClick}
             className={`d-inline-flex align-items-center gap-2 ${className}`}
             style={{
@@ -36,6 +37,7 @@ export const ClearToolBtnBootstrap = ({ onClick, style, className, ...props }) =
     return (
         <ButtonBootstrap
             variant="primary"
+            size="sm"
             onClick={onClick}
             className={`d-inline-flex align-items-center gap-2 ${className}`}
             style={{
@@ -65,6 +67,7 @@ export const SaveModalBtnBootstrap = ({ onClick, style, className, loading, ...p
     return (
         <ButtonBootstrap
             variant="primary"
+            size="sm"
             onClick={onClick}
             disabled={loading}
             className={`d-inline-flex align-items-center justify-content-center gap-2 ${className}`}
@@ -101,6 +104,7 @@ export const SaveModalBtnBootstrap = ({ onClick, style, className, loading, ...p
 export const PrintToolBtn = ({ onClick, style, className, ...props }) => {
     return (
         <Button
+            size="small"
             icon={<PrinterOutlined />}
             onClick={onClick}
             style={style}
@@ -116,6 +120,7 @@ export const AddToolBtnBootstrap = ({ onClick, style, className, ...props }) => 
     return (
         <ButtonBootstrap
             variant="success"
+            size="sm"
             onClick={onClick}
             className={`d-inline-flex align-items-center gap-2 ${className}`}
             style={{
@@ -207,6 +212,7 @@ export const CloseModalBtnBootstrap = ({ onClick, style, className, ...props }) 
     return (
         <ButtonBootstrap
             variant="secondary"
+            size="sm"
             onClick={onClick}
             className={`d-inline-flex align-items-center justify-content-center gap-2 ${className}`}
             style={{
@@ -239,6 +245,7 @@ export const SubmitModalBtnBootstrap = ({ onClick, style, className, ...props })
     return (
         <ButtonBootstrap
             variant="primary"
+            size="sm"
             onClick={onClick}
             className={`d-inline-flex align-items-center justify-content-center gap-2 ${className}`}
             style={{
@@ -279,6 +286,7 @@ export const ResetLocationBtn = ({ onClick, style, className, ...props }) => {
     return (
         <ButtonBootstrap
             variant="primary"
+            size="sm"
             onClick={onClick}
             className={`d-inline-flex align-items-center gap-2 ${className}`}
             style={{
@@ -306,7 +314,7 @@ export const CheckInBtn = ({ onClick, style, className, ...props }) => {
     return (
         <ButtonBootstrap
             variant="primary"
-            size="lg"
+            size="sm"
             onClick={onClick}
             className={`d-inline-flex align-items-center justify-content-center gap-2 ${className}`}
             style={{
@@ -336,7 +344,7 @@ export const CheckOutBtn = ({ onClick, style, className, ...props }) => {
     return (
         <ButtonBootstrap
             variant="primary"
-            size="lg"
+            size="sm"
             onClick={onClick}
             className={`d-inline-flex align-items-center justify-content-center gap-2 ${className}`}
             style={{
@@ -390,6 +398,7 @@ export const ApproveModalBtnBootstrap = ({ onClick, style, className, text, ...p
     return (
         <ButtonBootstrap
             variant="primary"
+            size="sm"
             onClick={onClick}
             className={`d-inline-flex align-items-center justify-content-center gap-2 ${className}`}
             style={{
@@ -426,6 +435,7 @@ export const RejectModalBtnBootstrap = ({ onClick, style, className, text, ...pr
     return (
         <ButtonBootstrap
             variant="primary"
+            size="sm"
             onClick={onClick}
             className={`d-inline-flex align-items-center justify-content-center gap-2 ${className}`}
             style={{
@@ -458,6 +468,7 @@ export const ExportToolBtnBootstrap = ({ onClick, style, className, ...props }) 
     return (
         <ButtonBootstrap
             variant="success"
+            size="sm"
             onClick={onClick}
             className={`d-inline-flex align-items-center gap-2 ${className}`}
             style={{

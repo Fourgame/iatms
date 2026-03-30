@@ -59,12 +59,12 @@ function App() {
             <Route path="/home" element={
               <Home title="Home" />
             } />
-            <Route path="/setup/role" element={
-              <Role title="Role" />
+            <Route path="/setup/define-roles" element={
+              <Role title="Define Roles" />
             } />
 
-            <Route path="/setup/manage-list-of-values" element={
-              <Listofvalues title="List of values" />
+            <Route path="/setup/list-of-values" element={
+              <Listofvalues title="List of Values" />
             } />
 
             <Route path="/admin/user-management" element={
@@ -72,7 +72,7 @@ function App() {
             } />
 
             <Route path="/setup/manage-holidays" element={
-              <Holidays title="Holidays" />
+              <Holidays title="Manage Holidays" />
             } />
 
             <Route path="/attendance/Check-In-&-Check-Out" element={

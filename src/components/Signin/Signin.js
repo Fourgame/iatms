@@ -26,8 +26,12 @@ const Signin = (props) => {
   useEffect(() => {
     const message = location.state?.message;
     if (message) {
-      setMessage(message);
-      noticeShowMessage(`${message}`, true);
+      if (message === "Logged out successfully") {
+        setMessage("Sign-out success.");
+      } else {
+        setMessage(message);
+        noticeShowMessage(`${message}`, true);
+      }
     }
   }, []);
 

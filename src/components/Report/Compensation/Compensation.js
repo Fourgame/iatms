@@ -71,7 +71,7 @@ const Compensation = ( {title} ) => {
             title: 'ชื่อ-นามสกุล',
             dataIndex: 'fullName',
             key: 'fullName',
-            align: 'center',
+            align: 'left',
             sorter: (a, b) => (a.fullName || "").localeCompare(b.fullName || ""),
         },
         {

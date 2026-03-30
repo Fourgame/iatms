@@ -47,7 +47,7 @@ const HolidaysModal = ({ show, onClose, onSave, title, data, existingData = [] }
             const currentUser = TokenService.getUser();
             if (!currentUser) {
                 TokenService.deleteUser();
-                return navigate("/signin", { state: { message: "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่" } });
+                return navigate("/signin", { state: { message: "ไม่สามารถเข้าสู่ระบบได้ ลองใหม่" } });
             }
 
             const values = await form.validateFields();

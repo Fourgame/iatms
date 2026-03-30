@@ -218,8 +218,8 @@ const Header = () => {
                                             Setup
                                         </a>
                                         <ul className="dropdown-menu shadow border-0 mt-2">
-                                            {<li><Link className="dropdown-item" to="/setup/manage-list-of-values" onClick={(e) => handleRefresh(e, "/setup/manage-list-of-values")}>Manage List Of Values</Link></li>}
-                                            {<li><Link className="dropdown-item" to="/setup/role" onClick={(e) => handleRefresh(e, "/setup/role")}>Role</Link></li>}
+                                            {<li><Link className="dropdown-item" to="/setup/define-roles" onClick={(e) => handleRefresh(e, "/setup/define-roles")}>Define Roles</Link></li>}
+                                            {<li><Link className="dropdown-item" to="/setup/list-of-values" onClick={(e) => handleRefresh(e, "/setup/list-of-values")}>List of Values</Link></li>}
                                             {<li><Link className="dropdown-item" to="/setup/manage-holidays" onClick={(e) => handleRefresh(e, "/setup/manage-holidays")}>Manage Holidays</Link></li>}
                                         </ul>
                                     </li>

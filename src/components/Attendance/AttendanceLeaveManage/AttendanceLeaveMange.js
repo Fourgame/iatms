@@ -190,7 +190,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
     // ✅ Reserve help space on both columns to keep same height
     const renderMapSection = (type, latLongStr, currentZone, newLocation, setNewLocation, originalAddress, newAddress) => {
         const fieldName = type === 'ci' ? 'ciNewLocation' : 'coNewLocation';
-        const msg = `ระบุตำแหน่ง${type === 'ci' ? 'เข้า' : 'ออก'}ที่ขอแก้ไข`;
+        const msg = `ตำแหน่ง${type === 'ci' ? 'เข้า' : 'ออก'}ที่ขอแก้ไข`;
 
         const originalLocation = parseLatLong(latLongStr);
         const mapContainerStyle = { width: '100%', height: '250px', borderRadius: '8px' };
@@ -398,7 +398,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
         }
 
         const fieldName = type === "ci" ? "ciNewTime" : "coNewTime";
-        const msg = `ระบุเวลา${type === 'ci' ? 'เข้า' : 'ออก'}ที่ขอแก้ไข`;
+        const msg = `เวลา${type === 'ci' ? 'เข้า' : 'ออก'}ที่ขอแก้ไข`;
 
         const readonlyBoxStyle = (hasError = false) => ({
             display: 'flex',
@@ -811,7 +811,7 @@ const EditAttModal = ({ show, onClose, data, onSuccess, geofence, isReadOnly = f
                                                 validateStatus={err ? "error" : undefined}
                                                 help={fixedHelp(err)}
                                             >
-                                                <Input.TextArea rows={4} placeholder="ระบุเหตุผลที่ขอแก้ไข..." style={{ resize: 'none' }} />
+                                                <Input.TextArea rows={4} placeholder="เหตุผลที่ขอแก้ไข..." style={{ resize: 'none' }} />
                                             </Form.Item>
                                         );
                                     }}
@@ -1223,7 +1223,7 @@ const AttendanceLeaveMange = ({ title }) => {
         }
 
         if (!leaveForm.isFullDay) {
-            if (!leaveForm.startTime || !leaveForm.endTime) { errors.time = "ระบุช่วงเวลา"; hasError = true; }
+            if (!leaveForm.startTime || !leaveForm.endTime) { errors.time = "ช่วงเวลา"; hasError = true; }
             else if (leaveForm.startDate && leaveForm.endDate && leaveForm.startDate.isSame(leaveForm.endDate, 'day')) {
                 const st = moment(typeof leaveForm.startTime.format === 'function' ? leaveForm.startTime.format("HH:mm") : leaveForm.startTime, "HH:mm");
                 const et = moment(typeof leaveForm.endTime.format === 'function' ? leaveForm.endTime.format("HH:mm") : leaveForm.endTime, "HH:mm");
@@ -1231,7 +1231,7 @@ const AttendanceLeaveMange = ({ title }) => {
             }
         }
 
-        if (!leaveForm.reason || !leaveForm.reason.trim()) { errors.reason = "ระบุเหตุผล"; hasError = true; }
+        if (!leaveForm.reason || !leaveForm.reason.trim()) { errors.reason = "เหตุผล"; hasError = true; }
         setLeaveFormErrors(errors);
         if (hasError) return;
 
@@ -2036,7 +2036,7 @@ const AttendanceLeaveMange = ({ title }) => {
                             <div style={{ display: 'flex', gap: '20px' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                                     <div style={{ position: 'relative' }}>
-                                        <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.startDate ? '#ff4d4f' : '#666', zIndex: 1 }}>start</span>
+                                        <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.startDate ? '#ff4d4f' : '#666', zIndex: 1 }}>Start Date</span>
                                         <DatePicker
                                             format="DD/MM/YYYY"
                                             placeholder="DD/MM/YYYY"
@@ -2077,7 +2077,7 @@ const AttendanceLeaveMange = ({ title }) => {
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                                     <div style={{ position: 'relative' }}>
-                                        <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.endDate ? '#ff4d4f' : '#666', zIndex: 1 }}>End</span>
+                                        <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.endDate ? '#ff4d4f' : '#666', zIndex: 1 }}>End Date</span>
                                         <DatePicker
                                             format="DD/MM/YYYY"
                                             placeholder="DD/MM/YYYY"
@@ -2148,7 +2148,7 @@ const AttendanceLeaveMange = ({ title }) => {
                                         }}
                                     />
                                     <div style={{ position: 'relative', opacity: leaveForm.isFullDay ? 0.6 : 1 }}>
-                                        <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.time ? '#ff4d4f' : '#666', zIndex: 1 }}>Start</span>
+                                        <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.time ? '#ff4d4f' : '#666', zIndex: 1 }}>Start Time</span>
                                         <div style={{ display: 'flex', alignItems: 'center', border: leaveFormErrors.time ? '1px solid #ff4d4f' : '1px solid #888', borderRadius: '6px', paddingRight: '10px', height: '40px' }}>
                                             {/*
                                             <TimePicker
@@ -2219,7 +2219,7 @@ const AttendanceLeaveMange = ({ title }) => {
                                     </div>
                                     <span style={{ fontWeight: 'bold' }}>-</span>
                                     <div style={{ position: 'relative', opacity: leaveForm.isFullDay ? 0.6 : 1 }}>
-                                        <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.time ? '#ff4d4f' : '#666', zIndex: 1 }}>End</span>
+                                        <span style={{ position: 'absolute', top: '-10px', left: '10px', fontSize: '12px', backgroundColor: 'white', padding: '0 5px', color: leaveFormErrors.time ? '#ff4d4f' : '#666', zIndex: 1 }}>End Time</span>
                                         <div style={{ display: 'flex', alignItems: 'center', border: leaveFormErrors.time ? '1px solid #ff4d4f' : '1px solid #888', borderRadius: '6px', paddingRight: '10px', height: '40px' }}>
                                             {/*
                                             <TimePicker
