@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../../Utilities/Table/Table.css";
 import { Select, Checkbox, Modal, Form, Input, DatePicker } from "antd";
 import { Card } from 'react-bootstrap';
-import { getHolidays, postHolidays, getHolidayYears } from "../../../services/้้holidays.service";
+import { getHolidays, postHolidays, getHolidayYears } from "../../../services/holidays.service";
 import TableUI from "../../Utilities/Table/TableUI";
 import Loading from "../../Utilities/Loading";
 import { SearchToolBtnBootstrap, ClearToolBtnBootstrap, AddToolBtnBootstrap, EditToolBtnBootstrap, SaveModalBtnBootstrap, CloseModalBtnBootstrap, CloseIconBtn } from "../../Utilities/Buttons/Buttons";
